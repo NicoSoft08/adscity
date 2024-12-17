@@ -1,0 +1,52 @@
+@import './fonts';
+@import './variables';
+
+
+.privacy {
+    padding: 2rem;
+    line-height: 1.6;
+
+    h1 {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 18px;
+    }
+
+    h2 {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 17px;
+    }
+
+    h3 {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 16px;
+    }
+
+    h4 {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 15px;
+    }
+
+    p {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 14px;
+        font-weight: $font-light;
+        text-align: justify;
+    }
+    
+
+    ul {
+        list-style-type: none;
+    }
+
+    li {
+        color: $dark;
+        font-size: 15px;
+        font-weight: $font-light;
+        text-align: justify;
+    }
+}

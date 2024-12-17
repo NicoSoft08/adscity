@@ -1,0 +1,64 @@
+@import './fonts';
+@import './variables';
+
+.limit-reached {
+    margin-top: 20px;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: $four;
+    border-radius: 8px;
+    box-shadow: rgb(0.0, 0.0, 0.1);
+
+    .body {
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            color: $dark;
+        }
+
+
+        p {
+            margin: 0;
+            color: $dark;
+            font-size: 14px;
+            font-weight: $font-light;
+        }
+    }
+
+    .footer {
+
+        .upgrade-button {
+            background-color: $two;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 18px;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-regular;
+            cursor: pointer;
+            transition: background-color 0.2s;
+
+            &:hover {
+                background-color: $three;
+            }
+        }
+    }
+
+    .close {
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #666;
+
+            &:hover {
+                color: #333;
+            }
+        }
+    }
+}

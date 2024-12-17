@@ -1,0 +1,105 @@
+@import './fonts';
+@import './variables';
+
+
+.pending-ads {
+    margin-top: 2rem;
+    padding: 10px 20px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    margin-bottom: 20px;
+    background-color: $dark;
+    border-radius: 12px;
+
+    h3 {
+        color: $white;
+        font-weight: $font-regular;
+    }
+
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+        background-color: $white;
+        border-radius: 12px;
+
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: $font-light;
+
+
+
+            .img {
+                border-radius: 50%;
+            }
+
+
+            button {
+                margin: 0.25rem;
+            }
+
+
+            .approve-button {
+                background-color: #4caf50;
+                color: white;
+                padding: 6px 12px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: $font-light;
+                font-family: 'Ubuntu', sans-serif;
+            }
+
+            .reject-button {
+                background-color: #f44336;
+                color: white;
+                padding: 6px 12px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: $font-light;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+
+    p {
+        font-size: 15px;
+        text-align: justify;
+        color: $dark;
+        font-weight: $font-light;
+        font-family: 'Ubuntu', sans-serif;
+    }
+
+
+    label {
+        font-size: 15px;
+        font-family: 'Ubuntu', sans-serif;
+
+        textarea {
+            width: 100%;
+            margin-top: 5px;
+            // padding: 5px;
+            text-align: justify;
+            font-size: 15px;
+            outline: none;
+            font-weight: $font-light;
+            font-family: 'Ubuntu', sans-serif;
+        }
+    }
+
+    .error-text {
+        color: $danger;
+        font-size: 13px;
+        text-align: center;
+        font-weight: $font-light;
+        font-family: 'Ubuntu', sans-serif;
+    }
+}

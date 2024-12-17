@@ -1,0 +1,13 @@
+@import './fonts';
+@import './variables';
+
+
+.search-result {
+    padding: 10px 20px;
+
+
+    h2 {
+        font-size: 18px;
+        color: $dark;
+    }
+}

@@ -1,0 +1,33 @@
+@import './fonts';
+@import './variables';
+
+
+
+.badge-container {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    margin-right: 1rem;
+
+    svg {
+        font-size: 20px;
+    }
+
+
+    .badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $white;
+        border-radius: 50%;
+        position: absolute;
+        border: 2px solid $white;
+        background-color: #f44336;
+        
+        
+        span {
+            font-size: 11px;
+            color: $white;
+        }
+    }
+}

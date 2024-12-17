@@ -1,0 +1,26 @@
+@import './fonts';
+@import './variables';
+
+
+.panel {
+    display: flex;
+    flex-direction: column;
+
+    h2 {
+        color: $dark;
+    }
+
+
+    .panel-body {
+        display: flex;
+        border-radius: 12px;
+        justify-content: space-between;
+
+
+        @media (max-width: 768px) {
+            margin-bottom: 15px;
+            flex-direction: column;
+
+        };
+    }
+}

@@ -1,0 +1,45 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+
+
+    label {
+        color: $gray-dark;
+        font-weight: $font-light;
+        margin-bottom: 10px;
+
+        strong {
+            color: $danger;
+        }
+    }
+
+    select {
+        appearance: none;
+    }
+
+    .input-field,
+    option {
+        
+        font-weight: $font-light;
+        font-size: 14px;
+        padding: 10px 15px;
+        font-family: 'Ubuntu', sans-serif;
+        outline: none;
+    }
+
+    .input-field.error {
+        border:  1px solid $danger;
+        background-color: #ffcccb;
+    }
+
+    span {
+        color: $danger;
+        font-size: 13px;
+        font-weight: $font-light;
+    }
+}

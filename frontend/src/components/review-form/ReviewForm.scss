@@ -1,0 +1,36 @@
+@import '../../styles/variables';
+@import '../../styles/fonts';
+
+
+.review-form {
+    max-width: 400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    // background-color: $danger;
+
+    textarea {
+        width: 90%;
+        height: 100px;
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 14px;
+        font-weight: $font-light;
+        border-radius: 5px;
+        outline: none;
+        padding: 10px;
+        margin-bottom: 10px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 14px;
+        font-weight: $font-light;
+        border-radius: 5px;
+        border: 1px solid $two;
+        background-color: $two;
+        color: $white;
+        cursor: pointer;
+    }
+}

@@ -1,0 +1,37 @@
+@import './fonts';
+@import './variables';
+
+
+.panel {
+
+
+    h2 {
+        color: $dark;
+    }
+
+    h4 {
+        text-align: center;
+        color: $black;
+        font-weight: $font-regular;
+    }
+
+
+    .panel-body {
+        display: flex;
+        border-radius: 12px;
+        justify-content: space-between;
+
+        @media(max-width: 768px) {
+            flex-direction: column;
+        }
+
+
+        .panel-left {
+            width: 68%;
+
+            @media(max-width: 768px) {
+                width: 100%;
+            }
+        }
+    }
+}

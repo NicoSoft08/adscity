@@ -1,0 +1,103 @@
+@import './fonts';
+@import './variables';
+
+
+.users-stats {
+    padding: 10px 20px;
+    background-color: $dark;
+    margin-top: 20px;
+    border-radius: 5px;
+
+
+    .body {
+        display: flex;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
+        
+        @media (max-width: 768px) {
+            flex-wrap: wrap;
+        }
+
+
+        .box-detail {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            background-color: #fcfcfc;
+            padding: 10px;
+            border-radius: 8px;
+            // margin: 0.5rem;
+            margin-top: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100px;
+            height: 90px;
+            transition: all 0.3s ease;
+
+            @media (max-width: 768px) {
+                width: 100%;
+            }
+
+
+            ._header {
+                display: flex;
+                align-items: center;
+                flex-direction: column;
+                justify-content: space-evenly;
+                position: relative;
+
+
+                .dot-detail {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    width: 35px;
+                    height: 35px;
+                    position: absolute;
+                    top: -25px;
+
+
+                    svg {
+                        color: $white;
+                        font-size: 20px;
+                    }
+                }
+
+
+                .dot-detail.all {
+                    background-color: $primary-color;
+                }
+
+                .dot-detail.online {
+                    background-color: #4caf50;
+                }
+
+                .dot-detail.offline {
+                    background-color: #f44336;
+                }
+
+
+
+                .title {
+                    margin-left: 0.5rem;
+                    font-size: 16px;
+                    color: $dark;
+                }
+            }
+
+
+            .detail {
+                display: flex;
+                align-items: baseline;
+                justify-content: center;
+                // margin: 0 20px;
+
+
+                sub {
+                    margin-left: 0.5rem;
+                }
+            }
+        }
+    }
+}

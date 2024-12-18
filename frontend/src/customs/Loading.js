@@ -1,15 +1,17 @@
 import React from 'react';
-import { logos } from '../config';
-
+import { 
+    letterWhiteBgBlue, 
+    textBlueWithoutBg 
+} from '../config/logos';
 import '../styles/Loading.scss';
 
 export default function Loading() {
     return (
         <div className="loading-modal">
             <div className="loading-container">
-                <img src={logos.letterWhiteBgBlue} alt="AdsCity" className="loading-logo" />
+                <img src={letterWhiteBgBlue} alt="AdsCity" className="loading-logo" />
                 <div className="loading-header">
-                    <img src={logos.textBlueWithoutBg} alt="AdsCity" className="loading-text" />
+                    <img src={textBlueWithoutBg} alt="AdsCity" className="loading-text" />
                 </div>
                 <span className="loading-span">Publiez, Vendez, Echangez</span>
                 <div className="loading-spinner"></div>

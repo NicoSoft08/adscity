@@ -1,0 +1,40 @@
+@import './fonts';
+@import './variables';
+
+
+
+.admin-chart-container {
+    background: $dark;
+    border-radius: 5px;
+    padding: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 28%;
+    margin: 20px auto;
+
+
+    .chart-title {
+        font-size: 18px;
+        text-align: center;
+        color: $white;
+        font-family: 'Ubuntu', sans-serif;
+        font-weight: $font-regular;
+    }
+
+    canvas {
+        max-height: 400px;
+        width: 100% !important;
+        height: auto !important;
+        margin-bottom: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-chart-container {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        border-radius: 5px;
+        margin-top: 20px;
+
+    }
+}

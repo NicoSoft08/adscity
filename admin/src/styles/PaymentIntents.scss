@@ -1,0 +1,77 @@
+@import './fonts';
+@import './variables';
+
+
+.payment-actions {
+
+    .action-btn {
+        padding: 5px 12px;
+        // font-size: 13px;
+        color: $white;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: $font-regular;
+        border: none;
+    }
+
+    .success {
+        background-color: $green;
+    }
+
+    .danger {
+        background-color: $red;
+    }
+}
+
+.payment-intents {
+
+    h2 {
+        font-weight: $font-regular;
+        color: $white;
+    }
+
+
+    .payment-filters {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: $font-light;
+            width: 200px;
+            cursor: pointer;
+            font-family: 'Ubuntu', sans-serif;
+
+            &:focus {
+                outline: none;
+                border-color: $two;
+            }
+        }
+    }
+
+    .payment-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+
+        background-color: $white;
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: $font-light;
+
+            button {
+                margin: 0.25rem;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+}

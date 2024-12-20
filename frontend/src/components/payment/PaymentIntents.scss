@@ -1,0 +1,35 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.payment-intents {
+
+    h2 {
+        font-weight: $font-regular;
+        color: $dark;
+    }
+
+
+
+    .payment-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 800px;
+
+        background-color: $white;
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            white-space: nowrap;
+            font-size: 14px;
+            font-weight: $font-light;
+
+            button {
+                margin: 0.25rem;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+}

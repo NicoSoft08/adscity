@@ -1,0 +1,23 @@
+@import './fonts';
+@import './variables';
+
+
+.status-component {
+    overflow-x: auto;
+    /* Enable horizontal scrolling */
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    /* width: 80%;
+    margin-left: auto;
+    margin-right: auto; */
+    flex-direction: row;
+    margin-bottom: 4rem;
+    /* padding-inline-start: 15px; */
+
+
+    .status-wrap {
+        display: flex;
+        align-items: center;
+    }
+}

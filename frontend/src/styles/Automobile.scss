@@ -1,0 +1,200 @@
+@import './fonts';
+@import './variables';
+
+
+.detail-form {
+    padding: 10px 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+
+
+
+    form {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+
+
+        @media (max-width: 390px) {
+            align-items: start;
+            margin-left: -50px;
+        }
+
+        
+
+
+
+        .d-flex-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            @media (max-width: 390px) {
+                flex-direction: column;
+            }
+
+
+
+            .wrap {
+                display: flex;
+                flex-direction: column;
+                padding: 10px 20px;
+                width: 90%;
+                
+                @media (max-width: 390px) {
+                    width: 90%;
+                    padding: 0;
+                }
+
+
+
+
+                label {
+                    margin-top: 1rem;
+                    font-size: 15px;
+                    font-weight: $font-light;
+
+
+                    strong {
+                        color: $danger;
+                    }
+                }
+
+
+                .input-field,
+                select,
+                option {
+                    // width: 50%;
+                    padding: 10px 20px;
+                    margin-top: 10px;
+                    font-family: 'Ubuntu', sans-serif;
+                    font-size: 14px;
+                    outline: none;
+                    border: 1px solid $gray;
+                    border-radius: 8px;
+                    font-weight: $font-light;
+
+
+                    @media (max-width: 390px) {
+                        width: 100%;
+                    }
+                }
+
+
+                .input-field.error {
+                    border: 1px solid $danger;
+                    background-color: #FFcccc;
+                }
+
+
+                option {
+                    font-size: 15px;
+                    font-family: "Ubuntu", sans-serif;
+                    // color: $danger;
+                    font-weight: $font-light;
+                }
+
+
+                .error {
+                    font-size: 13px;
+                    font-family: "Ubuntu", sans-serif;
+                    color: $danger;
+                    font-weight: $font-light;
+                    margin-top: 0.5rem;
+                    text-align: start;
+                }
+            }
+        }
+
+        .wrap {
+            display: flex;
+            flex-direction: column;
+            padding: 10px 20px;
+
+
+
+            label {
+                margin-top: 1rem;
+                font-size: 15px;
+                font-weight: $font-light;
+
+
+                strong {
+                    color: $danger;
+                }
+            }
+
+
+            .input-field,
+            select,
+            option {
+                // width: 95%;
+                // padding: 10px 20px;
+                margin-top: 10px;
+                font-family: 'Ubuntu', sans-serif;
+                font-size: 14px;
+                outline: none;
+                border: 1px solid $gray;
+                border-radius: 8px;
+                font-weight: $font-light;
+
+
+                @media (max-width: 768px) {
+                    width: 100%;
+                }
+            }
+
+
+            .input-field.error {
+                border: 1px solid $danger;
+                background-color: #FFcccc;
+            }
+
+
+            option {
+                font-size: 15px;
+                font-family: "Ubuntu", sans-serif;
+                // color: $danger;
+                font-weight: $font-light;
+            }
+
+
+            .error {
+                font-size: 13px;
+                font-family: "Ubuntu", sans-serif;
+                color: $danger;
+                font-weight: $font-light;
+                margin-top: 0.5rem;
+                text-align: start;
+            }
+        }
+
+
+        button {
+            border-radius: 8px;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 15px;
+            font-weight: $font-light;
+            margin-top: 1rem;
+            margin: auto;
+            padding: 10px 20px;
+            width: 50%;
+            color: $white;
+        }
+
+        button.pointer {
+            cursor: pointer;
+            border: 1px solid $secondary-color;
+            background-color: $secondary-color;
+        }
+
+        button.disabled {
+            cursor: not-allowed;
+            border: 1px solid $light;
+            background-color: $light;
+        }
+    }
+
+
+}

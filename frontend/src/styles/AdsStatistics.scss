@@ -1,0 +1,143 @@
+@import './fonts';
+@import './variables';
+
+
+.ads-statistics {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+
+    background-color: $dark;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 20px;
+
+    @media (max-width: 768px) {
+        flex-wrap: wrap;
+    }
+
+
+
+
+
+    .stat-block {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        padding: 10px 0;
+        width: 8rem;
+        height: 100px;
+        margin: 5px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        transition: all 0.3s ease;
+
+
+        @media (max-width: 768px) {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .icon {
+            position: absolute;
+            top: -12px;
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: $white;
+        }
+
+
+        .stat-info {
+
+
+            h3 {
+                font-size: 15px;
+                margin-bottom: 5px;
+                color: #333;
+            }
+
+
+            p {
+                font-size: 14px;
+                color: #777;
+            }
+        }
+    }
+
+
+    .stat-block.all {
+        background-color: $primary-color;
+    }
+
+    .stat-block.pending {
+        background-color: #ffab00;
+    }
+
+    .stat-block.approved {
+        background-color: #4caf50;
+    }
+
+    .stat-block.refused {
+        background-color: #f44336;
+    }
+
+
+    .stat-block:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    }
+}
+
+.ads-stats {
+    margin-top: 20px;
+
+    .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: $dark;
+
+
+
+
+        h3 {
+            font-size: 18px;
+            color: $white;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-regular;
+        }
+
+        .add-new-ad {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            background-color: $gray;
+            color: $white;
+            box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+
+
+            svg {
+                font-size: 16px;
+            }
+
+            span {
+                font-weight: $font-light;
+                margin-left: 5px;
+                font-size: 15px;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+
+    p {
+        font-weight: $font-light;
+    }
+}

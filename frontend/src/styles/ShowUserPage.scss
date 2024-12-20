@@ -1,0 +1,26 @@
+@import './fonts';
+@import './variables';
+
+.store-page {
+
+    .listing {
+        margin: 3rem;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+
+        h3 {
+            margin: 0;
+            text-transform: uppercase;
+            color: $secondary-color;
+            font-weight: $font-regular;
+        }
+        
+        span {
+            
+            color: $dark;
+            font-size: 13px;
+            font-weight: $font-light;
+        }
+    }
+}

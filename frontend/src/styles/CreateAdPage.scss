@@ -1,0 +1,17 @@
+@import './fonts';
+@import './variables';
+
+
+.create-ad-page {
+    padding: 10px 20px;
+    color: $gray-dark;
+    background-color: $gray-dark;
+
+
+    .container {
+        background-color: $white;
+        padding: 10px 20px;
+        border-radius: 12px;
+        align-items: center;
+    }
+}

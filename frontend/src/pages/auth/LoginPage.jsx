@@ -1,15 +1,20 @@
 import React, { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
-import '../../styles/ForgotPasswordPage.scss';
-import Spinner from '../../customs/Spinner';
+import '../../styles/LoginPage.scss';
 
-export default function ForgotPasswordPage() {
+import Spinner from '../../customs/Spinner';
+import Loading from '../../customs/Loading';
+import { signinUser } from '../../services/authServices';
+import Toast from '../../customs/Toast';
+
+export default function LoginPage() {
     const { email } = useParams();
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [message, setMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -56,30 +61,40 @@ export default function ForgotPasswordPage() {
         if (Object.keys(errors).length > 0) {
             setErrors(errors);
             setLoading(false);
-            setTimeout(() => {
-                setErrors({});
-            }, 2000);
             return;
         }
 
         try {
-            setTimeout(() => {
-                navigate('/auth/signin');
-                setLoading(false);
-            }, 5000);
+            const { email, password } = formData;
+            const verificationResult = await signinUser(email, password);
+
+            if (verificationResult.success) {
+                navigate('/');
+            } else {
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: 'Nouveau périphérique détecté. Veuillez vérifier votre boîte mail.'
+                });
+                navigate('/access-denied');
+            }
         } catch (error) {
-            console.error('Connexion échouée: ', error);
             setMessage('Une erreur est survenue. Veuillez réessayer.');
-            setTimeout(() => {
-                setMessage('');
-            }, 2000);
+        } finally {
+            setLoading(false);
         }
+    };
+
+    if (loading) {
+        return <Loading />
     }
 
+
+
     return (
-        <div className='reset-password-page'>
-            <form className="reset-form" onSubmit={handleSubmit}>
-                <h2>Réinitialisation</h2>
+        <div className='login-page'>
+            <form className="login-form" onSubmit={handleSubmit}>
+                <h2>Connexion</h2>
                 <div>
                     <label htmlFor="email">Identifiant</label>
                     <input
@@ -112,6 +127,9 @@ export default function ForgotPasswordPage() {
                     </span>
                     {errors.password && <div className="error-text">{errors.password}</div>}
                 </div>
+                <Link to={`/auth/reset-password`} className="passwrod-forgot">
+                    <span>Mot de passe oublié ?</span>
+                </Link>
                 <label className="checkbox-label">
                     <input
                         type="checkbox"
@@ -123,13 +141,26 @@ export default function ForgotPasswordPage() {
                 </label>
                 {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
                 {message && (<div className='error-text'>{message}</div>)}
+
                 <button
                     type="submit"
                     disabled={loading}
                 >
-                    {loading ? <Spinner /> : "Soumettre"}
+                    {loading ? <Spinner /> : "Se connecter"}
                 </button>
+                <p>Aucun compte utilisateur ? <Link to={'/auth/create-user'}>S'inscrire</Link></p>
             </form>
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                show={toast.show}
+                onClose={
+                    () => setToast({
+                        ...toast,
+                        show: false
+                    })
+                }
+            />
         </div>
     );
 };

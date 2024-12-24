@@ -7,8 +7,14 @@ const collectDeviceInfo = async () => {
     const result = parser.getResult();
 
     const deviceInfo = {
-        browser: `${result.browser.name} ${result.browser.version}`,
-        os: `${result.os.name} ${result.os.version}`,
+        browser: {
+            name: result.browser.name,
+            version: result.browser.version,
+        },
+        os: {
+            name: result.os.name,
+            version: result.os.version,
+        },
         device: result.device.type || 'desktop',
         ipAddress: await fetchIPAddress(),
     }

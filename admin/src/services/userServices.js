@@ -10,15 +10,29 @@ const fetchDataByUserID = async (userID) => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données de l\'utilisateur.');
-        }
-
         const result = await response.json();
         return result;
     } catch (error) {
         console.error('Erreur:', error);
         return null;
+    }
+};
+
+
+const setUserOnlineStatus = async (userID, isOnline) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/user/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID, isOnline })
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        throw error;
     }
 };
 
@@ -33,9 +47,6 @@ const fetchAllUsers = async () => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des utilisateurs.');
-        }
         const allUsers = await response.json();
         return allUsers;
     } catch (error) {
@@ -55,9 +66,6 @@ const fetchOnlineUsers = async () => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des utilisateurs online.');
-        }
         const onlineUsers = await response.json();
         return onlineUsers;
     } catch (error) {
@@ -77,9 +85,6 @@ const fetchOfflineUsers = async () => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des utilisateurs offline.');
-        }
         const offlineUsers = await response.json();
         return offlineUsers;
     } catch (error) {
@@ -94,4 +99,5 @@ export {
     fetchAllUsers,
     fetchOfflineUsers,
     fetchOnlineUsers,
+    setUserOnlineStatus,
 };

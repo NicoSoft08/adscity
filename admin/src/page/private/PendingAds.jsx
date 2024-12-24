@@ -3,6 +3,7 @@ import { onApproveAd, onRefuseAd } from '../../services/adServices';
 import { formateDateTimestamp } from '../../func';
 import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
+import Pagination from '../../components/pagination/Pagination';
 import '../../styles/PendingAds.scss';
 
 export default function PendingAds({ pendingAds }) {
@@ -12,8 +13,18 @@ export default function PendingAds({ pendingAds }) {
     const [message, setMessage] = useState({ type: '', text: '' });
     const [refusalReason, setRefusalReason] = useState('');
     const [selectedAdID, setSelectedAdID] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pendingAdPerPage] = useState(10);
 
     // const defaultReason = "En vertu des Règles De Publication qui régissent le fonctionnement d'AdsCity et au regard des photos sélectionnées pour votre annonce, il est à noter que les photos ne sont pas en adéquation avec le titre de l'annonce.";
+
+    // Get current users
+    const indexOfLastUser = currentPage * pendingAdPerPage;
+    const indexOfFirstUser = indexOfLastUser - pendingAdPerPage;
+    const currentPendingAds = pendingAds.slice(indexOfFirstUser, indexOfLastUser);
+
+    // Change page
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleDetailClick = (adID) => {
         setSelectedAdID(adID);
@@ -83,8 +94,8 @@ export default function PendingAds({ pendingAds }) {
                 </thead>
                 <tbody>
                     {
-                        pendingAds.length > 0 ? (
-                            pendingAds.map((ad, index) => (
+                        currentPendingAds.length > 0 ? (
+                            currentPendingAds.map((ad, index) => (
                                 <tr key={ad.id}>
                                     <td>{index + 1}</td>
                                     <td>
@@ -135,7 +146,7 @@ export default function PendingAds({ pendingAds }) {
             {isOpen && (
                 <Modal
                     title={"Confirmation requise"}
-                    onShow={handleOpenModal}
+                    onShow={isOpen}
                     onHide={handleCloseModal}
                     isNext={true}
                     nextText={'Confirmer'}
@@ -173,16 +184,18 @@ export default function PendingAds({ pendingAds }) {
                 </Modal>
             )}
 
-            {detailOpen && (
+            {detailOpen && selectedAdID && (
                 <Modal
                     title={"Détails de l'annonce"}
-                    onShow={handleDetailClick}
+                    onShow={detailOpen}
                     onHide={() => setDetailOpen(false)}
                     isNext={false}
                     isHide={false}
                 >
                     <div className='ad-details'>
-                        {pendingAds.map(pendingAd => (
+                        {currentPendingAds
+                        .filter((ad) => ad.id === selectedAdID)
+                        .map(pendingAd => (
                             <>
                                 <Tab
                                     pendingAd={pendingAd}
@@ -213,6 +226,13 @@ export default function PendingAds({ pendingAds }) {
                     </div>
                 </Modal>
             )}
+
+            <Pagination
+                currentPage={currentPage}
+                elements={pendingAds}
+                elementsPerPage={pendingAdPerPage}
+                paginate={paginate}
+            />
         </div>
     );
 };

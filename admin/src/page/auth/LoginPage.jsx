@@ -6,6 +6,7 @@ import Spinner from '../../customs/Spinner';
 import Toast from '../../customs/Toast';
 import { signinUser } from '../../services/authServices';
 import '../../styles/LoginPage.scss';
+import { collectDeviceInfo } from '../../services/trackServices';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -35,13 +36,13 @@ export default function LoginPage() {
             if (!formData.email) {
                 formErrors.email = "Email réquis";
             }
-        
+
             if (!formData.password) {
                 formErrors.password = "Mot de Passe réquis";
             }
         }
-    
-    
+
+
         return formErrors;
     };
 
@@ -72,9 +73,13 @@ export default function LoginPage() {
         try {
             setIsLoading(true);
             const { email, password } = formData;
-            const result = await signinUser(email, password, navigate);
 
-            if (result.role !== 'admin') {
+            // Collecte des informations de l'appareil
+            const deviceInfo = await collectDeviceInfo();
+
+            const result = await signinUser(email, password, deviceInfo);
+
+            if (result.user?.role !== 'admin') {
                 setTimeout(() => {
                     setToast({
                         type: 'error',
@@ -105,6 +110,8 @@ export default function LoginPage() {
                 message: 'Une erreur est survenue. Veuillez réessayer.',
                 show: true,
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 

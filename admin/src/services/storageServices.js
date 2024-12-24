@@ -52,7 +52,23 @@ const deleteProfilURLByUserID = async (userID) => {
 };
 
 
+const uploadProfilePhoto = async (userID, file) => {
+    const formData = new FormData();
+    formData.append('profilURL', file);
+
+    const response = await fetch(`${backendUrl}/api/upload/${userID}/profile`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    const data = await response.json();
+    return data;
+};
+
+
+
 export {
     uploadProfilURLByUserID,
-    deleteProfilURLByUserID
+    deleteProfilURLByUserID,
+    uploadProfilePhoto,
 }

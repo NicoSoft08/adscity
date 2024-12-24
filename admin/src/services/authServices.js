@@ -1,11 +1,10 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import { collectDeviceInfo } from "./trackServices";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 
-const signinUser = async (email, password) => {
+const signinUser = async (email, password, deviceInfo) => {
     try {
         // User authentication
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -14,10 +13,6 @@ const signinUser = async (email, password) => {
         if (!user.emailVerified) {
             throw new Error('Veuillez vérifier votre email avant de continuer.');
         }
-
-
-        // Collect device information
-        const deviceInfo = await collectDeviceInfo();
 
         // Token verification with device info
         const idToken = await user.getIdToken();

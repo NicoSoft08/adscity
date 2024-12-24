@@ -10,6 +10,7 @@ import {
 import Modal from '../../customs/Modal';
 import { AuthContext } from '../../contexts/AuthContext';
 import { IconCover, IconAvatar } from '../../config/images';
+import { uploadProfilePhoto } from '../../services/storageServices';
 import '../../styles/UserProfile.scss';
 
 
@@ -45,19 +46,13 @@ export default function UserProfile() {
         handleClose();
 
         try {
-            const response = await fetch(`http://localhost:3001/api/upload/${userID}/profile`, {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (response.ok) {
-                const res = await response.json();
-                setUserPersoData((prevData) => ({
+            const result = await uploadProfilePhoto(userID, file);
+            
+            if (result.profilURL) {
+                setUserPersoData(prevData => ({
                     ...prevData,
-                    profilURL: res.profilURL,
+                    profilURL: result.profilURL,
                 }));
-            } else {
-                console.error('Erreur lors de la mise à jour de la photo de profil');
             }
         } catch (error) {
             console.error('Erreur lors de l\'upload du fichier :', error);

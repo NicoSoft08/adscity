@@ -7,6 +7,7 @@ import UserProfile from './UserProfile';
 import Settings from './Settings';
 import MyAds from './MyAds';
 import PaymentIntents from '../../../components/payment/PaymentIntents';
+import MyNotifications from '../MyNotifications';
 import { AuthContext } from '../../../contexts/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -18,17 +19,6 @@ import {
     faUserCircle 
 } from '@fortawesome/free-solid-svg-icons';
 import '../../../styles/UserHome.scss';
-
-
-const style = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'black'
-};
-
-// content
-const Notifications = () => <div style={style}>Ads Content</div>;
 
 
 export default function UserHome() {
@@ -103,7 +93,7 @@ export default function UserHome() {
                 <div className="main-content">
                     {activeSection === "panel" && <DashboardPanel />}
                     {activeSection === "ads" && <MyAds currentUser={currentUser} />}
-                    {activeSection === "notifications" && <Notifications />}
+                    {activeSection === "notifications" && <MyNotifications />}
                     {activeSection === "payments" && <PaymentIntents userID={currentUser?.uid} />}
                     {activeSection === "profile" && <UserProfile />}
                     {activeSection === "settings" && <Settings />}

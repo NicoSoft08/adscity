@@ -33,16 +33,23 @@ export default function CategoryNamePage() {
                 paragraph={"Découvrez les annonces relatives à cette catégorie."}
                 backgroundImage={getItems().BackgroundImage}
             />
-            <h2>Category By Name Page</h2>
-            <CardList>
-                {adsCategory.length > 0 ?
-                    adsCategory.map((item) => (
+            {adsCategory.length > 0 ? (
+                <CardList>
+                    {adsCategory.map((item) => (
                         <CardItem ad={item} />
-                    ))
-                    : (
-                        <p>Aucunes annonces trouvées dans cette catégorie.</p>
-                    )}
-            </CardList>
+                    ))}
+                </CardList>
+            ) : (
+                <p
+                    style={{
+                        textAlign: 'center',
+                        fontSize: '14px',
+                        fontWeight: 'lighter'
+                    }}
+                >
+                    Aucunes annonces trouvées dans cette catégorie.
+                </p>
+            )}
             <ButtonAdd />
         </div>
     );

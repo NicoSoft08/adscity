@@ -10,7 +10,6 @@ import SignupSuccessModal from '../../customs/SignupSuccessModal';
 import { countries } from '../../data/countries';
 import '../../styles/SignUpPage.scss';
 import '../../components/phone-input/PhoneInput.scss';
-import { collectDeviceInfo } from '../../services/trackServices';
 
 
 export default function SignUpPage() {
@@ -117,7 +116,6 @@ export default function SignUpPage() {
 
         const fullPhoneNumber = getFullPhoneNumber();
 
-        const deviceInfo = await collectDeviceInfo();
 
         try {
             setLoading(true);
@@ -130,8 +128,8 @@ export default function SignUpPage() {
             const displayName = firstName + ' ' + lastName;
             const result = await createUser(
                 address, city, country, email,
-                password, firstName, lastName, deviceInfo,
-                fullPhoneNumber, displayName, navigate
+                password, firstName, lastName,
+                fullPhoneNumber, displayName
             );
 
             const userData = { email, displayName };
@@ -332,10 +330,10 @@ export default function SignUpPage() {
 
                 <div className="navigation-buttons">
                     {step > 1 && (
-                        <button onClick={prevStep}>Retour</button>
+                        <button className='prev' onClick={prevStep}>Retour</button>
                     )}
                     {step < 4 ? (
-                        <button onClick={nextStep}>Suivant</button>
+                        <button className='next' onClick={nextStep}>Suivant</button>
                     ) : (
                         <button onClick={handleSubmit} className='submit'>
                             {loading ? <Spinner /> : "S'inscrire"}

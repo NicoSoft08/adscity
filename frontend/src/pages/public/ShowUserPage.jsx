@@ -51,27 +51,6 @@ export default function ShowUserPage() {
                 {profilAds.map((item, index) => (
                     <CardItem key={index} ad={item} />
                 ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
-                ))}
             </CardList>
 
             <ReviewForm

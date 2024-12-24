@@ -1,9 +1,46 @@
-const admin = require('firebase-admin');
+const { admin, auth, firestore, messaging } = require("../config/firebase-admin");
+
+const getUserData = async (userID) => {
+    try {
+        const userRecord = auth.getUser(userID);
+
+        const userDoc = await firestore
+            .collection('USERS')
+            .doc(userID)
+            .get();
+
+        if (userDoc.exists) {
+            return {
+                ...(await userRecord).toJSON(),
+                ...userDoc.data(),
+            };
+        } else {
+            return (await userRecord).toJSON();
+        }
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données utilisateur :", error);
+        throw error;
+    }
+};
+
+const setUserOnlineStatus = async (userID, isOnline) => {
+    try {
+        await firestore
+            .collection('USERS')
+            .doc(userID)
+            .update({
+                isOnline: isOnline,
+                lastOnline: admin.firestore.FieldValue.serverTimestamp()
+            });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'état en ligne :", error);
+    }
+};
 
 
 const saveFcmToken = async (userID, token) => {
     try {
-        const userRef = admin.firestore().collection('USERS').doc(userID);
+        const userRef = firestore.collection('USERS').doc(userID);
         await userRef.update({ fcmToken: token });
         console.log('Token FCM enregistré avec succès');
         return { success: true };
@@ -16,7 +53,7 @@ const saveFcmToken = async (userID, token) => {
 const sendUserNotification = async (userID, title, message) => {
     try {
         // Récupère le token FCM de l'utilisateur
-        const userRef = admin.firestore().collection('USERS').doc(userID);
+        const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
@@ -42,7 +79,7 @@ const sendUserNotification = async (userID, title, message) => {
         };
 
         // Envoie la notification via Firebase Cloud Messaging
-        const response = await admin.messaging().send(messagePayload);
+        const response = await messaging.send(messagePayload);
         console.log('Notification envoyée avec succès:', response);
     } catch (error) {
         console.error('Erreur lors de l\'envoi de la notification:', error);
@@ -59,7 +96,7 @@ const verifyToken = async (req, res, next) => {
 
         const token = authHeader.split(' ')[1];
 
-        const decodedToken = await admin.auth().verifyIdToken(token);
+        const decodedToken = await auth.verifyIdToken(token);
 
         req.user = {
             uid: decodedToken.uid,
@@ -77,9 +114,9 @@ const verifyToken = async (req, res, next) => {
 
 const signinUser = async (email) => {
     try {
-        const user = admin.auth().getUserByEmail(email);
+        const user = auth.getUserByEmail(email);
 
-        const userSnapshot = await admin.firestore().collection('USERS')
+        const userSnapshot = await firestore.collection('USERS')
             .where('email', '==', email)
             .limit(1)  // Limite à un seul résultat
             .get();
@@ -105,7 +142,7 @@ const signinUser = async (email) => {
 
 const updateUserInteraction = async (userID, adID) => {
     try {
-        const userRef = admin.firestore().collection('USERS').doc(userID);
+        const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
@@ -140,7 +177,9 @@ const updateUserInteraction = async (userID, adID) => {
 
 
 module.exports = {
+    getUserData,
     saveFcmToken,
+    setUserOnlineStatus,
     sendUserNotification,
     signinUser,
     verifyToken,

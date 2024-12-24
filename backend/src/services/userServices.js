@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { firestore, admin } = require("../config/firebase-admin");
+const { getUserData, setUserOnlineStatus } = require('../controllers/userController');
 
 
 // Route pour récupérer tous les utilisateurs
@@ -69,32 +70,87 @@ router.get('/user/:userID', async (req, res) => {
     const { userID } = req.params;
 
     try {
-        const userDoc = await firestore.collection('USERS').doc(userID).get(); // Récupération du document utilisateur
-
-        if (!userDoc.exists) {
-            return res.status(404).json({ 
-                success: false,
-                message: 'Utilisateur non trouvé.'
-            });
-        }
-
-        const userData = userDoc.data();
+        const userData = await getUserData(userID);
         res.status(200).json(userData);
     } catch (error) {
         console.error('Erreur lors de la récupération des données utilisateur:', error);
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: 'Erreur lors de la récupération des données utilisateur.' 
+            message: 'Erreur lors de la récupération des données utilisateur.'
         });
     }
 });
 
 
+// Route pour mettre à jour le status d'un Utilisateur
+router.post('/user/status', async (req, res) => {
+    const { userID, isOnline } = req.body;
+
+    try {
+        await setUserOnlineStatus(userID, isOnline);
+        res.status(200).send({ success: true });
+    } catch (error) {
+        res.status(500).send({ error: "Erreur lors de la mise à jour de l'état." });
+    }
+});
+
+
+// Route pour récupérer les notifications d'un utilisateur
+router.get('/:userID/notifications', async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const notificationsSnapshot = await firestore
+            .collection('USERS')
+            .doc(userID)
+            .collection('NOTIFICATIONS')
+            .orderBy('timestamp', 'desc')
+            .get();
+
+        const notifications = notificationsSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+        }));
+
+        res.status(200).send(notifications);
+    } catch (error) {
+        console.error('Erreur lors de la récupération des notifications :', error);
+        res.status(500).send({ message: 'Erreur lors de la récupération des notifications' });
+    }
+})
+
+
+// Route pour marquer une notification comme lue
+router.post('/:userID/notifications/:notificationID/read', async (req, res) => {
+    const { userID, notificationID } = req.params;
+
+    try {
+        const notificationRef = firestore
+            .collection('USERS')
+            .doc(userID)
+            .collection('NOTIFICATIONS')
+            .doc(notificationID);
+
+        await notificationRef.update({ isRead: true });
+
+        res.status(200).send({ 
+            success: true,
+            message: 'Notification marquée comme lue' 
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de la notification :', error);
+        res.status(500).send({ 
+            success: false, 
+            message: 'Erreur lors de la mise à jour de la notification' 
+        });
+    }
+})
+
 
 
 router.get('/auth/verify-device/:deviceId/:token', async (req, res) => {
     const { deviceId, token } = req.params;
-    
+
     const tokenDoc = await admin.firestore()
         .collection('DEVICE_VERIFY_TOKENS')
         .doc(deviceId)
@@ -132,7 +188,7 @@ router.get('/auth/verify-device/:deviceId/:token', async (req, res) => {
 
 router.get('/auth/decline-device/:deviceId/:token', async (req, res) => {
     const { deviceId, token } = req.params;
-    
+
     // Mark device as suspicious and notify security team
     await admin.firestore()
         .collection('SUSPICIOUS_DEVICES')

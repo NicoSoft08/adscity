@@ -3,7 +3,7 @@ const { UAParser } = require('ua-parser-js');
 const { format, isToday, isYesterday } = require('date-fns');
 const { fr } = require('date-fns/locale');
 const crypto = require('crypto');
-const { admin } = require('../config/firebase-admin');
+const { admin, firestore } = require('../config/firebase-admin');
 
 
 const generateVerificationToken = () => {
@@ -156,6 +156,46 @@ const upload = multer({
 });
 
 
+const isDeviceKnown = (deviceInfo, existingDevices) => {
+    return existingDevices.some(device =>
+        device.browser.name === deviceInfo.browser.name &&
+        device.browser.version === deviceInfo.browser.version &&
+        device.os.name === deviceInfo.os.name &&
+        device.os.version === deviceInfo.os.version &&
+        device.ipAddress === deviceInfo.ipAddress
+    );
+};
+
+const handleDeviceVerification = async (userID, deviceInfo) => {
+    const devicesSnapshot = await firestore
+        .collection('USERS')
+        .doc(userID)
+        .collection('DEVICES')
+        .get();
+
+    const existingDevices = devicesSnapshot.docs.map(doc => doc.data());
+
+    if (isDeviceKnown(deviceInfo, existingDevices)) {
+        return { isKnown: true };
+    }
+
+    // Si l'appareil est inconnu, envoyez une alerte et enregistrez-le
+    const newDeviceRef = await firestore
+        .collection('USERS')
+        .doc(userID)
+        .collection('DEVICES')
+        .add({
+            ...deviceInfo,
+            lastLogin: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+    return { 
+        isKnown: false, 
+        deviceID: newDeviceRef.id,
+        reason: "Un nouvel appareil a été détecté."
+    };
+};
+
 
 
 
@@ -171,4 +211,5 @@ module.exports = {
     generateTicketID,
     trackUserDevice,
     trackFirstLoginDevice,
+    handleDeviceVerification,
 };

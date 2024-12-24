@@ -138,6 +138,7 @@ router.post('/approve', async (req, res) => {
 
         if (!adDoc.exists) {
             console.error('Annonce non trouvée.');
+            return res.status(404).send({ message: 'Annonce non trouvée.' });
         }
 
         const adData = adDoc.data();
@@ -148,9 +149,22 @@ router.post('/approve', async (req, res) => {
 
         if (!userDoc.exists) {
             console.error('Utilisateur non trouvé.');
+            return res.status(404).send({ message: 'Utilisateur non trouvé.' });
         }
 
         const { displayName, email } = userDoc.data();
+
+        // Enregistrer la notification pour l'utilisateur
+        const notification = {
+            type: 'ad_approval',
+            title: 'Annonce approuvée',
+            message: `Votre annonce "${title}" a été approuvée.`,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            isRead: false,
+            link: `/ads/${adID}`, // Lien vers l'annonce dans le tableau de bord
+        };
+
+        await userRef.collection('NOTIFICATIONS').add(notification);
 
 
         await sendUserAdsApprovedEmail(displayName, email, title, posted_at);
@@ -166,6 +180,13 @@ router.post('/approve', async (req, res) => {
 // Route pour refuser une annonce
 router.post('/refuse', async (req, res) => {
     const { adID, reason } = req.body;
+
+    if (!adID) {
+        res.status(400).send({
+            success: false,
+            message: "Identifiant manquant"
+        });
+    }
 
     try {
         await firestore.collection('POSTS').doc(adID).update({
@@ -195,8 +216,8 @@ router.post('/refuse', async (req, res) => {
 
         // Envoi de l'email de notification à l'utilisateur
         await sendUserAdsRefusedEmail(displayName, email, title, posted_at, reason);
-
-        console.log('Annonce refusée avec succès');
+        console.log('Annonce refusée avec succès')
+        res.status(200).send({ message: 'Annonce refusée avec succès' });
     } catch (error) {
         console.error('Erreur lors de l\'approbation de l\'annonce :', error);
     }

@@ -109,7 +109,7 @@ const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) =>
                     <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -165,7 +165,7 @@ const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, rea
                     <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -198,7 +198,7 @@ const sendWelcomeEmail = async (displayName, email) => {
     const mailOptions = {
         from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
         to: email,
-        replyTo: 'support@adscity.net',
+        replyTo: 'contact@adscity.net',
         subject: '🎉 Bienvenue à AdsCity ! Nous sommes ravis de vous compter parmi nous.',
         html: `
         <html>
@@ -250,10 +250,10 @@ const sendWelcomeEmail = async (displayName, email) => {
                     </a>
                     <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone : +7 (951) 516-95-31 |
-                        Email : <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Échangez</p>
+                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
             </body>
         </html>
@@ -398,6 +398,7 @@ const sendSupportEmail = async (email, firstName, lastName, message, object, tic
 };
 
 const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
+    const { browser, os, ipAddress } = deviceInfo;
     const verificationToken = generateVerificationToken();
     const verificationLink = `${PUBLIC_URL}/auth/verify-device/${deviceID}/${verificationToken}`;
     const declineLink = `${PUBLIC_URL}/auth/decline-device/${deviceID}/${verificationToken}`;
@@ -437,25 +438,23 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
         from: `"AdsCity Security" <${process.env.SMTP_MAIL}>`,
         to: email,
         replyTo: 'support@adscity.net',
-        subject: `🚨 Alerte de détection de périphérique - ${displayName}`,
+        subject: `🚨 Alerte de Détection de Périphérique - Nouvelle Connexion`,
         html: `
             <html>
                 <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
-                        <h3 style="color: #417abc;">Alerte de Sécurité - Nouvelle Connexion</h3>
-                        
-                        <p>Bonjour <strong>${displayName}</strong>,</p>
-                        
-                        <p>Une tentative connexion a été détectée sur votre compte AdsCity depuis un nouvel appareil. Voici les détails :</p>
+                        <h3 style="color: #417abc;">Bonjour, ${displayName} !</h3>
+                                                
+                        <p>Une tentative de connexion a été détectée sur votre compte AdsCity depuis un nouvel appareil. Pour des raisons de sécurité, votre compte a été temporairement désactivé. Voici les détails :</p>
                         
                         <ul style="list-style-type: none; padding: 0;">
-                            <li><strong>Navigateur:</strong> ${deviceInfo.browser.name} ${deviceInfo.browser.version}</li>
-                            <li><strong>Système:</strong> ${deviceInfo.os.name} ${deviceInfo.os.version}</li>
-                            <li><strong>Adresse IP:</strong> ${deviceInfo.api}</li>
+                            <li><strong>Navigateur :</strong> ${browser?.name} ${browser?.version}</li>
+                            <li><strong>Système :</strong> ${os?.name} ${os?.version}</li>
+                            <li><strong>Adresse IP :</strong> ${ipAddress}</li>
                             <li><strong>Date:</strong> ${currentDate}</li>
                         </ul>
 
-                        <p>Si vous êtes à l'origine de cette activité, veuillez autoriser cet appareil:</p>
+                        <p>Pour confirmer ou refuser cette connexion, cliquez sur l'un des liens ci-dessous :</p>
                         
                         <div style="text-align: center; margin: 30px 0;">
                             <a href="${verificationLink}"

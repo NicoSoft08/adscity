@@ -8,7 +8,7 @@ const oneMonthLater = new Date(currentDate);
 oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
 
-const createUser = async (email, password, firstName, lastName, phoneNumber, displayName, country, city, address, deviceInfo) => {
+const createUser = async (email, password, firstName, lastName, phoneNumber, displayName, country, city, address) => {
     try {
         const userRecord = await admin.auth().createUser({
             email: email,
@@ -99,7 +99,7 @@ const createUser = async (email, password, firstName, lastName, phoneNumber, dis
                     5: 0
                 }
             },
-            role: 'user', // admin, moderator, user
+            role: 'admin', // admin, moderator, user
 
             // Reviews System
             reviews: {
@@ -121,11 +121,6 @@ const createUser = async (email, password, firstName, lastName, phoneNumber, dis
             userID: userRecord.uid,
 
             verificationCode: code,
-        });
-
-        await userRef.collection('DEVICES').add({
-            ...deviceInfo,
-            lastLogin: admin.firestore.FieldValue.serverTimestamp()
         });
 
 

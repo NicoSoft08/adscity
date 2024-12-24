@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Toast from '../../customs/Toast';
 import { updateContactClick } from '../../services/userServices';
 import './OwnerProfileCard.scss';
+import { IconAvatar } from '../../config/images';
 
 
 const OwnerProfileCard = ({ owner, userID }) => {
@@ -42,7 +43,7 @@ const OwnerProfileCard = ({ owner, userID }) => {
     const handleProfileClick = async (url) => {
         navigate(url);
 
-        if (!userID)  return null;
+        if (!userID) return null;
 
         await updateContactClick(owner.userID);
     }
@@ -61,8 +62,12 @@ const OwnerProfileCard = ({ owner, userID }) => {
     return (
         <div className='owner-card'>
             <div className='owner-image'>
-                <img className='profil-image' src={owner?.profilURL} alt={owner.displayName} />
-                {owner?.isOnline ? <div className="online-bage" /> : null }
+                <img
+                    className='profil-image'
+                    src={owner?.profilURL === null ? IconAvatar : owner?.profilURL}
+                    alt={owner.displayName}
+                />
+                {owner?.isOnline ? <div className="online-bage" /> : null}
             </div>
             <p className='member-since'>Membre depuis: {formatDate(owner.createdAt)}</p>
             <h2 className='name'>{owner.displayName}</h2>

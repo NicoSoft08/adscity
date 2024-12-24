@@ -107,6 +107,32 @@ const calculateEndDate = (duration) => {
 };
 
 
+const formatTimeDistance = (dateString) => {
+    // Conversion de la chaîne au format ISO 8601
+    const parsedDate = new Date(dateString);
+
+    if (isNaN(parsedDate.getTime())) {
+        return 'Date non valide';
+    }
+
+    const now = new Date();
+    const seconds = Math.floor((now - parsedDate) / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    const weeks = Math.floor(days / 7);
+    const years = Math.floor(days / 365);
+
+    if (years > 0) return `${years} y`;
+    if (weeks > 0) return `${weeks} w`;
+    if (days > 0) return `${days} d`;
+    if (hours > 0) return `${hours} h`;
+    if (minutes > 0) return `${minutes} min`;
+    return `${seconds} sec`;
+}
+
+
+
 export {
     calculateExpiryDate,
     formateDate,
@@ -115,4 +141,5 @@ export {
     formatPostedAt,
     parseTimestamp,
     calculateEndDate,
+    formatTimeDistance,
 };

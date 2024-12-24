@@ -1,9 +1,8 @@
 import React, { useContext } from 'react';
-import './NavLinks.scss';
-
 import { AuthContext } from '../../contexts/AuthContext';
 import { IconAvatar } from '../../config/images';
 import { useNavigate } from 'react-router-dom';
+import './NavLinks.scss';
 
 export default function NavLinks() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -14,7 +13,7 @@ export default function NavLinks() {
             navigate('/auth/signin');
             return;
         }
-    
+
         if (userData && userData.role === 'user') {
             navigate('/user/dashboard');
         } else {
@@ -27,7 +26,10 @@ export default function NavLinks() {
             <img onClick={handleNavigate}
                 src={
                     userData?.role === 'user'
-                    && (userData?.profilURL === null ? IconAvatar : userData?.profilURL)
+                    && (userData?.profilURL === null
+                        ? IconAvatar
+                        : userData?.profilURL
+                    )
                 } // Image par défaut si l'utilisateur n'a pas de photo de profil
                 alt="Profile"
                 className="profile-image"

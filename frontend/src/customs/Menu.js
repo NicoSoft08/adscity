@@ -1,28 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { faEyeSlash, faFlag, faShare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import '../styles/Menu.scss';
 
-export default function Menu({ ad, onClose, isOpen, onReport, onShare, onHide }) {
+export default function Menu({ onClose, isOpen, options }) {
     const menuRef = useRef(null);
 
-    const options = [
-        {
-            label: 'Signaler l\'annonce',
-            icon: faFlag,
-            action: () => onReport(ad.id)
-        },
-        {
-            label: 'Partager',
-            icon: faShare,
-            action: () => onShare(ad.id)
-        },
-        {
-            label: 'Masquer',
-            icon: faEyeSlash,
-            action: () => onHide(ad.id)
-        },
-    ];
 
     useEffect(() => {
         const handleClickOutside = (event) => {

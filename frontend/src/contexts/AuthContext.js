@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
-import { auth, firestore } from '../firebaseConfig';
+import { fetchDataByUserID, setUserOnlineStatus } from '../services/userServices';
+import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
+
 
 // Création du contexte d'authentification
 export const AuthContext = createContext();
@@ -20,48 +20,64 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                // L'utilisateur est connecté
-                setCurrentUser(user);
-                try {
-                    const userDocRef = doc(firestore, 'USERS', user.uid);
-                    const userDoc = await getDoc(userDocRef);
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            const userID = user ? user.uid : null;
 
-                    if (userDoc.exists()) {
-                        setUserData(userDoc.data());
-
-                        const role = userDoc.data().role;
-                        setUserRole(role);
-
-                        // Mise à jour de l'état en ligne dans Firestore
-                        await updateDoc(userDocRef, { isOnline: true });
-                    }
-                } catch (error) {
-                    console.error("Erreur lors de la récupération des données utilisateur :", error);
+            try {
+                if (user) {
+                    setCurrentUser(user);
+                    const data = await fetchDataByUserID(userID);
+                    setUserData(data);
+                    setUserRole(data.role);
+                    updateUserStatus(true);
+                } else {
+                    setCurrentUser(null);
+                    setUserData(null);
+                    setUserRole(null);
                 }
-            } else {
-                // L'utilisateur est déconnecté
-                if (currentUser) {
-                    const userDocRef = doc(firestore, 'USERS', currentUser.uid);
-                    await updateDoc(userDocRef, { isOnline: false });
-                }
-                setCurrentUser(null);
-                setUserData(null);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
             }
-            setLoading(false);
         });
 
-        return () => {
-            unsubscribe();
-            if (currentUser) {
-                const userDocRef = doc(firestore, 'USERS', currentUser.uid);
-                updateDoc(userDocRef, { isOnline: false }).catch((error) => {
-                    console.error("Erreur lors de la mise à jour de l'état de connexion :", error);
-                });
+        const updateUserStatus = async (isOnline) => {
+            try {
+                if (currentUser) {
+                    await setUserOnlineStatus(currentUser.uid, isOnline);
+                }
+            } catch (error) {
+                console.error("Error updating online status:", error);
             }
         };
+
+        const fetchUserData = async () => {
+            try {
+                if (currentUser) {
+                    const data = await fetchDataByUserID(currentUser.uid);
+                    setUserData(data);
+                    setUserRole(data.role);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (currentUser) {
+            fetchUserData();
+            updateUserStatus(true);
+
+            return () => {
+                updateUserStatus(false);
+            };
+        } else {
+            setLoading(false);
+        }
+
+        return () => unsubscribe();
     }, [currentUser]);
+
 
     if (loading) {
         return <Loading />

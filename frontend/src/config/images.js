@@ -10,6 +10,8 @@ export const IconPrivacy = require('../imgs/privacy.png');
 export const IconDataProcess = require('../imgs/data-process.png');
 export const IconAdsRules = require('../imgs/ads-rules.png');
 
+export const IconVerified = require('../assets/icons/adscity-verified-badge.png');
+
 
 // START ALL CATEGORIES
 export const alimentation = require('../imgs/all-categories/alimentation/nutrition.png');

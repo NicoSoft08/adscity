@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { currency, typeOfPrice } from '../../data/database';
+import { currency, typeOfPrice, unitOfMeasureOptions } from '../../data/database';
 import InputField from '../input-field/InputField';
 import Toast from '../../customs/Toast';
 
@@ -12,13 +12,17 @@ export default function LocalProducts({ formData, onBack, onChange, onNext }) {
     });
 
     const fields = [
-        { label: 'Titre de l\'annonce', name: 'title', type: 'text', message: 'Le titre est requis.', required: true },
-        { label: 'Origine', name: 'origin', type: 'text', message: 'L\'origine du produit est requise.', required: true },
-        { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
+        { label: 'Titre de l\'annonce', name: 'title', type: 'text', message: 'Le titre est requis.', required: true, placeholder: 'Ex. : Vente de poudre de manioc bio' },
+        { label: 'Type de produit', name: 'productType', type: 'text', message: 'Le type de produit est requis.', required: true, placeholder: 'Ex: maïs, riz, manioc, fruits, légumes' },
+        { label: 'Quantité disponible', name: 'quantityAvailable', type: 'text', message: 'La quantité disponible est requise.', required: true, placeholder: 'Ex. : 100 kg, 100 pièces' },
+        { label: 'Unité de mesure', name: 'unitOfMeasure', type: 'select', options: unitOfMeasureOptions.fr, message: 'L\'unité de mesure est requise.', required: true },
+        { label: 'Origine du produit', name: 'origin', type: 'text', message: 'L\'origine du produit est requise.', required: true, placeholder: 'Ex. : Abidjan, Côte d\'Ivoire' },
+        { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true, placeholder: 'Décrivez votre produit en détail (méthode de culture, fraîcheur, avantages, etc.)' },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true },
-        { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true }
+       { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
+        { label: 'Prix par unité', name: 'price', type: 'number', message: 'Le prix par unité est requis.', required: true, placeholder: 'Ex. : 1500 (sans symbole)' },
     ];
+
 
     const validateForm = () => {
         const newErrors = {};
@@ -51,11 +55,13 @@ export default function LocalProducts({ formData, onBack, onChange, onNext }) {
 
     return (
         <div className='detail-form'>
-            {fields.map(({ label, name, type, options }) => (
+            {fields.map(({ label, name, type, options, placeholder, title }) => (
                 <div className="d-flex-row" key={name}>
                     <InputField
                         label={label}
                         name={name}
+                        placeholder={placeholder}
+                        title={title}
                         value={formData.adDetails?.[name] || ''}
                         onChange={onChange}
                         type={type}

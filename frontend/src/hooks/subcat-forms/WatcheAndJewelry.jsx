@@ -22,7 +22,7 @@ export default function WatcheAndJewelry({ formData, onBack, onChange, onNext })
         { label: 'Matériaux', name: 'materials', type: 'checkbox', options: jewelsMaterials.fr, message: 'Les matériaux sont requis.', required: true },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true },
+        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
         { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true },
     ];
 
@@ -57,11 +57,13 @@ export default function WatcheAndJewelry({ formData, onBack, onChange, onNext })
 
     return (
         <div className='detail-form'>
-            {fields.map(({ label, name, type, options }) => (
+            {fields.map(({ label, name, type, options, placeholder, title }) => (
                 <div className="d-flex-row" key={name}>
                     <InputField
                         label={label}
                         name={name}
+                        placeholder={placeholder}
+                        title={title}
                         value={formData.adDetails?.[name] || ''}
                         onChange={onChange}
                         type={type}

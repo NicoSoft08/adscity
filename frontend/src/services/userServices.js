@@ -58,15 +58,28 @@ const fetchDataByUserID = async (userID) => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données de l\'utilisateur.');
-        }
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
+
+const setUserOnlineStatus = async (userID, isOnline) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/user/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID, isOnline })
+        });
 
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error('Erreur:', error);
-        return null;
+        throw error;
     }
 };
 
@@ -280,4 +293,5 @@ export {
     updateInteraction,
     updateContactClick,
     updateUserField,
+    setUserOnlineStatus,
 };

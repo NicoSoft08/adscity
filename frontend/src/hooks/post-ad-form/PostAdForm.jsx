@@ -7,6 +7,8 @@ import CosmeticsPerfumes from '../subcat-forms/CosmeticsPerfumes';
 import MenShoes from '../subcat-forms/MenShoes';
 import WomenShoes from '../subcat-forms/WomenShoes';
 import LocalProducts from '../subcat-forms/LocalProducts';
+import Delivery from '../subcat-forms/Delivery';
+import HealthyandBeauty from '../subcat-forms/HealthyandBeauty';
 import '../../styles/main.scss';
 
 const SUBCATEGORY_COMPONENTS = {
@@ -19,6 +21,8 @@ const SUBCATEGORY_COMPONENTS = {
     'chaussures-homme': MenShoes,
     'chaussures-femme': WomenShoes,
     'produits-locaux': LocalProducts,
+    'courses-livraisons': Delivery,
+    'services-mode-beaute-et-bien-etre': HealthyandBeauty,
     // Add more subcategories here
 };
 

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import InputField from '../input-field/InputField';
-import { carsState, cosmeticsCategories, currency, typeOfPrice } from '../../data/database';
 import Toast from '../../customs/Toast';
+import { currency, deliveryOptions, serviceTypeOptions, typeOfPrice } from '../../data/database';
 
-export default function CosmeticsPerfumes({ formData, onBack, onChange, onNext }) {
+export default function Delivery({ formData, onBack, onChange, onNext }) {
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState({
         show: false,
@@ -13,20 +13,19 @@ export default function CosmeticsPerfumes({ formData, onBack, onChange, onNext }
 
     const fields = [
         { label: 'Titre de l\'annonce', name: 'title', type: 'text', message: 'Le titre est requis.', required: true },
-        { label: 'Catégorie', name: 'category', type: 'select', options: cosmeticsCategories.fr, message: 'La catégorie est requise.', required: true },
-        { label: 'Marque', name: 'brand', type: 'text', message: 'La marque est requise.', required: true },
-        { label: 'Volume/Poids', name: 'volumeWeight', type: 'text', message: 'Le volume/poids est requis.', required: true },
-        { label: 'État', name: 'condition', type: 'select', options: carsState.fr, message: 'L\'état est requis.', required: true },
+        { label: 'Type de service', name: 'serviceType', type: 'checkbox', options: serviceTypeOptions.fr, message: 'Le type de service est requis.', required: true },
+        { label: 'Zone de couverture', name: 'coverageArea', type: 'text', message: 'La zone de couverture est requise.', required: true },
+        { label: 'Délai de livraison', name: 'deliveryTime', type: 'text', message: 'Le délai de livraison est requis.', required: true },
+        { label: 'Options de livraison', name: 'deliveryOptions', type: 'checkbox', options: deliveryOptions.fr, message: 'Les options de livraison sont requises.', required: true },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
         { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
-        { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true }
-
+        { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true },
     ];
+
 
     const validateForm = () => {
         const newErrors = {};
-
         fields.forEach(field => {
             if (field.required && !formData.adDetails[field.name]) {
                 newErrors[field.name] = `${field.message}`;
@@ -44,6 +43,7 @@ export default function CosmeticsPerfumes({ formData, onBack, onChange, onNext }
         return newErrors;
     };
 
+
     const handleNext = () => {
         const formErrors = validateForm();
         if (Object.keys(formErrors).length > 0) {
@@ -52,6 +52,7 @@ export default function CosmeticsPerfumes({ formData, onBack, onChange, onNext }
         }
         onNext();
     };
+
 
     return (
         <div className='detail-form'>

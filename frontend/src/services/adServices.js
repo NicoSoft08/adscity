@@ -53,10 +53,6 @@ const fetchAnnonceByAdID = async (adID) => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données de l\'annonce spécifique.');
-        }
-
         const result = await response.json();
         return result;
     } catch (error) {
@@ -77,9 +73,6 @@ const fetchApprovedAds = async () => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des annonces approuvées.');
-        }
         const approvedAds = await response.json();
         return approvedAds;
     } catch (error) {
@@ -99,10 +92,6 @@ const fetchAdsByCategory = async (categoryName) => {
             },
             body: JSON.stringify({ categoryName }),
         });
-
-        if (!response.ok) {
-            console.log('Erreur serveur:');
-        }
 
         const ads = await response.json();
         return ads;
@@ -125,12 +114,7 @@ const fetchRelatedListings = async (adID, currentCategory) => {
             body: JSON.stringify({ adID, category: currentCategory }),
         });
 
-        if (!response.ok) {
-            throw new Error('Failed to fetch related ads');
-        }
-
         const relatedAds = await response.json();
-
         return relatedAds;
     } catch (error) {
         console.error('Error fetching related ads:', error);

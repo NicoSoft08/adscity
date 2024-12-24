@@ -1,9 +1,9 @@
 import React from 'react';
 import './InputField.scss';
 
-export default function InputField({ label, name, value, onChange, disabled, error, type = 'text', options, placeholder }) {
+export default function InputField({ label, name, value, onChange, disabled, error, type = 'text', options, placeholder, title }) {
     return (
-        <div className="wrap">
+        <div className="wrap" title={title}>
             <label htmlFor={name}>
                 {label} <strong>*</strong>
             </label>

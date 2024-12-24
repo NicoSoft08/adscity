@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import InputField from '../input-field/InputField';
-import { carsState, cosmeticsCategories, currency, typeOfPrice } from '../../data/database';
 import Toast from '../../customs/Toast';
+import { beautyAdditionalFeatures, beautyServiceOptions, currency, typeOfPrice } from '../../data/database';
 
-export default function CosmeticsPerfumes({ formData, onBack, onChange, onNext }) {
+export default function HealthyandBeauty({ formData, onBack, onChange, onNext }) {
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState({
         show: false,
@@ -12,21 +12,19 @@ export default function CosmeticsPerfumes({ formData, onBack, onChange, onNext }
     });
 
     const fields = [
-        { label: 'Titre de l\'annonce', name: 'title', type: 'text', message: 'Le titre est requis.', required: true },
-        { label: 'Catégorie', name: 'category', type: 'select', options: cosmeticsCategories.fr, message: 'La catégorie est requise.', required: true },
-        { label: 'Marque', name: 'brand', type: 'text', message: 'La marque est requise.', required: true },
-        { label: 'Volume/Poids', name: 'volumeWeight', type: 'text', message: 'Le volume/poids est requis.', required: true },
-        { label: 'État', name: 'condition', type: 'select', options: carsState.fr, message: 'L\'état est requis.', required: true },
+        { label: 'Titre de l\'annonce', name: 'title', type: 'text', placeholder: "Ex: Coiffure à Domicile", message: 'Le titre est requis.', required: true },
+        { label: 'Type de service', name: 'serviceType', type: 'checkbox', options: beautyServiceOptions.fr, message: 'Le type de service est requis.', required: true },
+        { label: 'Disponibilités', name: 'availability', type: 'text', placeholder: "Ex: Lundi au Vendredi, 9h-18h", message: 'Les disponibilités sont requises.', required: true },
+        { label: 'Durée du service', name: 'serviceDuration', type: 'text', placeholder: "Ex: 1h", message: 'La durée du service est requise.', required: true },
+        { label: 'Caractéristiques supplémentaires', name: 'additionalFeatures', type: 'checkbox', options: beautyAdditionalFeatures.fr, message: 'Les caractéristiques supplémentaires sont requises.', required: false },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
         { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
-        { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true }
-
+        { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true },
     ];
 
     const validateForm = () => {
         const newErrors = {};
-
         fields.forEach(field => {
             if (field.required && !formData.adDetails[field.name]) {
                 newErrors[field.name] = `${field.message}`;

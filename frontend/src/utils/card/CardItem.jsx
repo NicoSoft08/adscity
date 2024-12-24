@@ -1,10 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-    faCalendarDay, 
-    faEllipsisV, 
-    faEye, 
-    faHeart 
+import {
+    faCalendarDay,
+    faEllipsisV,
+    faEye,
+    faEyeSlash,
+    faFlag,
+    faHeart,
+    faShare
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -24,7 +27,7 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
     const { currentUser } = useContext(AuthContext);
     const { id, userID, adDetails, images,
         location, category, subcategory, views,
-        posted_at, expiry_date, isActive, 
+        posted_at, expiry_date, isActive,
     } = ad;
     const [showMenu, setShowMenu] = useState(false);
     const [profilURL, setProfilURL] = useState();
@@ -38,6 +41,24 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
 
         fetchProfilURL();
     }, [userID]);
+
+    const options = [
+        {
+            label: 'Signaler l\'annonce',
+            icon: faFlag,
+            action: () => handleReportAd(ad.id)
+        },
+        {
+            label: 'Partager',
+            icon: faShare,
+            action: () => handleShareAd(ad.id)
+        },
+        {
+            label: 'Masquer',
+            icon: faEyeSlash,
+            action: () => handleHideAd(ad.id)
+        },
+    ];
 
 
     const handleReportAd = (adID) => {
@@ -188,12 +209,9 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
                 </span>
             </div> */}
             <Menu
+                options={options}
                 isOpen={showMenu}
                 onClose={() => setShowMenu(false)}
-                ad={ad}
-                onReport={handleReportAd}
-                onShare={handleShareAd}
-                onHide={handleHideAd}
             />
         </div>
     );

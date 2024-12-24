@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconVerifiedModified } from '../../config';
+import { IconVerifiedModified } from '../../config/images';
 import './AdscityBadge.scss';
 
 export default function AdscityBadge({ logoURL, name, isVerified }) {

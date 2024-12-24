@@ -34,6 +34,7 @@ import TeamPage from './pages/public/TeamPage';
 import UserHome from './pages/private/client/UserHome';
 import CheckoutProceed from './pages/private/CheckoutProceed';
 import SecurityAdvices from './pages/public/SecurityAdvices';
+import { DeclineDevice, VerifyDevice } from './pages/auth/DeviceActions';
 
 export default function AppRouter() {
 
@@ -59,26 +60,28 @@ export default function AppRouter() {
                     <Route path="/ads/:category/:subcategory/:adID" element={<AdDetailPage />} />
                     <Route path='/users/show/:userID' element={<ShowUserPage />} />
                     <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />
-                    
-                    <Route path='/help-center' element={<HelpLayout />}>
-                        <Route index element={<HelpPage />} />
-                        <Route path='faq' element={<FAQsPage />} />
-                        <Route path='safety' element={<SecurityAdvices />} />
-                    </Route>
+
                 </Route>
-                
+                <Route path='/help-center' element={<HelpLayout />}>
+                    <Route index element={<HelpPage />} />
+                    <Route path='faq' element={<FAQsPage />} />
+                    <Route path='safety' element={<SecurityAdvices />} />
+                </Route>
+
                 <Route element={<AuthLayout />}>
                     <Route path='/auth/signin' element={<LoginPage />} />
                     <Route path='/auth/signin/:email?' element={<LoginPage />} />
                     <Route path='/auth/create-user' element={<SignupPage />} />
                     <Route path='/auth/signup-success' element={<SignupSuccess />} />
                     <Route path='/auth/reset-password/:email?' element={<ForgotPasswordPage />} />
+                    <Route path="/auth/verify-device/:deviceID/:verificationToken" element={<VerifyDevice />} />
+                    <Route path="/auth/decline-device/:deviceID/:verificationToken" element={<DeclineDevice />} />
                 </Route>
-                
+
                 <Route path='/user/dashboard' element={<UserLayout />}>
                     <Route index element={<UserHome />} />
                 </Route>
-                
+
                 <Route path='/access-denied' element={<AccessDenied />} />
                 <Route path='*' element={<NotFoundPage />} />
             </Routes>

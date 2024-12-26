@@ -1,10 +1,9 @@
 import React, { useContext, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faAddressCard, faEnvelopeOpen,
+    faAddressCard, faCamera, faCheck, faEnvelopeOpen,
     faFolderOpen, faHome, faLocationDot,
-    faPen, faPhone, faPlus, faTrash,
-    faUserAltSlash,
+    faPhone, faTimes, faUserAltSlash,
     faUserCheck
 } from '@fortawesome/free-solid-svg-icons';
 import Modal from '../../../customs/Modal';
@@ -12,128 +11,214 @@ import { AuthContext } from '../../../contexts/AuthContext';
 import { IconCover, IconAvatar } from '../../../config/images';
 import ProfileStats from '../../../components/profile-stats/ProfileStats';
 import { uploadProfilePhoto } from '../../../services/storageServices';
+import Toast from '../../../customs/Toast';
 import '../../../styles/UserProfile.scss';
-
 
 export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [userPersoData, setUserPersoData] = useState({
-        displayName: userData?.displayName,
-        email: userData?.email,
-        phoneNumber: userData?.phoneNumber,
-        profileNumber: userData?.profileNumber,
-        location: userData?.location || "Ville, Pays Non Renseignés",
-        address: userData?.address || "Adresse Non Renseignée",
-        profilURL: userData?.profilURL || IconAvatar,
-        coverURL: userData?.coverURL || IconCover,
-        city: userData?.city || "Ville Non Renseignée",
-        country: userData?.country || "Pays Non Renseigné",
-        lastName: userData?.lastName,
-        firstName: userData?.firstName,
-    });
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [profilePreview, setProfilePreview] = useState(null);
+
+    const validateFile = (file) => {
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+        const maxSize = 2 * 1024 * 1024; // 2MB
+
+        if (!allowedTypes.includes(file?.type)) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Le fichier doit être au format JPEG, PNG ou JPG.',
+            });
+            return false;
+        }
+
+        if (file?.size > maxSize) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'La taille du fichier ne doit pas dépasser 2MB.',
+            });
+            return false;
+        }
+
+        return true;
+    };
 
 
-
-    const handleClose = () => setIsModalOpen(false);
-
-    const handleChangeProfil = async (e) => {
+    const handleProfileChange = (e) => {
         const file = e.target.files[0];
+
+        if (!validateFile(file)) {
+            return;
+        }
+
+        setSelectedFile(file);
+        const reader = new FileReader();
+        reader.onload = () => {
+            setProfilePreview(reader.result);
+            setIsModalOpen(true);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleConfirm = async () => {
         const userID = currentUser?.uid;
 
-        const formData = new FormData();
-        formData.append('profilURL', file);
-
-        handleClose();
-
-        try {
-            const result = await uploadProfilePhoto(userID, file);
-            
-            if (result.profilURL) {
-                setUserPersoData(prevData => ({
-                    ...prevData,
-                    profilURL: result.profilURL,
-                }));
-            }
-        } catch (error) {
-            console.error('Erreur lors de l\'upload du fichier :', error);
+        if (selectedFile) {
+            await uploadProfilePhoto(userID, selectedFile);
         }
+
+        setIsModalOpen(false);
+        setProfilePreview(null);
+        setSelectedFile(null);
+    };
+
+    const handleCancel = () => {
+        setIsModalOpen(false);
+        setProfilePreview(null);
+        setSelectedFile(null);
     };
 
 
-
-
-    const handleDeleteProfil = async () => {
-        setUserPersoData((prevData) => ({
-            ...prevData,
-            profilURL: null
-        }));
-    };
-
+    const handleBannerChange = async (e) => { 
+        const file = e.target.files[0];
+        console.log(file);
+    }
 
 
     return (
         <div className='user-profile'>
-            <div className='background' style={{ backgroundImage: `url(${userPersoData.coverURL})`, backgroundSize: 'cover', backgroundPosition: 'center', }}>
-                <img className='avatar' src={userPersoData.profilURL} alt='avatar' />
-                <div className='wrap-camera' onClick={() => setIsModalOpen(true)}>
-                    <FontAwesomeIcon icon={faPen} />
-                </div>
+            <div className="banner-content">
+                <img
+                    src={userData?.coverURL || IconCover}
+                    alt="User Banner"
+                    className="banner-image"
+                />
+                <label className="update-icon banner-update">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleBannerChange}
+                        style={{ display: 'none' }}
+                    />
+                    <FontAwesomeIcon icon={faCamera} />
+                </label>
+            </div>
+            <div className="profile-content">
+                <img
+                    src={userData?.profilURL || IconAvatar}
+                    alt="User Profile"
+                    className="profile-image"
+                />
+                <label className="update-icon profile-update">
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleProfileChange}
+                        style={{ display: 'none' }}
+                    />
+                    <FontAwesomeIcon icon={faCamera} />
+                </label>
             </div>
 
             <div style={{ height: '50px' }} />
 
             <div className='user-data'>
-                <h2>{userPersoData.displayName}</h2>                
+                <h2>{userData?.displayName}</h2>
                 <div className="seperator" />
-                <p>{userPersoData.profileNumber}<FontAwesomeIcon icon={faAddressCard} className='pen' /></p>
+                <p>
+                    {userData?.profileNumber}
+                    <FontAwesomeIcon
+                        icon={faAddressCard}
+                        className='pen'
+                    />
+                </p>
                 <div className="seperator" />
-                <p>{userData?.adsCount} annonce(s)<FontAwesomeIcon icon={faFolderOpen} className='pen' /></p>
+                <p>
+                    {userData?.adsCount}
+                    annonce(s)
+                    <FontAwesomeIcon
+                        icon={faFolderOpen}
+                        className='pen'
+                    />
+                </p>
                 <div className="seperator" />
-                <p>{userData?.isActive ? "Actif" : "Désactivé"}<FontAwesomeIcon icon={userData?.isActive ? faUserCheck : faUserAltSlash} className='pen' /></p>
+                <p>
+                    {userData?.isActive
+                        ? "Actif"
+                        : "Désactivé"
+                    }
+                    <FontAwesomeIcon
+                        icon={userData?.isActive
+                            ? faUserCheck
+                            : faUserAltSlash
+                        }
+                        className='pen'
+                    />
+                </p>
                 <div className="seperator" />
-                <p>{userPersoData.location}<FontAwesomeIcon icon={faLocationDot} className='pen'/></p>
+                <p>
+                    {userData?.location}
+                    <FontAwesomeIcon
+                        icon={faLocationDot}
+                        className='pen'
+                    />
+                </p>
                 <div className="seperator" />
-                <p>{userPersoData.email}<FontAwesomeIcon icon={faEnvelopeOpen} className='pen' /></p>
+                <p>
+                    {userData?.email}
+                    <FontAwesomeIcon
+                        icon={faEnvelopeOpen}
+                        className='pen'
+                    />
+                </p>
                 <div className="seperator" />
-                <p>{userPersoData.phoneNumber}
-                    <FontAwesomeIcon icon={faPhone} className='pen' /></p>
+                <p>{userData?.phoneNumber}
+                    <FontAwesomeIcon
+                        icon={faPhone}
+                        className='pen'
+                    />
+                </p>
                 <div className="seperator" />
-                <p>{userPersoData.address}<FontAwesomeIcon icon={faHome} className='pen' /></p>
+                <p>
+                    {userData?.address}
+                    <FontAwesomeIcon
+                        icon={faHome}
+                        className='pen'
+                    />
+                </p>
             </div>
 
             <ProfileStats user={userData} />
-
             {isModalOpen && (
                 <Modal
                     onShow={isModalOpen}
-                    onHide={handleClose}
-                    title={"Choisie une action"}
                 >
-                    <div className='banner'>
-                        <div className="file-info">
-                            {userPersoData.profilURL && <p>Fichier sélectionné : {userPersoData.profilURL.name}</p>}
-                        </div>
-                        <div className="icons-actions">
-                            <label htmlFor="file-upload">
-                                <FontAwesomeIcon icon={faPlus} className="icon" />
-                            </label>
-                            <input
-                                type="file"
-                                id="file-upload"
-                                style={{ display: 'none' }} // Masquer l'input file natif
-                                onChange={handleChangeProfil}
-                            />
-                            <FontAwesomeIcon
-                                icon={faTrash}
-                                className="icon delete"
-                                onClick={userPersoData.profilURL ? handleDeleteProfil : null}
-                                style={{ cursor: userPersoData.profilURL ? 'pointer' : 'not-allowed' }}
-                            />
+                    <div className="modal">
+                        <div className="modal-content">
+                            <h3>Aperçu de la nouvelle photo</h3>
+                            <img src={profilePreview} alt="Preview" className="modal-preview" />
+                            <div className="modal-actions">
+                                <button className="btn btn-confirm" onClick={handleConfirm}>
+                                    <FontAwesomeIcon icon={faCheck} /> Valider
+                                </button>
+                                <button className="btn btn-cancel" onClick={handleCancel}>
+                                    <FontAwesomeIcon icon={faTimes} /> Annuler
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </Modal>
             )}
+
+            <Toast
+                show={toast.show}
+                type={toast.type}
+                message={toast.message}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </div>
     );
 };

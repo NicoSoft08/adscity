@@ -46,13 +46,17 @@ export default function MyAds({ currentUser }) {
     useEffect(() => {
         const userID = currentUser?.uid;
         const fetchDisabledAds = async () => {
-            const activeAds = await fetchUserActiveAds(userID);
-            setAdsActive(activeAds);
+            const result = await fetchUserActiveAds(userID);
+            if (result.success) {
+                setAdsActive(result?.activeApprovedAds);
+            }
         };
 
         const fetchActiveAds = async () => {
-            const disabledAds = await fetchUserInactiveAds(userID);
-            setAdsInactive(disabledAds);
+            const result = await fetchUserInactiveAds(userID);
+            if (result.success) {
+                setAdsInactive(result?.inactiveApprovedAds);
+            }
         }
 
         fetchActiveAds();

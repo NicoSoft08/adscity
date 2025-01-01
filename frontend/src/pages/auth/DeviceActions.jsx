@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { validateDevice } from "../../services/authServices";
 import { AuthContext } from "../../contexts/AuthContext";
 import Loading from "../../customs/Loading";
@@ -8,47 +8,62 @@ import Toast from "../../customs/Toast";
 function VerifyDevice() {
     const { currentUser } = useContext(AuthContext);
     const { deviceID, verificationToken } = useParams();
-    const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const [error, setError] = useState(null);
 
     useEffect(() => {
+        console.log("Debug - deviceID:", deviceID);
+        console.log("Debug - verificationToken:", verificationToken);
+        console.log("Debug - currentUser:", currentUser);
+
+        if (!currentUser) {
+            setToast({ 
+                show: true, 
+                type: 'error', 
+                message: "Utilisateur non connecté ou authentification non initialisée." 
+            });
+            return;
+        }
+        
         const verifyDevice = async () => {
+            if (!deviceID || !verificationToken) {
+                setToast({ 
+                    show: true, 
+                    type: 'error', 
+                    message: 'Informations insuffisantes pour vérifier l’appareil.' 
+                });
+                return;
+            }
+
             setLoading(true);
-            const result = await validateDevice(currentUser, deviceID, verificationToken);
 
-            console.log(result);
-            // if (result.success) {
-            //     setToast({
-            //         show: true,
-            //         type: 'success',
-            //         message: 'Appareil vérifié avec succès !',
-            //     });
-
-            //     setTimeout(() => {
-            //         navigate('/auth/signin');
-            //         setLoading(false);
-            //     }, 2000);
-            // }
+            try {
+                const result = await validateDevice(deviceID, verificationToken);
+                console.log('Résultat de la vérification de l’appareil :', result);
+            } catch (error) {
+                console.error('Erreur lors de la vérification de l’appareil :', error);
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
         };
 
         verifyDevice();
+    }, [deviceID, verificationToken, currentUser]);
 
-    }, [deviceID, verificationToken, navigate, currentUser]);
 
     if (loading) return <Loading />
 
     return (
-        <div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+            {error && <div>Erreur : {error}</div>}
             <Toast
                 show={toast.show}
                 type={toast.type}
                 message={toast.message}
                 onClose={() => setToast({ ...toast, show: false })}
             />
-            <h1>Verify Device</h1>
-            <p>Device ID: {deviceID}</p>
-            <p>Verification Token: {verificationToken}</p>
         </div>
     );
 };

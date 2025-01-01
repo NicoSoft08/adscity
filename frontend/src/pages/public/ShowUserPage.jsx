@@ -29,8 +29,8 @@ export default function ShowUserPage() {
         };
 
         const fetchProfilAds = async () => {
-            const activeApprovedAds = await fetchUserActiveAds(userID);
-            setProfilAds(activeApprovedAds);
+            const result = await fetchUserActiveAds(userID);
+            setProfilAds(result?.activeApprovedAds);
         };
 
         logEvent(analytics, 'view_store');

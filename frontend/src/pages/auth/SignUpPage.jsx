@@ -125,7 +125,7 @@ export default function SignUpPage() {
                 lastName,
             } = formData;
 
-            const displayName = firstName + ' ' + lastName;
+            const displayName = `${firstName} ${lastName}`;
             const result = await createUser(
                 address, city, country, email,
                 password, firstName, lastName,

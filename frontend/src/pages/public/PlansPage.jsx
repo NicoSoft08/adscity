@@ -5,59 +5,21 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import Modal from '../../customs/Modal';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import PlanItem from '../../components/plan-item/PlanItem';
 import '../../styles/PlansPage.scss';
-
-const PlanCard = ({ plan, planKey, onSelect, selectedPlan, setSelectedPlan, onClick }) => {
-    const isSelected = selectedPlan === planKey;
-
-    const handleSeeMore = (e) => {
-        e.stopPropagation(); // Prevent triggering the card selection
-        onClick(planKey);
-        setSelectedPlan(planKey);
-    };
-
-    return (
-        <div
-            title={`Forfait ${planKey.toUpperCase()}`}
-            className={`plan-card ${isSelected ? "selected" : ""}`}
-            onClick={() => onSelect(planKey)}
-        >
-            <span className='plan-name'>{planKey.charAt(0).toUpperCase() + planKey.slice(1)}</span>
-            <div className="plan-header">
-                <span className="price">{plan.price === 0 ? "Gratuit" : plan.price + " RUB"}</span>{" "}
-                <span className="duration">{" "} / {plan.validity_days} jours</span>
-            </div>
-            <div className="plan-details">
-                <p className='max-ads'>
-                    {plan.max_ads === "Illimité"
-                        ? "Illimité"
-                        : `${plan.max_ads} ${plan.max_ads > 1 ? "annonces" : "annonce"
-                        }`}
-                </p>
-                <p className='max-photos'>{plan.max_photos} photos</p>
-                <p className='max-photos'>Visibilité {plan.visibility}</p>
-                <p className='max-photos'>Assistance {plan.support}</p>
-            </div>
-            <button className="see-more" onClick={handleSeeMore}>Voir Plus</button>
-        </div>
-    );
-};
-
 
 export default function PlansPage() {
     const { currentUser } = useContext(AuthContext);
-    const [selectedPlan, setSelectedPlan] = useState("basic");
+    const [selectedPlan, setSelectedPlan] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const navigate = useNavigate();
 
-    const handleSelect = (planKey) => {
-        setSelectedPlan(planKey);
-        setIsLoading(true);
-        setTimeout(() => { setIsLoading(false) }, 2000);
+    const handleSelect = (id) => {
+        const plan = plans.find((p) => p.id === id);
+
+        if (plan) setSelectedPlan(plan);
     };
 
     const handleHide = () => {
@@ -67,76 +29,57 @@ export default function PlansPage() {
         });
     };
 
+    const CTAButton = ({ className, selectedPlan, isLoading, currentUser, setToast, navigate }) => {
+        if (!selectedPlan) return null;
 
-    const getSelectedPlanPrice = () => {
-        let price = 0
-
-        switch (selectedPlan) {
-            case 'basic':
-                return price === 0 ? "Gratuit" : price;
-            case 'bronze':
-                price = 2000 + " RUB";
-                return price;
-            case 'silver':
-                price = 4000 + " RUB";
-                return price;
-            case 'gold':
-                price = 6000 + " RUB";
-                return price;
-            default:
-                return null;
-        }
-    }
-
-
-    const CTAButton = ({ className, selectedPlan, isLoading }) => {
-        const planDetails = {
-            basic: { price: 0, label: 'Continuer' },
-            bronze: { price: 2000, label: 'Payer 2000 RUB' },
-            silver: { price: 4000, label: 'Payer 4000 RUB' },
-            gold: { price: 6000, label: 'Payer 6000 RUB' }
-        };
-
-        const handleClick = (plan, price) => {
-            if (price === 0) {
-                navigate('/'); // Redirection pour le plan gratuit
-            } else {
-                if (!currentUser) {
-                    setToast({ type: 'error', show: true, message: "Connectez-vous pour continuer !!" });
-                } else {
-                    const planInfo = { plan, price };
-                    navigate(`/proceed-to-checkout`, { state: { planInfo: planInfo } });
-                }
+        const handleClick = () => {
+            // Redirection pour un plan payant
+            if (!currentUser) {
+                // Afficher un message si l'utilisateur n'est pas connecté
+                setToast({
+                    type: 'error',
+                    show: true,
+                    message: "Connectez-vous pour continuer !!"
+                });
+                return;
             }
-        };
-
-        if (!planDetails[selectedPlan]) return null; // Gère les plans non définis
-
-        const { price, label } = planDetails[selectedPlan];
+            setIsLoading(true);
+            setTimeout(() => {
+                navigate(`/proceed-to-checkout`, {
+                    state: {
+                        planInfo: {
+                            plan: selectedPlan.name,
+                            price: selectedPlan.price
+                        }
+                    }
+                });
+                setIsLoading(false);
+            }, 1000);
+        }
 
         return (
             <button
                 className={className}
-                onClick={() => handleClick(selectedPlan, price)}
+                onClick={handleClick}
                 disabled={isLoading}
             >
-                {isLoading ? <Spinner /> : label}
+                {isLoading ? <Spinner /> : `Passer au plan ${selectedPlan.name}`}
             </button>
         );
     }
 
     return (
         <div className="pricing">
-            <h2>Nos Tarifs et Forfaits</h2>
+            <h2>Découvrez nos Plans et Tarifs</h2>
             <p>Choisissez le forfait adapté à vos besoins.</p>
             <div className="pricing-container">
-                {Object.keys(plans).map((planKey) => (
-                    <PlanCard
-                        key={planKey}
-                        plan={plans[planKey]}
-                        planKey={planKey}
+                {plans.map((plan) => (
+                    <PlanItem
+                        key={plan.id}
+                        id={plan.id}
+                        plan={plan}
                         onSelect={handleSelect}
-                        selectedPlan={selectedPlan}
+                        selectedPlan={selectedPlan?.id}
                         setSelectedPlan={setSelectedPlan}
                         onClick={() => setIsOpen(true)}
                     />
@@ -148,70 +91,89 @@ export default function PlansPage() {
                         <h2>Prix tarifaire</h2>
                         <div className="forfait">
                             <span>Forfait</span>
-                            <span>{getSelectedPlanPrice(selectedPlan)}</span>
+                            <span>{selectedPlan.price === 0 ? "Gratuit" : `${selectedPlan.price} RUB`}</span>
                         </div>
-                        <p>{`<<${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}>>`}</p>
+                        <p>{`<<${selectedPlan?.name.toUpperCase()}>>`}</p>
                         <div className="forfait">
                             <span><strong>Total</strong></span>
-                            <span><strong>{getSelectedPlanPrice(selectedPlan)}</strong></span>
+                            <span><strong>{selectedPlan.price === 0 ? "Gratuit" : `${selectedPlan.price} RUB`}</strong></span>
                         </div>
                         <div className="call-to-action">
                             <CTAButton
                                 className='proceed-btn'
                                 selectedPlan={selectedPlan}
                                 isLoading={isLoading}
+                                currentUser={currentUser}
+                                setToast={setToast}
+                                navigate={navigate}
                             />
                         </div>
                     </div>
                 )}
             </div>
 
-            {isOpen && (
+            {selectedPlan && isOpen && (
                 <Modal
                     onShow={isOpen}
-                    title={`Forfait ${selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)}`}
+                    title={`Forfait ${selectedPlan?.name.toUpperCase()}`}
                     onHide={() => setIsOpen(false)}
                 >
                     <div className="plan-details-modal">
-                        <table border="1" style={{ margin: "10px", width: "95%" }}>
+                        <table>
                             <tbody>
                                 <tr>
                                     <td>
-                                        Annonces
-                                        <FontAwesomeIcon
-                                            icon={faExclamationCircle}
-                                            title="Nombre d'annonces incluses pour ce forfait"
-                                        />
+                                        Nombre d'annonces
                                     </td>
-                                    <td>{plans[selectedPlan].max_ads}</td>
+                                    <td>{selectedPlan?.content.ads_num}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        Photos par annonce
-                                        <FontAwesomeIcon
-                                            icon={faExclamationCircle}
-                                            title="Nombre de photos publiables par annonce"
-                                        />
+                                    Coût des plans
                                     </td>
-                                    <td>{plans[selectedPlan].max_photos}</td>
+                                    <td>{selectedPlan?.content.cost_plan}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                        Validité
-                                        <FontAwesomeIcon
-                                            icon={faExclamationCircle}
-                                            title="Durée de validité de l'annonce"
-                                        />
+                                    Visibilité des annonces
                                     </td>
-                                    <td>{plans[selectedPlan].validity_days} jours</td>
+                                    <td>{selectedPlan?.content.ads_visible}</td>
                                 </tr>
                                 <tr>
-                                    <td>Visibilité</td>
-                                    <td>{plans[selectedPlan].visibility}</td>
+                                    <td>
+                                    Support client
+                                    </td>
+                                    <td>{selectedPlan?.content.support_client}</td>
                                 </tr>
                                 <tr>
-                                    <td>Support client</td>
-                                    <td>{plans[selectedPlan].support}</td>
+                                    <td>
+                                    Rapports de performance
+                                    </td>
+                                    <td>{selectedPlan?.content.stat_performance}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    Catégories spécialisées
+                                    </td>
+                                    <td>{selectedPlan?.content.special_cat}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    Outils de gestion
+                                    </td>
+                                    <td>{selectedPlan?.content.tool_manage_ads}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    Personnalisation
+                                    </td>
+                                    <td>{selectedPlan?.content.personalize}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                    Crédibilité perçue
+                                    </td>
+                                    <td>{selectedPlan?.content.credibility}</td>
                                 </tr>
                             </tbody>
                         </table>

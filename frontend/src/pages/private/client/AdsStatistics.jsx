@@ -83,10 +83,10 @@ export default function AdsStatistics() {
                 ]);
 
                 // Set the ads data
-                setAds(allAds);
-                setAdsPending(pendingAds);
-                setAdsApproved(approvedAds);
-                setAdsRefused(refusedAds);
+                setAds(allAds?.userAds);
+                setAdsPending(pendingAds?.pendingAds);
+                setAdsApproved(approvedAds?.approvedAds);
+                setAdsRefused(refusedAds?.refusedAds);
             } catch (error) {
                 console.error('Erreur lors de la récupération des annonces:', error);
             }

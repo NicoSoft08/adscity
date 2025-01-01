@@ -3,7 +3,7 @@ import { faCheck, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate } from 'react-router-dom';
-
+import { contactUs } from '../../services/contactServices';
 import '../../styles/ContactPage.scss';
 
 export default function ContactPage() {
@@ -74,29 +74,28 @@ export default function ContactPage() {
         }
 
         try {
-            const backendUrl = process.env.REACT_APP_BACKEND_URL;
-            // Sending data to the backend
-            const response = await fetch(`${backendUrl}/api/contact`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ formData: formData }),
-            });
-
-            if (!response.ok) {
-                throw new Error('Erreur lors de l\'envoi du message');
+            const newForm = {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                email: formData.email,
+                object: formData.object,
+                message: formData.message,
+            };
+            const result = await contactUs(newForm);
+            if (result.success) {
+                setMessage(result.message);
+                setSubmitted(true);
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    object: '',
+                    message: '',
+                    agree: false,
+                });
+            } else {
+                setMessage(result.message);
             }
-
-            setSubmitted(true);
-            setFormData({
-                firstName: '',
-                lastName: '',
-                email: '',
-                object: '',
-                message: '',
-                agree: false,
-            });
         } catch (error) {
             setMessage(error);
             console.error(error);

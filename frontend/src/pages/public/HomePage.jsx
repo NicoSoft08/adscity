@@ -7,18 +7,24 @@ import { fetchApprovedAds } from '../../services/adServices';
 import { toggleFavorites } from '../../services/favorisServices';
 import Toast from '../../customs/Toast';
 import '../../styles/HomePage.scss';
+import Loading from '../../customs/Loading';
 
 export default function HomePage() {
     const { currentUser } = useContext(AuthContext);
     const [adsApproved, setAdsApproved] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
         const getApprovedAds = async () => {
-            const response = await fetchApprovedAds();
-            const approvedAds = Array.isArray(response) ? response : [];
-            setAdsApproved(approvedAds);
+            setIsLoading(true);
+            const result = await fetchApprovedAds();
+            if (result) {
+                const approvedAds = Array.isArray(result?.approvedAds) ? result?.approvedAds : [];
+                setAdsApproved(approvedAds);
+                setIsLoading(false);
+            }
 
         }
 
@@ -64,6 +70,7 @@ export default function HomePage() {
 
     return (
         <div className='home-page'>
+            {isLoading && <Loading />}
             <ButtonAdd />
             {adsApproved.length === 0 && <p>Aucune annonce trouvée</p>}
             <CardList>

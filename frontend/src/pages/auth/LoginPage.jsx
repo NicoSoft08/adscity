@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
-import '../../styles/LoginPage.scss';
-
 import Spinner from '../../customs/Spinner';
 import Loading from '../../customs/Loading';
 import { signinUser } from '../../services/authServices';
 import Toast from '../../customs/Toast';
 import { collectDeviceInfo } from '../../services/trackServices';
+import '../../styles/LoginPage.scss';
+
 
 export default function LoginPage() {
     const { email } = useParams();
@@ -133,7 +132,7 @@ export default function LoginPage() {
                     </span>
                     {errors.password && <div className="error-text">{errors.password}</div>}
                 </div>
-                <Link to={`/auth/reset-password`} className="passwrod-forgot">
+                <Link to={`/auth/reset-password/${formData.email}`} className="passwrod-forgot">
                     <span>Mot de passe oublié ?</span>
                 </Link>
                 <label className="checkbox-label">
@@ -156,17 +155,7 @@ export default function LoginPage() {
                 </button>
                 <p>Aucun compte utilisateur ? <Link to={'/auth/create-user'}>S'inscrire</Link></p>
             </form>
-            <Toast
-                message={toast.message}
-                type={toast.type}
-                show={toast.show}
-                onClose={
-                    () => setToast({
-                        ...toast,
-                        show: false
-                    })
-                }
-            />
+            <Toast message={toast.message} type={toast.type} show={toast.show} onClose={() => setToast({ ...toast, show: false }) }/>
         </div>
     );
 };

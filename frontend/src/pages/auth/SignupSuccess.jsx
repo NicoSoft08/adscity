@@ -5,6 +5,7 @@ import ReactCodeInput from 'react-code-input';
 // import { getFCMToken } from '../../firebase/messaging';
 import { checkCode } from '../../services/userServices';
 import '../../styles/SignupSuccess.scss';
+import Toast from '../../customs/Toast';
 
 
 
@@ -13,6 +14,7 @@ export default function SignupSuccess() {
     const userData = location.state?.userData;
     // const [showPopup, setShowPopup] = useState(true);
     const [isVerified, setIsVerified] = useState(false);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [code, setCode] = useState(0);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -54,7 +56,11 @@ export default function SignupSuccess() {
 
     if (!userData) {
         // Gestion de l'erreur ou redirection si les données sont manquantes
-        console.error("Aucune donnée utilisateur trouvée");
+        setToast({
+            show: true,
+            type: 'error',
+            message: 'Aucune donnée utilisateur trouvée',
+        })
         return <div>Erreur: Aucune donnée utilisateur trouvée</div>;
     }
 
@@ -84,20 +90,21 @@ export default function SignupSuccess() {
 
             <h2>Premiers Pas</h2>
             <ul>
-                <li><Link to="#">Guide de démarrage rapide</Link></li>
+                <li><Link to="/start-guide">Guide de démarrage rapide</Link></li>
                 <li><a href="https://youtube.com/@AdsCity24" >Tutoriels vidéo</a></li>
                 <li><Link to="/faqs">FAQ</Link></li>
             </ul>
             <h2>Contactez-nous</h2>
-            <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter via notre <Link to={"/contact-us"}>page de support</Link> ou à envoyer un email à <a href="mailto:support@adscity.net">support@adscity.net</a>.</p>
+            <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter via notre <Link to={"/contact-us"}>page de support</Link> ou à envoyer un email à <a href="mailto:contact@adscity.net">contact@adscity.net</a>.</p>
             <div className="links">
-                <Link to={'/'}>Retour à la Page d'Accueil</Link>
+                <Link to={'/'}>Retour à l'Accueil</Link>
                 {/* <Link to="#">Consulter notre Blog</Link> */}
-                <Link to={'/our-services'}>Découvrir Nos Services</Link>
+                <Link to={'/pricing'}>Découvrir Nos Offres</Link>
             </div>
             <p>Merci de faire confiance à AdsCity. Nous sommes impatients de vous accompagner et de vous aider à atteindre vos objectifs.</p>
             <a href="https://mail.google.com/" className="button">Vérifier ma boîte Gmail</a>
             {/* {showPopup && <InstallAppModal onClose={handleClosePopup} requestNotificationPermission={requestNotificationPermission} userID={userID} />} */}
+           <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} /> 
         </div>
     );
 };

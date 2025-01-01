@@ -1,286 +1,378 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../../contexts/AuthContext';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheck } from '@fortawesome/free-solid-svg-icons';
-import Modal from '../../../customs/Modal';
 import Toast from '../../../customs/Toast';
 import { useNavigate } from 'react-router-dom';
+import { logoutUser, sendVerificationCode, updateUserPassword, verifyCodeAndUpdateEmail } from '../../../services/authServices';
+import { getUserDevices, updateUserFields } from '../../../services/userServices';
+import Spinner from '../../../customs/Spinner';
+import Modal from '../../../customs/Modal';
+import DeviceItem from '../../../utils/device-item/DeviceItem';
 import '../../../styles/Settings.scss';
-import { updateUserField } from '../../../services/userServices';
 
 export default function Settings() {
     const { currentUser, userData } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [selectedField, setSelectedField] = useState(null);
-    const [fieldValue, setFieldValue] = useState('');
     const [toast, setToast] = useState({
         show: false,
         message: '',
         type: '',
     });
-    const [userPersoData, setUserPersoData] = useState({
-        email: userData?.email,
-        phoneNumber: userData?.phoneNumber,
-        address: userData?.address || "Adresse Non Renseignée",
-        city: userData?.city || "Ville Non Renseignée",
-        country: userData?.country || "Pays Non Renseigné",
-        lastName: userData?.lastName,
-        firstName: userData?.firstName,
-    });
+    const [devices, setDevices] = useState([]);
+    const [open, setOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const [personalInfo, setPersonalInfo] = useState({
+        firstName: userData?.firstName || "",
+        lastName: userData?.lastName || "",
+        phoneNumber: userData?.phoneNumber || "",
+        country: userData?.country || "",
+        city: userData?.city || "",
+        address: userData?.address || "",
+    });
+    const [securityInfo, setSecurityInfo] = useState({
+        email: userData?.email || "",
+        newEmail: "",
+        verificationCode: "",
+        password: "",
+    });
+    const [step, setStep] = useState("form"); // "form" | "verification"
 
+    useEffect(() => {
+        const fetchUserDevices = async () => {
+            const userID = currentUser?.uid;
+            const result = await getUserDevices(userID);
+            setDevices(result.devices);
+        }
 
-    const handleOnClose = () => setShowModal(false);
+        fetchUserDevices();
 
+    }, [currentUser]);
 
-    const handleEditClick = (field) => {
-        setSelectedField(field);
-        setFieldValue(userPersoData[field]);
-        setShowModal(true);
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setPersonalInfo({ ...personalInfo, [name]: value });
     };
 
+    const handlePersonalInfoUpdate = async () => {
+        const userID = currentUser?.uid;
+        setIsLoading(true);
 
-    const handleChange = (e) => {
-        const { value } = e.target;
-        setFieldValue(value);
+        // Détecter les champs modifiés
+        const updatedFields = {};
+        for (const key in personalInfo) {
+            if (personalInfo[key] !== userData[key]) {
+                updatedFields[key] = personalInfo[key];
+            }
+        }
 
+        if (Object.keys(updatedFields).length === 0) {
+            setToast({
+                show: true,
+                message: "Aucun champ n'a été modifié.",
+                type: 'error',
+            });
+            return;
+        }
+
+        const result = await updateUserFields(userID, updatedFields);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+            setPersonalInfo({
+                firstName: userData?.firstName || "",
+                lastName: userData?.lastName || "",
+                phoneNumber: userData?.phoneNumber || "",
+                country: userData?.country || "",
+                city: userData?.city || "",
+                address: userData?.address || "",
+            });
+        }
     }
 
-    const handleSave = async () => {
 
+    const handleSecurityInfoUpdate = async () => {
         const userID = currentUser?.uid;
+        const password = securityInfo.password;
 
-        handleOnClose();
-
-        try {
-            await updateUserField(userID, selectedField, fieldValue);
-
+        if (!password) {
             setToast({
-                type: 'success',
-                message: 'Mise à jour réussie',
                 show: true,
-            });
-
-            setUserPersoData(prevState => ({
-                ...prevState,
-                [selectedField]: fieldValue,
-            }));
-        } catch (error) {
-            setToast({
+                message: "Veuillez renseigner votre nouveau mot de passe !",
                 type: 'error',
-                message: 'Erreur lors de la mise à jour',
+            });
+            return;
+        }
+
+        const result = await updateUserPassword(userID, password);
+        if (result.error) {
+            setToast({
                 show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
             });
         }
-    };
+    }
 
-    const handleSaveCity = () => { };
 
-    const handleSaveCountry = () => { };
+    const handleSendVerificationCode = async () => {
+        const userID = currentUser?.uid;
+        const newEmail = securityInfo.newEmail;
 
-    const hideToast = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
-    };
+        if (!newEmail) {
+            setToast({
+                show: true,
+                message: "Veuillez renseigner votre nouvel email !",
+                type: 'error',
+            });
+            return;
+        }
 
-    const renderContent = () => {
-        switch (selectedField) {
-            case 'address':
-                return (
-                    <>
-                        <label htmlFor="address">
-                            <input
-                                className='input-field'
-                                type="text"
-                                name='address'
-                                value={fieldValue || userPersoData.address}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={handleSave}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            case 'firstName':
-                return (
-                    <>
-                        <label htmlFor="firstName">
-                            <input
-                                className='input-field'
-                                type="text"
-                                name='firstName'
-                                value={fieldValue || userPersoData.firstName}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={handleSave}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            case 'lastName':
-                return (
-                    <>
-                        <label htmlFor="lastName">
-                            <input
-                                className='input-field'
-                                type="text"
-                                name='lastName'
-                                value={fieldValue || userPersoData.lastName}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={handleSave}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            case 'email':
-                return (
-                    <>
-                        <label htmlFor="email">
-                            <input
-                                className='input-field'
-                                type="email"
-                                name='email'
-                                placeholder={userPersoData?.email}
-                                value={fieldValue || userPersoData?.email}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={handleSave}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            case 'city':
-                return (
-                    <>
-                        <label htmlFor="city">
-                            <input
-                                className='input-field'
-                                type="text"
-                                name='city'
-                                value={fieldValue || userPersoData?.city}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={[
-                                handleSave(),
-                                handleSaveCity()
-                            ]}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            case 'country':
-                return (
-                    <>
-                        <label htmlFor="country">
-                            <input
-                                className='input-field'
-                                type="text"
-                                name='country'
-                                value={fieldValue || userPersoData?.country}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={[
-                                handleSave(),
-                                handleSaveCountry()
-                            ]}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            case 'phoneNumber':
-                return (
-                    <>
-                        <label htmlFor="phoneNumber">
-                            <input
-                                className='input-field'
-                                type="tel"
-                                value={fieldValue || userPersoData?.phoneNumber}
-                                onChange={handleChange} // Mettre à jour la valeur du champ
-                            />
-                            <div className="save-btn" onClick={handleSave}>
-                                <FontAwesomeIcon title='Enregistrer' icon={faCheck} />
-                            </div>
-                        </label>
-                    </>
-                );
-            default:
-                return null;
+        if (newEmail === userData?.email) {
+            setToast({
+                show: true,
+                message: "L'email actuel et le nouvel email sont identiques !",
+                type: 'error',
+            });
+            setTimeout(() => { setSecurityInfo({ newEmail: '' }) }, 2000);
+            return;
+        }
+
+        setIsLoading(true);
+
+        const result = await sendVerificationCode(userID, newEmail);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+            setStep("verification");
+        }
+    }
+
+    const handleVerifyCodeAndUpdateEmail = async () => {
+        const userID = currentUser?.uid;
+        const email = securityInfo.email;
+        const verificationCode = securityInfo.verificationCode;
+
+        const result = await verifyCodeAndUpdateEmail(userID, email, verificationCode);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+            setStep("form");
+        }
+    }
+
+    const handleOpen = () => setOpen(true);
+
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+            navigate('/');
+            setOpen(false);
+            console.log('User signed out successfully');
+        } catch (error) {
+            console.error('Error signing out:', error);
         }
     };
 
+    const handleAccountDeletion = async () => {
+        setShowModal(true); // Ouvre le Modal
+    }
+
+    const closeModal = () => {
+        setShowModal(false); // Ferme le Modal
+    };
 
 
     return (
-        <div className='settings'>
+        <div className='user-settings'>
             <h2>Paramètres</h2>
-            <div className="settings-section">
-                <h3>Gestion du Compte</h3>
-                <button onClick={() => handleEditClick('firstName')}>Modifier le Prénom</button>
-                <button onClick={() => handleEditClick('lastName')}>Modifier le Nom de Famille</button>
-                <button onClick={() => handleEditClick('phoneNumber')}>Modifier le Numéro de Téléphone</button>
-                <button onClick={() => handleEditClick('country')}>Modifier le Pays</button>
-                <button onClick={() => handleEditClick('city')}>Modifier la Ville</button>
-                <button onClick={() => handleEditClick('address')}>Modifier l'Adresse</button>
 
-                <button onClick={() => handleEditClick('email')}>Modifier l'Email</button>
-                <button onClick={() => handleEditClick('password')}>Changer le Mot de Passe</button>
-                <button onClick={() => setShowModal({ deleteUser: true })}>Supprimer le Compte</button>
-            </div>
-            <div className="settings-section">
-                <h3>Assistance</h3>
-                <button onClick={() => navigate('/contact-us')}>Support Client</button>
-                <button onClick={() => navigate('/help-center/faq')}>FAQs</button>
-            </div>
-            <Modal
-                onShow={showModal}
-                onHide={() => setShowModal(false)}
-                title={`Modifier le champs`}
-            >
-                {renderContent()}
-            </Modal>
+            <section className="personal-info">
+                <h2>Informations personnelles</h2>
+                <form onSubmit={(e) => e.preventDefault()}>
+                    <input
+                        type="text"
+                        name='firstName'
+                        value={personalInfo.firstName}
+                        onChange={handleInputChange}
+                        placeholder="Prénom"
+                    />
+                    <input
+                        type="text"
+                        name='lastName'
+                        value={personalInfo.lastName}
+                        onChange={handleInputChange}
+                        placeholder="Nom"
+                    />
+                    <input
+                        type="tel"
+                        name='phoneNumber'
+                        value={personalInfo.phoneNumber}
+                        onChange={handleInputChange}
+                        placeholder="Téléphone"
+                    />
+                    <input
+                        type="text"
+                        name='country'
+                        value={personalInfo.country}
+                        onChange={handleInputChange}
+                        placeholder="Pays"
+                    />
+                    <input
+                        type="text"
+                        name='city'
+                        value={personalInfo.city}
+                        onChange={handleInputChange}
+                        placeholder="Ville"
+                    />
+                    <input
+                        type="text"
+                        name='address'
+                        value={personalInfo.address}
+                        onChange={handleInputChange}
+                        placeholder="Adresse"
+                    />
+                    <button onClick={handlePersonalInfoUpdate}>Enregistrer</button>
+                </form>
+            </section>
 
-            <Toast
-                type={toast.type}
-                message={toast.message}
-                show={toast.show}
-                onClose={hideToast}
-            />
-
-            {showModal
-                .resetPassword && (
-                    <Modal
-                        show={showModal}
-                        hide={() => setShowModal({ resetPassword: false })}
-                        title={"Modifier votre Mot de Passe"}
-                    >
+            <section className="security-info">
+                <h2>Sécurité</h2>
+                {step === "form" && (
+                    <form onSubmit={(e) => e.preventDefault()}>
                         <input
-                            type="password"
-                            name="" id=""
-                            value={userPersoData.email}
+                            type="email"
+                            value={securityInfo.newEmail}
+                            onChange={(e) =>
+                                setSecurityInfo({ ...securityInfo, newEmail: e.target.value })
+                            }
+                            placeholder="Nouvel email"
                         />
-                    </Modal>
-                )
+                        <button onClick={handleSendVerificationCode}>
+                            {isLoading ? <Spinner /> : "Envoyer un code"}
+                        </button>
+                    </form>
+                )}
+
+                {step === "verification" && (
+                    <form onSubmit={(e) => e.preventDefault()}>
+                        <input
+                            type="text"
+                            value={securityInfo.verificationCode}
+                            onChange={(e) =>
+                                setSecurityInfo({ ...securityInfo, verificationCode: e.target.value })
+                            }
+                            placeholder="Code de vérification"
+                        />
+                        <button onClick={handleVerifyCodeAndUpdateEmail}>
+                            {isLoading ? <Spinner /> : "Vérifier et Mettre à jour"}
+                        </button>
+                    </form>
+                )}
+
+                <form onSubmit={(e) => e.preventDefault()}>
+                    <input
+                        type="password"
+                        value={securityInfo.password}
+                        onChange={(e) =>
+                            setSecurityInfo({
+                                ...securityInfo,
+                                password: e.target.value
+                            })
+                        }
+                        placeholder="Nouveau mot de passe"
+                    />
+                    <button onClick={handleSecurityInfoUpdate}>
+                        {isLoading ? <Spinner /> : "Enregistrer"}
+                    </button>
+                </form>
+            </section>
+
+            <section className="help-zone">
+                <h2>Assistance</h2>
+                <button onClick={() => navigate('/contact-us')} className='help-button'>Support Client</button>
+                <button onClick={() => navigate('/help-center/faq')} className='help-button'>FAQs</button>
+            </section>
+
+            <section className="connectivity">
+                <h2>Connectivité</h2>
+                <p>Appareils connectés</p>
+                {devices.map((device, index) => (
+                    <DeviceItem key={index} device={device} />
+                ))}
+            </section>
+
+            <section className="danger-zone">
+                <h2>Zone Danger</h2>
+                <button className="logout" onClick={handleOpen}>Déconnexion</button>
+                <button onClick={handleAccountDeletion} className="delete-button">
+                    Supprimer le compte
+                </button>
+            </section>
+
+            {open &&
+                <Modal
+                    title={"Déconnexion"}
+                    onShow={() => setOpen(true)}
+                    onHide={() => setOpen(false)}
+                    onNext={handleLogout}
+                    isNext={true}
+                    isHide={false}
+                    nextText={"Oui"}
+                    hideText={"Annuler"}
+                >
+                    <p>Confirmez-vous vouloir vous déconnecter ?</p>
+                </Modal>
             }
-            {showModal
-                .deleteUser && (
-                    <Modal
-                        show={showModal}
-                        hide={() => setShowModal({ deleteUser: false })}
-                        title={"Suppression de Compte"}
-                    >
-                        <span>Veuillez adresser un courrier à l'administrateur de la plateforme à travers l'adresse suivante: <a href="mailto:privacy@adscity.net">privacy@adscity.net</a></span>
-                    </Modal>
-                )
-            }
+
+            {showModal && (
+                <Modal
+                    title={"Supprimer mon compte"}
+                    onShow={() => setShowModal(true)}
+                    onHide={closeModal}
+                    isNext={false}
+
+                >
+                    <p>
+                        Pour des raisons de sécurité, veuillez contacter notre support client
+                        à <strong>support@adscity.net</strong> pour effectuer cette action.
+                    </p>
+                </Modal>
+            )}
+
+            <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

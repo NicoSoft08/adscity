@@ -2,9 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-
-import '../../styles/ForgotPasswordPage.scss';
 import Spinner from '../../customs/Spinner';
+import '../../styles/ForgotPasswordPage.scss';
 
 export default function ForgotPasswordPage() {
     const { email } = useParams();

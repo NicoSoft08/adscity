@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconAvatar } from '../../config/images';
 import '../../styles/TeamPage.scss';
 
 export default function TeamPage() {
@@ -6,25 +7,25 @@ export default function TeamPage() {
         {
             name: "Nicolas N'DAH",
             role: 'CEO & Founder',
-            photo: 'https://via.placeholder.com/150',
+            photo: IconAvatar,
             description: 'Visionnaire et leader de l’équipe, Nicolas supervise toutes les opérations stratégiques.',
         },
         {
             name: 'Bob Smith',
             role: 'CTO',
-            photo: 'https://via.placeholder.com/150',
+            photo: IconAvatar,
             description: 'Expert en technologie, Bob est responsable de l’innovation et des solutions techniques.',
         },
         {
             name: 'Aristide GALLOH',
             role: 'Marketing Manager',
-            photo: 'https://via.placeholder.com/150',
+            photo: IconAvatar,
             description: 'Aristide est à la tête des campagnes marketing et de la communication de l’équipe.',
         },
         {
             name: 'David Brown',
             role: 'Lead Developer',
-            photo: 'https://via.placeholder.com/150',
+            photo: IconAvatar,
             description: 'David gère le développement des produits et les équipes techniques.',
         },
     ];

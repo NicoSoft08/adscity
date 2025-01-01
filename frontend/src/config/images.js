@@ -9,7 +9,7 @@ export const Icon404 = require('../imgs/404.png');
 export const IconPrivacy = require('../imgs/privacy.png');
 export const IconDataProcess = require('../imgs/data-process.png');
 export const IconAdsRules = require('../imgs/ads-rules.png');
-
+export const IconHelpCenter = require('../imgs/help-center.png');
 export const IconVerified = require('../assets/icons/adscity-verified-badge.png');
 
 

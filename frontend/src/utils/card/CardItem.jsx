@@ -1,11 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
+    faBan,
     faCalendarDay,
     faEllipsisV,
+    faExclamationTriangle,
     faEye,
     faEyeSlash,
     faFlag,
+    faGavel,
     faHeart,
     faShare
 } from '@fortawesome/free-solid-svg-icons';
@@ -16,11 +19,13 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
 import {
+    reportAd,
     updateContactClick,
     updateInteraction
 } from '../../services/userServices';
 import { fetchProfileByUserID } from '../../services/storageServices';
 import Menu from '../../customs/Menu';
+import Toast from '../../customs/Toast';
 import './CardItem.scss';
 
 export default function CardItem({ ad, isLiked, onToggleFavorites }) {
@@ -30,6 +35,8 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
         posted_at, expiry_date, isActive,
     } = ad;
     const [showMenu, setShowMenu] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [profilURL, setProfilURL] = useState();
     const navigate = useNavigate();
 
@@ -41,6 +48,27 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
 
         fetchProfilURL();
     }, [userID]);
+
+    const reportReasons = [
+        { 
+            id: 1, 
+            label: 'Contenu inapproprié', 
+            icon: faBan,
+            action: () => handleReportWithReason(ad.id, 'Contenu inapproprié')
+        },
+        { 
+            id: 2, 
+            label: 'Produit illégal', 
+            icon: faGavel,
+            action: () => handleReportWithReason(ad.id, 'Produit illégal')
+        },
+        { 
+            id: 3, 
+            label: 'Annonce frauduleuse', 
+            icon: faExclamationTriangle,
+            action: () => handleReportWithReason(ad.id, 'Annonce frauduleuse')
+        },
+    ];
 
     const options = [
         {
@@ -60,8 +88,39 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
         },
     ];
 
+    const handleReportWithReason = async (adID, reasonLabel) => {
+        if (!currentUser) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Vous devez être connecté pour signaler une annonce.'
+            });
+            return;
+        }
+
+        const userID = currentUser.id;
+
+        const result = await reportAd(adID, userID, reasonLabel);
+        if (result.success) {
+            setToast({
+                show: true,
+                type: 'success',
+                message: 'Votre signalement a été envoyé avec succès.'
+            });
+        } else {
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Une erreur est survenue lors du signalement de l\'annonce.'
+            });
+        }
+        setShowReportModal(false);
+    };
+
 
     const handleReportAd = (adID) => {
+        setShowReportModal(true);
+        setShowMenu(false);
         console.log(`Signaler l'annonce avec l'ID : ${adID}`);
     };
 
@@ -213,6 +272,12 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
                 isOpen={showMenu}
                 onClose={() => setShowMenu(false)}
             />
+            <Menu
+                options={reportReasons}
+                isOpen={showReportModal}
+                onClose={() => setShowReportModal(false)}
+            />
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

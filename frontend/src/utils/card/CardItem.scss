@@ -27,27 +27,18 @@
 
 
         .card-title {
-            font-size: 18px;
+            font-size: 14px;
             font-weight: $font-regular;
             margin: 0 0 5px;
             text-align: start;
-
-            @media (max-width: 768px) {
-                font-size: 16px;
-            }
         }
 
 
         .card-price {
-            font-size: 16px;
-            color: #4CAF50;
-            /* Vert pour le prix */
+            font-size: 13px;
+            color: $secondary-color;
             margin: 0 0 5px;
             text-align: start;
-
-            @media (max-width: 768px) {
-                font-size: 14px;
-            }
         }
 
 
@@ -64,14 +55,13 @@
             justify-content: center;
             position: absolute;
             bottom: 90%;
-            left: 75%;
+            right: 10px;
             width: 60px;
             height: 60px;
             width: 50px;
             height: 50px;
             border-radius: 50%;
             background-color: $white;
-
 
             .avatar {
                 width: 90%;

@@ -1,6 +1,4 @@
 import React from 'react';
-import './Header.scss';
-
 import AppLogo from '../../utils/app-logo/AppLogo';
 import { letterBlueBgWhite } from '../../config/logos';
 import SearchBar from '../../components/search-bar/SearchBar';
@@ -8,6 +6,7 @@ import NavLinks from '../../components/nav-links/NavLinks';
 import CreateAdButton from '../../components/create-ad-button/CreateAdButton';
 import { allCategories } from '../../data/database';
 import { Link } from 'react-router-dom';
+import './Header.scss';
 
 export default function Header() {
 

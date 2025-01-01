@@ -35,6 +35,9 @@ import UserHome from './pages/private/client/UserHome';
 import CheckoutProceed from './pages/private/CheckoutProceed';
 import SecurityAdvices from './pages/public/SecurityAdvices';
 import { DeclineDevice, VerifyDevice } from './pages/auth/DeviceActions';
+import Business from './pages/public/Business';
+import QuickStartGuide from './pages/public/QuickStartGuide';
+import FeedbackForm from './pages/private/FeedbackForm';
 
 export default function AppRouter() {
 
@@ -56,11 +59,15 @@ export default function AppRouter() {
                     <Route path='/legal/terms' element={<ConditionPage />} />
                     <Route path='/legal/announcement-rules' element={<RulesPage />} />
 
+                    <Route path='/business' element={<Business />} />
                     <Route path='/about' element={<TeamPage />} />
                     <Route path="/ads/:category/:subcategory/:adID" element={<AdDetailPage />} />
                     <Route path='/users/show/:userID' element={<ShowUserPage />} />
                     <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />
 
+                    <Route path='/start-guide' element={<QuickStartGuide />} />
+
+                    <Route path='/feedback-tests' element={<FeedbackForm />} />
                 </Route>
                 <Route path='/help-center' element={<HelpLayout />}>
                     <Route index element={<HelpPage />} />

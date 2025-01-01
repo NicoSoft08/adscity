@@ -180,24 +180,15 @@ const fetchUserActiveAds = async (userID) => {
         return false;
     }
 
-    try {
-        const response = await fetch(`${backendUrl}/api/ads/user/${userID}/active`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des annonces actives de l\'utilisateur.');
+    const response = await fetch(`${backendUrl}/api/ads/user/${userID}/active`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
         }
+    });
 
-        const adsActive = await response.json();
-        return adsActive;
-    } catch (error) {
-        console.error('Erreur:', error);
-        return [];
-    }
+    const result = await response.json();
+    return result;
 };
 
 
@@ -215,16 +206,13 @@ const fetchUserInactiveAds = async (userID) => {
             throw new Error('Erreur lors de la récupération des annonces inactives de l\'utilisateur.');
         }
 
-        const adsInactive = await response.json();
-        return adsInactive;
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error('Erreur:', error);
         return [];
     }
 };
-
-
-
 
 
 // Update Interaction
@@ -261,18 +249,44 @@ const updateContactClick = async (userID) => {
 }
 
 
-const updateUserField = async (userID, selectedField, fieldValue) => {
-    const response = await fetch(`${backendUrl}/api/update/user/${userID}/${selectedField}`, {
+const updateUserFields = async (userID, updatedFields) => {
+    const response = await fetch(`${backendUrl}/api/users/update-profile`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ value: fieldValue }),
+        body: JSON.stringify({ userID, updatedFields }),
     });
 
     const result = await response.json();
     return result;
 };
+
+const reportAd = async (adID, userID, reason) => {
+    const response = await fetch(`${backendUrl}/api/report/ad`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ adID, userID, reason })
+    });
+
+    const result = await response.json();
+    return result;
+};
+
+
+const getUserDevices = async (userID) => {
+    const response = await fetch(`${backendUrl}/api/users/devices/${userID}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    const result = await response.json();
+    return result;
+}
 
 
 
@@ -290,8 +304,10 @@ export {
     fetchRefusedAdsByUserID,
     fetchUserActiveAds,
     fetchUserInactiveAds,
+    getUserDevices,
+    reportAd,
     updateInteraction,
     updateContactClick,
-    updateUserField,
+    updateUserFields,
     setUserOnlineStatus,
 };

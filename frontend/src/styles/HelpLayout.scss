@@ -3,19 +3,21 @@
 
 
 .help-layout {
-    margin: 0;
-
+   
     .heading {
-        padding: 8px;
-        background-color: #f4f4f9;
+        width: 100%;
+        position: fixed;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        padding: 8px 10px;
+        background-color: $white;
         // background-color: #fcfcfc;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-        h2 {
-            color: $black;
-            text-align: left;
-            font-size: 18px;
-            padding: 0 20px;
+        img {
+            width: 180px;
+            height: 100px;
         }
     }
 

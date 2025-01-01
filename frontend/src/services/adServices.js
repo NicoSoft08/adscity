@@ -73,8 +73,8 @@ const fetchApprovedAds = async () => {
             }
         });
 
-        const approvedAds = await response.json();
-        return approvedAds;
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error('Erreur:', error);
         return [];

@@ -42,13 +42,14 @@ const getCurrentUser = () => {
 };
 
 
-const validateDevice = async (currentUser, deviceID, verificationToken) => {
-    if (!currentUser) {
+const validateDevice = async (deviceID, verificationToken) => {
+    const user = auth.currentUser;
+    if (!user) {
         throw new Error('Utilisateur non connecté');
     }
 
-    const idToken = await currentUser.getIdToken(true);
-    // Envoyer une requête POST à ton serveur pour valider l'appareil
+    const idToken = await user.getIdToken();
+
     const response = await fetch(`${backendUrl}/api/auth/verify-device/${deviceID}/${verificationToken}`, {
         method: 'POST',
         headers: {
@@ -57,10 +58,16 @@ const validateDevice = async (currentUser, deviceID, verificationToken) => {
         },
     });
 
+    if (!response.ok) {
+        throw new Error(`Erreur de validation : ${response.status} ${response.statusText}`);
+    }
+
     const result = await response.json();
     console.log(result);
+
     return result;
 };
+
 
 
 const refuseDevice = async (deviceID, verificationToken) => {
@@ -112,6 +119,49 @@ const signinUser = async (email, password, deviceInfo) => {
 };
 
 
+const updateUserPassword = async (userID, newPassword) => {
+    const response = await fetch(`${backendUrl}/api/auth/update-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, newPassword }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+};
+
+
+const sendVerificationCode = async (userID, newEmail) => {
+    const response = await fetch(`${backendUrl}/api/auth/send-verification-code`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, newEmail }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+};
+
+
+const verifyCodeAndUpdateEmail = async (userID, verificationCode, newEmail) => {
+    const response = await fetch(`${backendUrl}/api/auth/verify-code-and-update-email`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, verificationCode, newEmail }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+}
 
 const passwordReset = async (email) => {
     try {
@@ -162,5 +212,8 @@ export {
     signinUser,
     validateDevice,
     refuseDevice,
+    updateUserPassword,
+    sendVerificationCode,
+    verifyCodeAndUpdateEmail
 };
 

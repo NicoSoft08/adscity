@@ -47,35 +47,6 @@ const fetchProfileByUserID = async (userID) => {
 
 
 // Upload User Profile URL
-const uploadProfilURLByUserID = async (userID, file) => {
-    if (!file) {
-        console.error('Aucun fichier sélectionné');
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-        const response = await fetch(`${process.env.BACKEND_URL}/upload-profile/${userID}`, {
-            method: 'POST',
-            body: formData,
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            console.log('Photo de profil mise à jour avec succès', result);
-
-            return result;
-        } else {
-            console.error('Erreur lors de la mise à jour de la photo de profil');
-        }
-    } catch (error) {
-        console.error('Erreur lors de l\'upload:', error);
-    }
-};
-
-
 const uploadProfilePhoto = async (userID, file) => {
     const formData = new FormData();
     formData.append('profilURL', file);
@@ -85,17 +56,31 @@ const uploadProfilePhoto = async (userID, file) => {
         body: formData,
     });
 
-    const data = await response.json();
-    return data;
+    const result = await response.json();
+    return result;
 };
+
+const uploadImage = async (file, userID) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    formData.append('userID', userID);
+
+    const response = await fetch(`${backendUrl}/api/upload/image`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    const result = await response.json();
+    return result;
+}
 
 
 
 
 
 export {
+    uploadImage,
     deleteProfilURLByUserID,
     fetchProfileByUserID,
-    uploadProfilURLByUserID,
     uploadProfilePhoto,
 };

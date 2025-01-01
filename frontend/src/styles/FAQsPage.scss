@@ -11,6 +11,7 @@
 
 
     .faq-intro {
+        margin-top: 6rem;
         text-align: center;
         margin-bottom: 20px;
         padding: 10px;
@@ -65,6 +66,14 @@
                 background-color: #f9f9f9;
                 font-family: 'Ubuntu', sans-serif;
                 font-weight: $font-light;
+            }
+
+            ul {
+                list-style-type: none;
+
+                li {
+                    font-weight: $font-light;
+                }
             }
 
 

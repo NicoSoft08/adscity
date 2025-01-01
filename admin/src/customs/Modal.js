@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/Modal.scss';
 
-export default function Modal({ onShow, onHide , hideText, title, children, isNext, isHide, onNext, nextText }) {
+export default function Modal({ onShow, onHide, isHide, hideText, title, children, isNext, onNext, nextText }) {
     if (!onShow) {
         return null;
     }

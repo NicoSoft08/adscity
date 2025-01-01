@@ -3,20 +3,14 @@ import UserIsOnline from '../../customs/UserIsOnline';
 import AppLogo from '../../utils/app-logo/AppLogo';
 import { AuthContext } from '../../contexts/AuthContext';
 import { IconAvatar } from '../../config/images';
-import { useNavigate } from 'react-router-dom';
-import { logoutUser } from '../../services/authServices';
-import Modal from '../../customs/Modal';
-import './Header.scss';
 import { fetchDataByUserID } from '../../services/userServices';
 import { letterBlueBgWhite } from '../../config/logos';
+import './Header.scss';
 
 export default function Header() {
     const { currentUser } = useContext(AuthContext);
     const [data, setData] = useState(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [open, setOpen] = useState(false);
-    const navigate = useNavigate();
-    const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 
     useEffect(() => {
@@ -27,26 +21,16 @@ export default function Header() {
         }
 
         fetchUserData();
-    }, [currentUser, backendUrl]);
-
-    const handleOpen = () => setOpen(true);
-
-    const handleLogout = async () => {
-        try {
-            await logoutUser();
-            navigate('/');
-            setOpen(false);
-            console.log('User signed out successfully');
-        } catch (error) {
-            console.error('Error signing out:', error);
-        }
-
-    };
+    }, [currentUser]);
 
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
     };
+
+    const profilURL = data
+        && data?.profilURL === null ? IconAvatar // Si profilURL est null, utiliser l'image par défaut
+        : data?.profilURL;
 
 
     return (
@@ -63,31 +47,12 @@ export default function Header() {
                             height={'40px'}
                             top={'30px'}
                             right={'-4px'}
-                            profileURL={data?.profilURL || IconAvatar}
+                            profileURL={profilURL}
                             isOnline={data?.isOnline || null}
                         />
-                        {dropdownOpen && (
-                            <div className="dropdown-menu">
-                                <button className="logout" onClick={handleOpen}>Déconnexion</button>
-                            </div>
-                        )}
-
                     </div>
                 </div>
             </div>
-            {open &&
-                <Modal
-                    title={"Déconnexion"}
-                    onShow={() => setOpen(true)}
-                    onHide={() => setOpen(false)}
-                    onNext={handleLogout}
-                    isNext={true}
-                    nextText={"Oui, déconnecter"}
-                    hideText={"Annuler"}
-                >
-                    <p>Confirmez-vous vouloir vous déconnecter ?</p>
-                </Modal>
-            }
         </header>
     );
 };

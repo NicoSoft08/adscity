@@ -19,22 +19,16 @@ const generateVerificationToken = () => {
 
 // Generate a random ticket
 const generateTicketID = () => {
-    // Get current date
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-    const day = String(date.getDate()).padStart(2, '0');
-    
-    // Format the date part as YYYYMMDD
-    const datePart = `${year}${month}${day}`;
-    
-    // Generate a 5-digit random number
-    const randomPart = Math.floor(10000 + Math.random() * 90000); // Ensures a 5-digit number
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const date = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const millis = String(now.getMilliseconds()).padStart(3, '0');
 
-    const ticketID = `${datePart}${randomPart}`;
-    
-    // Combine everything to form the ticket ID
-    return ticketID;
+    return `${year}${month}${date}${hours}${minutes}${seconds}${millis}`;
 }
 
 // Fonction pour générer un numéro de profil unique (exemple simple)

@@ -1,12 +1,16 @@
-const admin = require('firebase-admin');
+const { storage, firestore } = require("../config/firebase-admin");
 
 const uploadUserProfilePicture = async (file, userID) => {
     try {
-        const userDoc = admin.firestore().collection('USERS').doc(userID);
+        const userDoc = firestore.collection('USERS').doc(userID);
         const userSnapshot = await userDoc.get();
 
         if (!userSnapshot.exists) {
-            throw new Error('Utilisateur non trouvé');
+            const response = {
+                success: false,
+                message: 'Utilisateur non trouvé',
+            };
+            return  response;
         }
 
         const userData = userSnapshot.data();
@@ -15,15 +19,18 @@ const uploadUserProfilePicture = async (file, userID) => {
         const now = new Date();
         const lastUpdateDate = profilChanges.lastUpdated ? new Date(profilChanges.lastUpdated) : null;
         const isSameMonth = lastUpdateDate && now.getMonth() === lastUpdateDate.getMonth() && now.getFullYear() === lastUpdateDate.getFullYear();
-        
+
         if (isSameMonth && profilChanges.count >= 3) {
-            throw new Error('Vous avez atteint la limite de changement de photo de profile pour ce mois.');
+            const response = {
+                success: false,
+                message: 'Vous avez atteint la limite de changement de photo de profile pour ce mois.',
+            };
+            return response;
         }
 
         const newCount = isSameMonth ? profilChanges.count + 1 : 1; // Incrémenter ou réinitialiser
 
         // Téléchargement dans Firebase Storage
-        const storage = admin.storage();
         const bucket = storage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
         const fileName = `PHOTOS/PROFILES/${userID}/${file.originalname}`;
 
@@ -47,18 +54,28 @@ const uploadUserProfilePicture = async (file, userID) => {
             },
         });
 
-        console.log('Téléchargement de la photo de profil réussi et Firestore mis à jour');
-        return publicUrl;
+        const response = {
+            success: true,
+            message: 'Photo de profile mise à jour avec succès',
+            publicUrl: publicUrl,
+        };
+
+        return response;
     } catch (error) {
-        console.error('Erreur lors du téléchargement de la photo de profil:', error);
-        throw new Error('Échec du téléchargement de la photo de profil');
+        const response = {
+            success: false,
+            message: 'Erreur lors du téléchargement de la photo de profile',
+        };
+        return response;
     }
 };
 
 
 const uploadUserBannerPicture = async (file, userID) => {
     try {
-        const userDoc = admin.firestore().collection('USERS').doc(userID);
+        const userDoc = firestore
+            .collection('USERS')
+            .doc(userID);
         const userSnapshot = await userDoc.get();
 
         if (!userSnapshot.exists) {
@@ -71,7 +88,7 @@ const uploadUserBannerPicture = async (file, userID) => {
         const now = new Date();
         const lastUpdateDate = coverChanges.lastUpdated ? new Date(coverChanges.lastUpdated) : null;
         const isSameMonth = lastUpdateDate && now.getMonth() === lastUpdateDate.getMonth() && now.getFullYear() === lastUpdateDate.getFullYear();
-        
+
         if (isSameMonth && coverChanges.count >= 3) {
             throw new Error('Vous avez atteint la limite de changement de photo de couverture pour ce mois.');
         }
@@ -79,7 +96,6 @@ const uploadUserBannerPicture = async (file, userID) => {
         const newCount = isSameMonth ? coverChanges.count + 1 : 1; // Incrémenter ou réinitialiser
 
         // Téléchargement dans Firebase Storage
-        const storage = admin.storage();
         const bucket = storage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
         const fileName = `PHOTOS/BANNERS/${userID}/${file.originalname}`;
 
@@ -107,13 +123,13 @@ const uploadUserBannerPicture = async (file, userID) => {
         return publicUrl;
     } catch (error) {
         console.error('Erreur lors du téléchargement de la photo de couverture:', error);
-        throw new Error('Échec du téléchargement de la photo de couverture');
+        throw error;
     }
 };
 
 
 
-module.exports = { 
+module.exports = {
     uploadUserBannerPicture,
-    uploadUserProfilePicture, 
+    uploadUserProfilePicture,
 };

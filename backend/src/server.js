@@ -11,8 +11,6 @@ const PORT = process.env.PORT || 4000;
 
 const {
     markNotificationAsRead,
-    getUserIncompleteField,
-    sendUserNotification,
 } = require('./firebase/firestore');
 
 const authServices = require('./services/authServices');
@@ -23,6 +21,7 @@ const paymentServices = require('./services/paymentServices');
 const favorisServices = require('./services/favorisServices');
 const updateServices = require('./services/updateServices');
 const { checkFreeTrialExpiry, adStatusChecker } = require('./cron');
+const { createDefaultAdmin } = require('./firebase/auth');
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit
@@ -48,21 +47,6 @@ app.get('', async (req, res) => {
 });
 
 
-app.post('/api/user/incomplete-fields/:userID', async (req, res) => {
-    const { userID } = req.params;
-
-    try {
-        const notifications = await getUserIncompleteField(userID);
-        notifications.forEach(async (notification) => {
-            await sendUserNotification(userID, notification)
-        })
-
-        res.status(200).send({ message: "Notification envoyée" });
-    } catch (error) {
-        res.status(500).send({ mesage: "Erreur coté serveur" });
-    }
-});
-
 
 app.patch('/notifications/:notificationID/read', async (req, res) => {
     const { notificationID } = req.params;
@@ -86,6 +70,7 @@ app.use('/api/users', userServices);
 app.use('/api/ads', adServices);
 
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`Server started at http://localhost:${PORT}`);
+    await createDefaultAdmin(); // Créer un compte administrateur par défaut
 });

@@ -21,7 +21,7 @@ router.post('/create', async (req, res) => {
 
 
         if (!userDoc.exists) {
-            return res.status(404).send({
+            res.status(404).send({
                 success: false,
                 message: 'Utilisateur non trouvé.'
             });
@@ -33,7 +33,7 @@ router.post('/create', async (req, res) => {
 
         // Check if the user is disabled
         if (!isActive) {
-            return res.status(403).send({
+            res.status(403).send({
                 success: false,
                 message: 'Utilisateur inactif. Veuillez contacter le support.'
             });
@@ -48,7 +48,7 @@ router.post('/create', async (req, res) => {
         // Check if the user has reached the maximum number of ads for the current plan
         if (adsPostedThisMonth >= maxAds) {
             console.log('Limite d\'annonces atteinte');
-            return res.status(403).json({
+            res.status(403).json({
                 success: false,
                 message: 'Limite d\'annonces atteinte'
             });
@@ -103,7 +103,7 @@ router.post('/create', async (req, res) => {
 
         // Respond with success
         console.log('Annonce créée avec succès', adRef.id);
-        return res.status(201).json({
+        res.status(200).json({
             success: true,
             message: 'Annonce créée avec succès',
             adId: adRef.id
@@ -120,8 +120,9 @@ router.post('/create', async (req, res) => {
 
 // Route pour approuver une annonce
 router.post('/approve', async (req, res) => {
-    const { adID } = req.body;
+    const {  adID } = req.body;
 
+    
     try {
         const expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + 7);
@@ -138,7 +139,10 @@ router.post('/approve', async (req, res) => {
 
         if (!adDoc.exists) {
             console.error('Annonce non trouvée.');
-            return res.status(404).send({ message: 'Annonce non trouvée.' });
+            res.status(404).send({ 
+                success: false,
+                message: 'Annonce non trouvée.' 
+            });
         }
 
         const adData = adDoc.data();
@@ -149,7 +153,10 @@ router.post('/approve', async (req, res) => {
 
         if (!userDoc.exists) {
             console.error('Utilisateur non trouvé.');
-            return res.status(404).send({ message: 'Utilisateur non trouvé.' });
+            return res.status(404).send({ 
+                success: false,
+                message: 'Utilisateur non trouvé.' 
+            });
         }
 
         const { displayName, email } = userDoc.data();
@@ -170,9 +177,16 @@ router.post('/approve', async (req, res) => {
         await sendUserAdsApprovedEmail(displayName, email, title, posted_at);
 
         console.log('Annonce approuvée avec succès et expire le :', expiryDate)
-        res.status(200).send({ message: 'Annonce approuvée avec succès' });
+        res.status(200).send({ 
+            success: true,
+            message: 'Annonce approuvée avec succès' 
+        });
     } catch (error) {
         console.error('Erreur lors de l\'approbation de l\'annonce :', error);
+        res.status(500).send({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
     }
 });
 
@@ -199,6 +213,10 @@ router.post('/refuse', async (req, res) => {
 
         if (!adDoc.exists) {
             console.error('Annonce non trouvée.');
+            res.status(404).send({
+                success: false,
+                message: 'Annonce non trouvée.'
+            });
         }
 
         const adData = adDoc.data();
@@ -210,6 +228,10 @@ router.post('/refuse', async (req, res) => {
 
         if (!userDoc.exists) {
             console.error('Utilisateur non trouvé.');
+            res.status(404).send({
+                success: false,
+                message: 'Utilisateur non trouvé.'
+            });
         }
 
         const { displayName, email } = userDoc.data();
@@ -217,9 +239,16 @@ router.post('/refuse', async (req, res) => {
         // Envoi de l'email de notification à l'utilisateur
         await sendUserAdsRefusedEmail(displayName, email, title, posted_at, reason);
         console.log('Annonce refusée avec succès')
-        res.status(200).send({ message: 'Annonce refusée avec succès' });
+        res.status(200).send({ 
+            success: true,
+            message: 'Annonce refusée avec succès' 
+        });
     } catch (error) {
         console.error('Erreur lors de l\'approbation de l\'annonce :', error);
+        res.status(500).send({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
     }
 });
 
@@ -237,10 +266,17 @@ router.get('/all', async (req, res) => {
             ...doc.data(),
         }));
 
-        res.status(200).json(allAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces récupérées avec succès',
+            allAds: allAds
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces.' 
+        });
     }
 });
 
@@ -259,10 +295,17 @@ router.get('/pending', async (req, res) => {
             ...doc.data(),
         }));
 
-        res.status(200).json(pendingAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces en attente récupérées avec succès',
+            pendingAds: pendingAds,
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces en attente:', error);
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces en attente.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces en attente.' 
+        });
     }
 });
 
@@ -282,10 +325,17 @@ router.get('/approved', async (req, res) => {
             ...doc.data(),
         }));
 
-        res.status(200).json(approvedAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces approuvées récupérées avec succès',
+            approvedAds: approvedAds
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces approuvées:', error);
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces approuvées.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces approuvées.' 
+        });
     }
 });
 
@@ -304,10 +354,17 @@ router.get('/refused', async (req, res) => {
             ...doc.data(),
         }));
 
-        res.status(200).json(refusedAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces refusées récupérées avec succès',
+            refusedAds: refusedAds,
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces refusées:', error);
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces refusées.' });
+        res.status(500).json({ 
+            success: false,
+            error: 'Erreur lors de la récupération des annonces refusées.' 
+        });
     }
 });
 
@@ -320,21 +377,37 @@ router.get('/:adID', async (req, res) => {
         const adDoc = await firestore.collection('POSTS').doc(adID).get();
 
         if (!adDoc.exists) {
-            return res.status(404).json({ error: 'Annonce non trouvée.' });
+            res.status(404).json({ 
+                success: false,
+                message: 'Annonce non trouvée.' 
+            });
         }
 
         const adData = adDoc.data();
         if (adData.status !== 'approved') {
-            return res.status(403).json({ error: 'L\'annonce n\'est pas approuvée.' });
+            res.status(403).json({ 
+                success: false,
+                message: 'L\'annonce n\'est pas approuvée.' 
+            });
         }
 
-        res.status(200).json({
+        const data = [];
+        data.push({
             id: adDoc.id,
             ...adData,
         });
+
+        res.status(200).json({
+            success: true,
+            message: 'Annonce récupérée avec succès.',
+            data: data,
+        });
     } catch (error) {
         console.error(`Erreur lors de la récupération de l\'annonce avec ${adID}:`, error);
-        res.status(500).json({ error: 'Erreur lors de la récupération de l\'annonce.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération de l\'annonce.' 
+        });
     }
 });
 
@@ -345,9 +418,16 @@ router.get('/user/:userID', async (req, res) => {
 
     try {
         const userAds = await getUserAds(userID);
-        res.status(200).json(userAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces récupérées avec succès.',
+            userAds: userAds,
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces de l\'utilisateur.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces de l\'utilisateur.' 
+        });
     }
 });
 
@@ -358,9 +438,16 @@ router.get('/user/:userID/pending', async (req, res) => {
 
     try {
         const pendingAds = await getPendingAdsByUserID(userID); // Appel de la fonction pour récupérer les annonces en attente
-        res.status(200).json(pendingAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces en attente récupérées avec succès.',
+            pendingAds: pendingAds,
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces en attente de l\'utilisateur.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces en attente de l\'utilisateur.' 
+        });
     }
 });
 
@@ -371,9 +458,16 @@ router.get('/user/:userID/approved', async (req, res) => {
 
     try {
         const approvedAds = await getApprovedAdsByUserID(userID); // Appel de la fonction pour récupérer les annonces en attente
-        res.status(200).json(approvedAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces approuvées récupérées avec succès.',
+            approvedAds: approvedAds,
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces approuvées de l\'utilisateur.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces approuvées de l\'utilisateur.' 
+        });
     }
 });
 
@@ -384,9 +478,16 @@ router.get('/user/:userID/refused', async (req, res) => {
 
     try {
         const refusedAds = await getRefusedAdsByUserID(userID); // Appel de la fonction pour récupérer les annonces en attente
-        res.status(200).json(refusedAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces refusées récupérées avec succès.',
+            refusedAds: refusedAds,
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Erreur lors de la récupération des annonces refusées de l\'utilisateur.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces refusées de l\'utilisateur.' 
+        });
     }
 });
 
@@ -396,18 +497,31 @@ router.get('/user/:userID/active', async (req, res) => {
     const { userID } = req.params;
 
     if (!userID) {
-        return res.status(400).json({ error: 'ID utilisateur non fourni.' });
+        res.status(400).json({ 
+            success: false,
+            message: 'ID utilisateur non fourni.' 
+        });
     }
 
     try {
         const activeApprovedAds = await getUserActiveAds(userID);
 
         if (!activeApprovedAds || activeApprovedAds.length === 0) {
-            return res.status(404).json({ message: 'Aucune annonce active et approuvée trouvée pour cet utilisateur.' });
+            return res.status(404).json({ 
+                success: false,
+                message: 'Aucune annonce active et approuvée trouvée pour cet utilisateur.' 
+            });
         }
-        res.status(200).json(activeApprovedAds);
+        return res.status(200).json({
+            success: true,
+            message: 'Annonces actives et approuvées récupérées avec succès',
+            activeApprovedAds: activeApprovedAds
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Erreur lors de la récupération des annonces actives et approuvées' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces actives et approuvées' 
+        });
     }
 });
 
@@ -417,19 +531,32 @@ router.get('/user/:userID/outdated', async (req, res) => {
     const { userID } = req.params;
 
     if (!userID) {
-        return res.status(400).json({ error: 'ID utilisateur non fourni.' });
+        res.status(400).json({ 
+            success: false,
+            message: 'ID utilisateur non fourni.' 
+        });
     }
 
     try {
         const inactiveApprovedAds = await getUserInactiveAds(userID);
 
         if (!inactiveApprovedAds || inactiveApprovedAds.length === 0) {
-            return res.status(404).json({ message: 'Aucune annonce inactive et approuvée trouvée pour cet utilisateur.' });
+            return res.status(404).json({ 
+                success: false,
+                message: 'Aucune annonce inactive et approuvée trouvée pour cet utilisateur.' 
+            });
         }
 
-        res.status(200).json(inactiveApprovedAds);
+        return res.status(200).json({
+            success: true,
+            message: 'Annonces inactives et approuvées récupérées avec succès',
+            inactiveApprovedAds: inactiveApprovedAds
+        });
     } catch (error) {
-        res.status(500).json({ message: 'Erreur lors de la récupération des annonces inactives et approuvées' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors de la récupération des annonces inactives et approuvées' 
+        });
     }
 });
 
@@ -439,7 +566,10 @@ router.post('/category', async (req, res) => {
     const { categoryName } = req.body;
 
     if (!categoryName) {
-        return res.status(400).send({ message: 'Nom de catégorie requis' });
+        res.status(400).send({ 
+            success: false,
+            message: 'Nom de catégorie requis' 
+        });
     }
 
     try {
@@ -453,7 +583,10 @@ router.post('/category', async (req, res) => {
         const adsSnapshotDoc = await adsSnapshot.get();
 
         if (adsSnapshotDoc.empty) {
-            return res.status(404).send({ message: 'Aucune annonce trouvée pour cette catégorie' });
+            res.status(404).send({ 
+                success: false,
+                message: 'Aucune annonce trouvée pour cette catégorie' 
+            });
         }
 
         const ads = [];
@@ -463,10 +596,17 @@ router.post('/category', async (req, res) => {
         })
 
 
-        res.status(200).send(ads);
+        res.status(200).send({
+            success: true,
+            message: 'Annonces récupérées avec succès',
+            ads: ads
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
-        res.status(500).send({ message: 'Erreur du serveur lors de la récupération des annonces' });
+        res.status(500).send({ 
+            success: false,
+            message: 'Erreur du serveur lors de la récupération des annonces' 
+        });
     }
 });
 
@@ -476,18 +616,23 @@ router.post('/related-category', async (req, res) => {
     const { adID, category } = req.body;
 
     if (!category) {
-        return res.status(400).json({
+        res.status(400).json({
+            success: false,
             message: 'Catégorie de l\'annonce requise pour la recherche des annonces similaires'
         });
     }
 
     try {
         const relatedAds = await getRelatedAds(adID, category);
-        res.status(200).json(relatedAds);
+        res.status(200).json({
+            success: true,
+            message: 'Annonces similaires récupérées avec succès',
+            relatedAds: relatedAds
+        });
     } catch (error) {
         res.status(500).json({
+            success: false,
             message: "Erreur lors de la récupération des annonces similaires",
-            error: error.message
         });
     }
 });

@@ -4,7 +4,10 @@ const multer = require('multer');
 const { getUserProfileURL } = require("../firebase/firestore");
 const { uploadUserBannerPicture, uploadUserProfilePicture } = require("../firebase/storage");
 const { admin } = require('../config/firebase-admin');
+const { generateTicketID } = require('../func');
+const { sendUserEmailWithTicket } = require('../controllers/emailController');
 
+const storage_bucket = process.env.FIREBASE_STORAGE_BUCKET
 
 const upload = multer({
     storage: multer.memoryStorage(), // On stocke temporairement le fichier en mémoire
@@ -17,13 +20,25 @@ router.post('/upload/:userID/profile', upload.single('profilURL'), async (req, r
     const { userID } = req.params;
     const file = req.file;
 
+    if (!userID || !file) {
+        return res.status(400).send({
+            success: false,
+            message: 'Requête invalide : utilisateur ou fichier manquant.'
+        });
+    }
 
-    try {
-        const profilURL = await uploadUserProfilePicture(file, userID);
-
-        res.status(200).send({ message: 'Photo de profil mise à jour avec succès', profilURL });
-    } catch (error) {
-        res.status(500).send({ message: 'Erreur lors du téléchargement de la photo de profil.' });
+    const result = await uploadUserProfilePicture(file, userID);
+    if (result.success) {
+        res.status(200).send({
+            success: true,
+            message: result.message,
+            profilURL: result.profilURL
+        });
+    } else {
+        res.status(500).send({
+            success: false,
+            message: result.message
+        });
     }
 });
 
@@ -63,7 +78,10 @@ router.post('/upload/image', upload.single('image'), async (req, res) => {
     const { userID } = req.body;
 
     if (!file) {
-        return res.status(400).json({ error: 'Aucun fichier fourni.' });
+        res.status(400).json({
+            success: false,
+            message: 'Aucun fichier fourni.'
+        });
     }
 
     const uniqueFolderID = userID;
@@ -73,7 +91,7 @@ router.post('/upload/image', upload.single('image'), async (req, res) => {
     try {
         const storageRef = admin
             .storage()
-            .bucket(process.env.FIREBASE_STORAGE_BUCKET)
+            .bucket(storage_bucket)
             .file(`${folderPath}${file.originalname}`);
 
         await storageRef.save(file.buffer);
@@ -84,10 +102,38 @@ router.post('/upload/image', upload.single('image'), async (req, res) => {
             expires: '03-09-2491',
         });
 
-        res.status(200).json({ imageUrl });
+        res.status(200).json({
+            success: true,
+            message: 'Images téléversées avec succès',
+            imageUrl: imageUrl,
+        });
     } catch (error) {
         console.error('Erreur lors du téléversement des images:', error);
-        res.status(500).json({ error: 'Erreur lors du téléversement des images.' });
+        res.status(500).json({ 
+            success: false,
+            message: 'Erreur lors du téléversement des images.' 
+        });
+    }
+});
+
+
+router.post('/contact', async (req, res) => {
+    const { formData } = req.body;
+
+    try {
+        const { firstName, lastName, email, object, message } = formData;
+        const ticketID = generateTicketID();
+
+        await sendUserEmailWithTicket(firstName, lastName, email, object, message, ticketID);
+        res.status(200).json({
+            success: true,
+            message: 'Email envoyé avec succès'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de l\'envoi de l\'email'
+        });
     }
 });
 

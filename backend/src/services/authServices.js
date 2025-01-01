@@ -2,18 +2,17 @@ const express = require('express');
 const router = express.Router();
 const { firestore, admin, auth } = require('../config/firebase-admin');
 const { createUser } = require("../firebase/auth");
-const { sendWelcomeEmail, sendNewDeviceAlert } = require('../controllers/emailController');
-const { verifyToken, signinUser } = require('../controllers/userController');
-const { handleDeviceVerification } = require('../func');
-
+const { sendWelcomeEmail, sendNewDeviceAlert, sendCode } = require('../controllers/emailController');
+const { verifyToken, signinUser, getUserData } = require('../controllers/userController');
+const { handleDeviceVerification, generateVerificationCode } = require('../func');
+const verificationCodes = new Map(); // Stocke les codes temporairement
 
 // Route pour créer un utilisateur
 router.post('/create/user', async (req, res) => {
-    const { email, password, firstName, lastName, phoneNumber, displayName, country, city, address } = req.body;
+    const { email, password, displayName, firstName, lastName, phoneNumber, country, city, address } = req.body;
 
     try {
-        const newUser = await createUser(email, password, lastName, firstName, phoneNumber, displayName, country, city, address
-        );
+        const newUser = await createUser(email, password, displayName, lastName, firstName, phoneNumber, country, city, address);
         res.status(200).json({
             success: true,
             message: 'Utilisateur créé avec succès',
@@ -65,7 +64,6 @@ router.post('/signin', async (req, res) => {
 });
 
 
-
 // Route pour vérifier le Token d'un utilisateur
 router.post('/verify/user-token', verifyToken, async (req, res) => {
     try {
@@ -95,7 +93,7 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
         }
 
         const userID = user.uid;
-        const userDoc = await admin.firestore().collection('USERS').doc(userID).get();
+        const userDoc = await firestore.collection('USERS').doc(userID).get();
 
         if (!userDoc.exists) {
             return res.status(404).json({
@@ -109,7 +107,6 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
 
         // Si c'est la première connexion
         if (loginCount === 0) {
-            // Stocker l'appareil comme "de confiance"
             await admin.firestore()
                 .collection('USERS')
                 .doc(userID)
@@ -123,10 +120,14 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
                     lastUsed: admin.firestore.FieldValue.serverTimestamp(),
                 });
 
-            // Envoyer un email de bienvenue
-            await sendWelcomeEmail(email, displayName);
+            try {
+                console.log('Appel à sendWelcomeEmail...');
+                await sendWelcomeEmail(email, displayName);
+                console.log('Email envoyé.');
+            } catch (error) {
+                console.error('Erreur lors de l\'envoi de l\'email de bienvenue :', error);
+            }
 
-            // Mettre à jour loginCount
             await admin.firestore().collection('USERS').doc(userID).update({
                 loginCount: 1,
                 lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -154,9 +155,8 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
             // Appareil inconnu détecté
             const deviceID = admin.firestore().collection('USERS').doc().id;
 
-            // Désactiver l'utilisateur immédiatement
             await admin.auth().updateUser(userID, { disabled: true });
-
+            
             // Envoyer une alerte pour l'appareil inconnu
             await sendNewDeviceAlert(email, displayName, deviceInfo, deviceID);
 
@@ -331,8 +331,6 @@ router.post('/decline-device/:deviceID/:verificationToken', verifyToken, async (
         });
     }
 })
-    
-
 
 
 // Route pour activer une utilisateur
@@ -350,7 +348,6 @@ router.post('/enable/user/:userID', async (req, res) => {
         res.status(500).send({ message: "Erreur lors de la activation de l'utilisateur:", error: error.message });
     }
 });
-
 
 
 // Route pour déconnecter
@@ -393,6 +390,107 @@ router.post('/logout/user', verifyToken, async (req, res) => {
             success: false,
             message: 'Erreur lors de la déconnexion',
             error: error.message
+        });
+    }
+});
+
+
+// Mettre à jour le mot de passe
+router.post('/update-password', async (req, res) => {
+    const { userID, newPassword } = req.body;
+
+    if (!userID || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'utilisateur et le nouveau mot de passe sont requis'
+        });
+    }
+
+    try {
+        // Mettre à jour le mot de passe dans Firebase Authentication
+        await auth.updateUser(userID, { password: newPassword });
+
+        res.status(200).json({
+            success: true,
+            message: 'Mot de passe mis à jour avec succès'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la mise à jour du mot de passe',
+            error: error.message
+        });
+    }
+});
+
+
+router.post('/send-verification-code', async (req, res) => {
+    const { userID, newEmail } = req.body;
+
+    if (!userID || !newEmail) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'utilisateur et l\'adresse e-mail sont requis'
+        });
+    }
+
+    try {
+        const userData = await getUserData(userID);
+        const { displayName } = userData;
+        const code = generateVerificationCode();
+        verificationCodes.set(userID, { newEmail, code });
+        await sendCode(displayName, newEmail, code);
+
+        res.status(200).json({
+            success: true,
+            message: 'Code de vérification envoyé avec succès'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de l\'envoi du code de vérification'
+        });
+    }
+});
+
+
+router.post('/verify-code-and-update-email', async (req, res) => {
+    const { userID, verificationCode, newEmail } = req.body;
+
+    if (!userID || !verificationCode) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'utilisateur et code de vérification manquants'
+        });
+    }
+
+    const savedCode = verificationCodes.get(userID);
+    if (!savedCode || savedCode.code !== verificationCode) {
+        res.status(400).send({
+            success: false,
+            message: "Code de vérification invalide."
+        });
+    }
+
+    try {
+        // Mettre à jour l'email dans Firebase Authentication
+        await admin.auth().updateUser(userID, { email: newEmail });
+
+        // Mettre à jour l'email dans Firestore
+        const userRef = firestore.collection('USERS').doc(userID);
+        await userRef.update({ email: newEmail });
+
+        // Supprimer le code de vérification après succès
+        verificationCodes.delete(userID);
+
+        res.status(200).json({
+            success: true,
+            message: 'Email mis à jour avec succès'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la mise à jour de l\'email'
         });
     }
 });

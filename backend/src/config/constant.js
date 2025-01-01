@@ -1,5 +1,17 @@
-const PLAN_CONFIGS = {
-    bronze: {
+const PLAN_CONFIGS = [
+    {
+        id: 1,
+        name: "Particulier",
+        price: 0,
+        validity_days: 30,
+        max_ads: 3,
+        max_photos: 3,
+        visibility: "Basique",
+        support: "24/7"
+    },
+    {
+        id: 2,
+        name: "Professionnel",
         price: 2000,
         validity_days: 30,
         max_ads: 10,
@@ -7,23 +19,17 @@ const PLAN_CONFIGS = {
         visibility: "Améliorée",
         support: "24/7"
     },
-    silver: {
+    {
+        id: 3,
+        name: "Entreprise",
         price: 4000,
         validity_days: 30,
         max_ads: 20,
         max_photos: 12,
         visibility: "Premium",
         support: "24/7"
-    },
-    gold: {
-        price: 6000,
-        validity_days: 30,
-        max_ads: 30,
-        max_photos: 15,
-        visibility: "Exclusive",
-        support: "24/7"
     }
-};
+];
 
 const LAUNCH_PROMO = {
     code: 'LAUNCH2025',
@@ -33,7 +39,8 @@ const LAUNCH_PROMO = {
     endDate: '2025-02-01'
 };
 
+
 module.exports = {
     PLAN_CONFIGS,
-    LAUNCH_PROMO
+    LAUNCH_PROMO,
 };

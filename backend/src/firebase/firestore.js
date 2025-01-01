@@ -1,10 +1,10 @@
-const admin = require('firebase-admin');
 const { sendDeviceVerificationEmail } = require('../controllers/emailController');
+const { admin, firestore, auth } = require('../config/firebase-admin');
 
 const sendUserNotification = async (userID, notification) => {
     try {
         if (notification) {
-            await admin.firestore().collection('NOTIFICATIONS').add({
+            await firestore.collection('NOTIFICATIONS').add({
                 userID: userID,
                 title: notification.title,
                 message: notification.message,
@@ -17,7 +17,7 @@ const sendUserNotification = async (userID, notification) => {
             throw new Error('Erreur d\'envoi de la notification');
         }
     } catch (error) {
-
+        console.error('Erreur lors de l\'envoi de la notification:', error);
     }
 };
 
@@ -31,45 +31,9 @@ const paymentProcessing = async (paymentData, userID) => {
 }
 
 
-const getUserIncompleteField = async (userID) => {
-    try {
-        const userSnapshot = await admin.firestore().collection('USERS').doc(userID).get();
-
-        if (userSnapshot.exists) {
-            throw new Error('Utilisateur non trouvé');
-        }
-
-        const userData = userSnapshot.data();
-        const notifications = [];
-
-        const location = userData.location;
-        const address = userData.address;
-
-        if (!location) {
-            notifications.push({
-                title: 'Ville, Pays manquants',
-                message: "Vous devez renseigner la ville et le pays d'où vous résidez, pour une meilleur expérience utilisateur.",
-            });
-        }
-
-        if (!address) {
-            notifications.push({
-                title: 'Adresse manquants',
-                message: "Vous devez renseigner une adresse, pour une meilleur expérience utilisateur.",
-            });
-        }
-
-        return notifications;
-    } catch (error) {
-        console.error('Erreur lors de la récupération des champs incomplets:', error.message);
-        throw new Error('Erreur lors du chargement des champs incomplets');
-    }
-};
-
-
 const markNotificationAsRead = async (notificationID) => {
     try {
-        const notificationRef = admin.firestore().collection('NOTIFICATIONS').doc(notificationID);
+        const notificationRef = firestore.collection('NOTIFICATIONS').doc(notificationID);
         await notificationRef.update({ read: true });
         console.log('Notification marquée comme lue.');
     } catch (error) {
@@ -81,7 +45,7 @@ const markNotificationAsRead = async (notificationID) => {
 // Fonction pour obtenir les données de l'utilisateur par son ID
 const getUserDataByID = async (userID) => {
     try {
-        const userSnapshot = await admin.firestore().collection('USERS').doc(userID).get();
+        const userSnapshot = await firestore.collection('USERS').doc(userID).get();
 
         if (!userSnapshot.exists) {
             throw Error('Utilisateur non trouvé');
@@ -97,47 +61,7 @@ const getUserDataByID = async (userID) => {
 };
 
 
-const updateUserByField = async (userID, field, value) => {
-    try {
-        const userRef = admin.firestore().collection('USERS').doc(userID);
 
-        await userRef.update({ [field]: value });
-
-        const userDoc = await userRef.get();
-
-        const userData = userDoc.data();
-
-        const { firstName, lastName, city, country } = userData;
-
-        await userRef.update({
-            displayName: `${firstName} ${lastName}`,
-            location: `${city}, ${country}`,
-        });
-
-        console.log('Mise à jour réussie');
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour:', error);
-    }
-};
-
-// Fonction pour mettre à jour l'URL de profil
-const updateUserProfileURL = async (userID, file) => {
-    try {
-        const userRef = admin.firestore().collection('USERS').doc(userID);
-
-        const userDoc = await userRef.get();
-        if (!userDoc.exists) {
-            throw new Error('Utilisateur non trouvé');
-        }
-
-        await userRef.update({ profilURL: file });
-
-        console.log('URL de profil mise à jour avec succès');
-    } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'URL de profil:', error);
-        throw new Error('Échec de la mise à jour du profil');
-    }
-};
 
 // Fonction pour récupérer l'URL de profil
 const getUserProfileURL = async (userID) => {
@@ -162,7 +86,7 @@ const getUserProfileURL = async (userID) => {
 // Fonction pour mettre à jour l'URL de couverture
 const updateUserCoverURL = async (userID, file) => {
     try {
-        const userRef = admin.firestore().collection('USERS').doc(userID);
+        const userRef = firestore.collection('USERS').doc(userID);
 
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
@@ -181,7 +105,7 @@ const updateUserCoverURL = async (userID, file) => {
 
 const verifyUserDevice = async (userID, deviceInfo) => {
     try {
-        const deviceRef = admin.firestore().collection('USERS').doc(userID).collection('DEVICES');
+        const deviceRef = firestore.collection('USERS').doc(userID).collection('DEVICES');
         const devicesSnapshot = await deviceRef.get();
 
         // First-time login case
@@ -218,7 +142,7 @@ const verifyUserDevice = async (userID, deviceInfo) => {
         // New device detected - requires verification
         if (!isKnownDevice) {
             // Disable user account
-            await admin.auth().updateUser(userID, {
+            await auth.updateUser(userID, {
                 disabled: true
             });
             const userRef = admin.firestore().collection('USERS').doc(userID);
@@ -253,7 +177,7 @@ const verifyUserDevice = async (userID, deviceInfo) => {
 
 
 const saveLocation = async (country, city) => {
-    const locationRef = admin.firestore().collection('LOCATIONS');
+    const locationRef = firestore.collection('LOCATIONS');
     const countryDoc = locationRef.doc(country);
 
     const doc = await countryDoc.get();
@@ -272,16 +196,38 @@ const saveLocation = async (country, city) => {
 };
 
 
+const getUserDevices = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID).collection('DEVICES');
+        const devicesSnapshot = await userRef.get();
+        const devices = [];
+        devicesSnapshot.forEach(doc => {
+            devices.push(doc.data());
+        });
+        const response = {
+            success: true,
+            message: 'Informations récupérées avec succès',
+            devices: devices
+        }
+        return response;
+    } catch (error) {
+        const response = {
+            success: false,
+            message: 'Erreur lors de la collecte des informations',
+        }
+        return  response;
+    }
+}
+
+
 
 module.exports = {
     getUserDataByID,
-    getUserIncompleteField,
     getUserProfileURL,
     markNotificationAsRead,
     sendUserNotification,
-    updateUserByField,
+    getUserDevices,
     updateUserCoverURL,
-    updateUserProfileURL,
     verifyUserDevice,
     paymentProcessing,
     saveLocation,

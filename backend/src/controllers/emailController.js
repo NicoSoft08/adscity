@@ -338,7 +338,7 @@ const verifyCode = async (email, code) => {
 };
 
 
-const sendUserEmailWithTicket = async (email, firstName, lastName, object, ticketID) => {
+const sendUserEmailWithTicket = async (firstName, lastName, email, object, message, ticketID) => {
 
     // Envoi du code par email
     let transporter = nodemailer.createTransport({
@@ -352,11 +352,39 @@ const sendUserEmailWithTicket = async (email, firstName, lastName, object, ticke
     });
 
     const mailOptions = {
-        from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
+        from: `"AdsCity Contact" <${process.env.SMTP_MAIL}>`,
         to: email,
-        replyTo: 'support@adscity.net',
-        subject: `Confirmation de réception - Ticket #${ticketID}`,
-        text: `Bonjour ${firstName} ${lastName},\n\nMerci pour votre message concernant "${object}".\nVotre ticket de référence est ${ticketID}. Nous vous répondrons dans les plus brefs délais.\n\nCordialement,\nL'équipe de support.`,
+        replyTo: 'contact@adscity.net',
+        subject: `Accusé de réception - Ticket: ${ticketID}`,
+        html: `
+        <html>
+            <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                    <h3 style="color: #417abc;">Bonjour ${firstName} ${lastName},</h3>
+                    <p>Nous avons bien reçu votre message concernant : <strong>${object}</strong>.</p>
+                    <p>Notre équipe vous répondra dans les plus brefs délais.</p>
+                    <p>Voici votre numéro de ticket : <strong>${ticketID}</strong>.</p>
+                    <p>Message envoyé : <br> <span style="font-style: italic>${message}</span> </p>
+                    <p style="margin-top: 20px; font-style: italic">Merci de nous avoir contactés.</p>
+                    <p style="margin-top: 20px;">Cordialement,</p>
+                    <p style="font-style: italic; color: #777;">L'équipe AdsCity</p>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <small style="color: #777;">Ce message vous est généré automatiquement et ne nécessite aucune réponse de votre part.</small>
+                </div>
+                <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
+                    <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
+                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                    </a>
+                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">
+                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                    </p>
+                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                </footer>
+            </body>
+        </html>
+        `,
     }
 
     try {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { admin } = require("../config/firebase-admin");
+const { admin, firestore } = require("../config/firebase-admin");
 const { verifyCode } = require('../controllers/emailController');
 const { updateUserByField } = require('../firebase/firestore');
 
@@ -17,8 +17,8 @@ router.post('/update/interaction', async (req, res) => {
     }
 
     try {
-        const adRef = admin.firestore().collection('POSTS').doc(adID);
-        const userRef = admin.firestore().collection('USERS').doc(userID);
+        const adRef = firestore.collection('POSTS').doc(adID);
+        const userRef = firestore.collection('USERS').doc(userID);
 
         const [adDoc, userDoc] = await Promise.all([
             adRef.get(),
@@ -74,7 +74,7 @@ router.post('/update/contact-click', async (req, res) => {
     }
 
     try {
-        const userRef = admin.firestore().collection('USERS').doc(userID);
+        const userRef = firestore.collection('USERS').doc(userID);
 
         await userRef.update({
             profileViewed: admin.firestore.FieldValue.increment(1),
@@ -190,7 +190,7 @@ router.get('/search-results', async (req, res) => {
     }
 
     // Effectuer la recherche dans Firestore
-    const searchResults = await admin.firestore()
+    const searchResults = await firestore
         .collection('POSTS')
         .where('searchableTerms', 'array-contains-any', searchTerms)
         .limit(10)
@@ -205,6 +205,71 @@ router.get('/search-results', async (req, res) => {
     });
 
     res.json(results);
+});
+
+
+// Route pour signaler une annonce
+router.post('/report/ad', async (req, res) => {
+    const { adID, userID, reason } = req.body;
+
+    if (!adID || !userID || !reason) {
+        return res.status(400).json({
+            success: false,
+            message: 'Tous les champs sont requis'
+        });
+    }
+
+    const userRef = firestore.collection('USERS').doc(userID);
+    const adRef = firestore.collection('POSTS').doc(adID);
+
+    try {
+        const userDoc = await userRef.get();
+        const adDoc = await adRef.get();
+
+        if (!userDoc.exists || !adDoc.exists) {
+            return res.status(404).json({ 
+                successs: false,
+                message: 'Utilisateur ou annonce non trouvé' 
+            });
+        }
+
+        // Rechercher un rapport existant pour cet utilisateur et cette annonce
+        const existingReportQuery = await firestore
+            .collection('REPORTS')
+            .where('adID', '==', adID)
+            .where('userID', '==', userID)
+            .get();
+
+        // Si un rapport existe, refuser l'opération
+        if (!existingReportQuery.empty) {
+            res.status(400).send({ 
+                success: false, 
+                message: "Vous avez déjà signalé cette annonce." 
+            });
+        }
+
+        await firestore.collection('REPORTS').add({
+            adID,
+            userID,
+            reason,
+            timestamp: admin.firestore.FieldValue.serverTimestamp()
+        });
+
+        await adRef.update({
+            reportCount: admin.firestore.FieldValue.increment(1)
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Signalement enregistré avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors du signalement:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors du signalement'
+        });
+    }
 });
 
 

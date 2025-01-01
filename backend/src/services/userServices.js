@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { firestore, admin } = require("../config/firebase-admin");
 const { getUserData, setUserOnlineStatus } = require('../controllers/userController');
+const { getUserDevices } = require('../firebase/firestore');
 
 
 // Route pour récupérer tous les utilisateurs
@@ -232,6 +233,67 @@ router.get('/search-results', async (req, res) => {
     } catch (error) {
         console.error('Erreur lors de la recherche:', error);
         return res.status(500).json({ error: 'Erreur lors de la recherche.' });
+    }
+});
+
+
+router.put('/update-profile', async (req, res) => {
+    const { userID, updatedFields } = req.body;
+
+    console.log('Received request to update profile:', userID, updatedFields);
+
+    if (!userID) {
+        res.status(400).send({
+            success: false,
+            message: 'L\'ID de l\'utilisateur est requis.'
+        })
+    };
+
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        await userRef.update({
+            ...updatedFields,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        res.status(200).send({
+            success: true,
+            message: 'Profil mis à jour avec succès.'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du profil :', error);
+        res.status(500).send({
+            success: false,
+            message: 'Erreur lors de la mise à jour du profil.'
+        });
+        
+    }
+});
+
+
+router.get('/devices/:userID', async (req, res) => {
+    const { userID } = req.params;
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'utilisateur manquant'
+        });
+    }
+
+    const response = await getUserDevices(userID);
+
+    if (response.success) {
+        res.status(200).json({
+            success: true,
+            message: response.message,
+            devices: response.devices
+        });
+    } else {
+        res.status(500).json({
+            success: false,
+            message: response.message,
+        });
     }
 });
 

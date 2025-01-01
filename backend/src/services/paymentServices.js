@@ -17,7 +17,7 @@ router.post('/process', async (req, res) => {
         if (!userDoc.exists) {
             return res.status(404).json({
                 success: false,
-                error: 'Utilisateur non trouvé'
+                message: 'Utilisateur non trouvé'
             });
         };
 
@@ -46,8 +46,7 @@ router.post('/process', async (req, res) => {
     } catch (error) {
         res.status(500).json({
             success: false,
-            error: 'Erreur lors du traitement du paiement',
-            message: error.message
+            message: 'Erreur lors du traitement du paiement',
         });
     }
 });
@@ -59,7 +58,7 @@ router.get('/collect/:userID', async (req, res) => {
     if (!userID) {
         return res.status(400).json({
             success: false,
-            error: 'ID de l\'utilisateur manquant'
+            message: 'ID de l\'utilisateur manquant'
         });
     }
 
@@ -69,19 +68,19 @@ router.get('/collect/:userID', async (req, res) => {
         if (paymentDoc.empty) {
             return res.status(404).json({
                 success: false,
-                error: 'Aucune information de paiement trouvée pour cet utilisateur'
+                message: 'Aucune information de paiement trouvée pour cet utilisateur'
             });
         };
         const paymentData = paymentDoc.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         res.status(200).json({
             success: true,
-            paymentData
+            message: 'Informations de paiement récupérées avec succès',
+            paymentData: paymentData
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            error: 'Erreur lors de la récupération des informations de paiement',
-            message: error.message
+            message: 'Erreur lors de la récupération des informations de paiement',
         });
 
     }
@@ -96,7 +95,7 @@ router.get('/collect/all', async (req, res) => {
         if (paymentDoc.empty) {
             return res.status(404).json({
                 success: false,
-                error: 'Aucune information de paiement trouvée'
+                message: 'Aucune information de paiement trouvée'
             });
         };
 
@@ -107,12 +106,13 @@ router.get('/collect/all', async (req, res) => {
 
         res.status(200).json({
             success: true,
-            paymentData
+            message: 'Informations de paiement récupérées avec succès',
+            paymentData: paymentData,
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            error: 'Erreur lors de la récupération des informations de paiement'
+            message: 'Erreur lors de la récupération des informations de paiement'
         });
 
     }
@@ -127,7 +127,7 @@ router.put('/update/status/:paymentID', async (req, res) => {
     if (!['processing', 'completed', 'failed'].includes(status)) {
         return res.status(400).json({
             success: false,
-            error: 'Statut de paiement invalide'
+            message: 'Statut de paiement invalide'
         });
     }
 
@@ -138,7 +138,7 @@ router.put('/update/status/:paymentID', async (req, res) => {
         if (!paymentDoc.exists) {
             return res.status(404).json({
                 success: false,
-                error: 'Paiement non trouvé'
+                message: 'Paiement non trouvé'
             });
         }
 
@@ -160,8 +160,8 @@ router.put('/update/status/:paymentID', async (req, res) => {
             await userRef.update({
                 plans: {
                     [plan]: planConfig,
-                    startAt: startDate,
-                    endAt: endDate,
+                    subscriptionDate: startDate,
+                    expiryDate: endDate,
                 }
             });
         }
@@ -195,7 +195,8 @@ router.get('/processing', async (req, res) => {
         const processingPayments = paymentDoc.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         res.status(200).json({
             success: true,
-            paymentData: processingPayments
+            message: 'Paiements en cours récupérés avec succès',
+            processingPayments: processingPayments
         });
     } catch (error) {
         res.status(500).json({
@@ -222,7 +223,8 @@ router.get('/completed', async (req, res) => {
         const completedPayments = paymentDoc.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         res.status(200).json({
             success: true,
-            paymentData: completedPayments
+            message: 'Paiements réussis récupérés avec succès',
+            completedPayments: completedPayments
         });
     } catch (error) {
         res.status(500).json({

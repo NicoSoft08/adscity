@@ -137,27 +137,20 @@ const uploadFile = async (file, folderPath = 'uploads') => {
 
 
 const onApproveAd = async (adID) => {
-    try {
-        const response = await fetch(`${backendUrl}/api/ads/approve`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ adID }),
-        });
+    const response = await fetch(`${backendUrl}/api/ads/approve`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ adID }),
+    });
 
-        const result = await response.json();
+    const result = await response.json();
+    console.log(result);
+    logEvent(analytics, 'advertisment_approved');
+    fetchPendingAds();
 
-        if (response.ok) {
-            console.log('Annonce approuvée avec succès:', result.message);
-            logEvent(analytics, 'advertisment_approved');
-            fetchPendingAds(); // Rafraîchir la liste après approbation
-        } else {
-            console.error('Erreur lors de l\'approbation de l\'annonce:', result.error);
-        }
-    } catch (error) {
-        console.error('Erreur lors de la requête d\'approbation:', error);
-    }
+    return result;
 };
 
 

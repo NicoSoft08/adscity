@@ -10,7 +10,6 @@ import '../../styles/DashboardPanel.scss';
 export default function DashboardPanel() {
     const [adsPending, setAdsPending] = useState([]);
 
-
     useEffect(() => {
         const fetchData = async () => {
             try {

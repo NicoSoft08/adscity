@@ -17,18 +17,9 @@ import {
     faUsers 
 } from '@fortawesome/free-solid-svg-icons';
 import PaymentIntents from '../public/PaymentIntents';
+import ManageAds from './ManageAds';
 import '../../styles/AdminHome.scss';
 
-
-const style = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'black'
-};
-
-// content
-const AdsSection = () => <div style={style}>Ads Content</div>;
 
 export default function AdminHome() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -101,7 +92,7 @@ export default function AdminHome() {
 
                 <div className="main-content">
                     {activeSection === "panel" && <DashboardPanel />}
-                    {activeSection === "ads" && <AdsSection />}
+                    {activeSection === "ads" && <ManageAds />}
                     {activeSection === "users" && <ManageUsers />}
                     {activeSection === "payments" && <PaymentIntents />}
                     {activeSection === "profile" && <UserProfile />}

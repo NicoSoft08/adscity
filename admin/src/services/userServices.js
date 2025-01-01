@@ -18,6 +18,20 @@ const fetchDataByUserID = async (userID) => {
     }
 };
 
+const updateUserFields = async (userID, updatedFields) => {
+    const response = await fetch(`${backendUrl}/api/users/update-profile`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, updatedFields }),
+    });
+
+    const result = await response.json();
+    return result;
+};
+
+
 
 const setUserOnlineStatus = async (userID, isOnline) => {
     try {
@@ -93,11 +107,25 @@ const fetchOfflineUsers = async () => {
     }
 };
 
+const getUserDevices = async (userID) => {
+    const response = await fetch(`${backendUrl}/api/users/devices/${userID}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    const result = await response.json();
+    return result;
+}
+
 
 export {
+    getUserDevices,
     fetchDataByUserID,
     fetchAllUsers,
     fetchOfflineUsers,
     fetchOnlineUsers,
     setUserOnlineStatus,
+    updateUserFields,
 };

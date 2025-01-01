@@ -4,12 +4,16 @@ import { formateDateTimestamp } from '../../func';
 import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
 import Pagination from '../../components/pagination/Pagination';
+import Toast from '../../customs/Toast';
 import '../../styles/PendingAds.scss';
+import Spinner from '../../customs/Spinner';
 
 export default function PendingAds({ pendingAds }) {
     const [isOpen, setIsOpen] = useState(false);
     const [detailOpen, setDetailOpen] = useState(false);
+    const [isLoading, setIsloading] = useState(false);
     const [confirm, setConfirm] = useState(false);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' })
     const [message, setMessage] = useState({ type: '', text: '' });
     const [refusalReason, setRefusalReason] = useState('');
     const [selectedAdID, setSelectedAdID] = useState(null);
@@ -43,12 +47,25 @@ export default function PendingAds({ pendingAds }) {
 
 
     const handleApprove = async (adID) => {
+        setIsloading(true);
         const result = await onApproveAd(adID);
 
-        if (result) {
-            console.log('Annonce approuvée avec succès', result.message);
+        if (result.success) {
+            setToast({
+                show: true,
+                type: 'success',
+                message: result.message,
+            });
+            setIsloading(false);
+            setDetailOpen(false);
         } else {
-            console.log('Erreur lors de l\'approbation de l\'annonce:', result.error);
+            setToast({
+                show: true,
+                type: 'error',
+                message: result.message,
+            });
+            setIsloading(false);
+            setDetailOpen(false);
         }
     };
 
@@ -194,35 +211,32 @@ export default function PendingAds({ pendingAds }) {
                 >
                     <div className='ad-details'>
                         {currentPendingAds
-                        .filter((ad) => ad.id === selectedAdID)
-                        .map(pendingAd => (
-                            <>
-                                <Tab
-                                    pendingAd={pendingAd}
-                                    key={pendingAd.id}
-                                />
-                                <div className="ad-details-buttons">
-                                    <button
-                                        className="modal-button approve-button"
-                                        onClick={() => {
-                                            setDetailOpen(false);
-                                            handleApprove(pendingAd.id);
-                                        }}
-                                    >
-                                        Approuver
-                                    </button>
-                                    <button
-                                        className="modal-button reject-button"
-                                        onClick={() => {
-                                            setDetailOpen(false);
-                                            handleOpenModal((pendingAd.id))
-                                        }}
-                                    >
-                                        Refuser
-                                    </button>
-                                </div>
-                            </>
-                        ))}
+                            .filter((ad) => ad.id === selectedAdID)
+                            .map(pendingAd => (
+                                <>
+                                    <Tab
+                                        pendingAd={pendingAd}
+                                        key={pendingAd.id}
+                                    />
+                                    <div className="ad-details-buttons">
+                                        <button
+                                            className="modal-button approve-button"
+                                            onClick={() => handleApprove(pendingAd.id)}
+                                        >
+                                            {isLoading ? <Spinner /> : 'Approuver'}
+                                        </button>
+                                        <button
+                                            className="modal-button reject-button"
+                                            onClick={() => {
+                                                setDetailOpen(false);
+                                                handleOpenModal((pendingAd.id))
+                                            }}
+                                        >
+                                            Refuser
+                                        </button>
+                                    </div>
+                                </>
+                            ))}
                     </div>
                 </Modal>
             )}
@@ -233,6 +247,8 @@ export default function PendingAds({ pendingAds }) {
                 elementsPerPage={pendingAdPerPage}
                 paginate={paginate}
             />
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

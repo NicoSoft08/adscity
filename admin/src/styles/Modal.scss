@@ -24,6 +24,8 @@
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         animation: slideDown 0.3s ease-out;
 
+
+
         // Media queries
         @media (max-width: 768px) {
             // display: none;
@@ -48,7 +50,7 @@
                 font-size: 18px;
                 font-weight: bold;
             }
-            
+
             .close-button {
                 background: none;
                 border: none;
@@ -77,7 +79,7 @@
                 cursor: pointer;
                 font-size: 14px;
                 font-weight: $font-light;
-                font-family: 'Ubuntu',sans-serif;
+                font-family: 'Ubuntu', sans-serif;
             }
 
             .modal-button.close {
@@ -87,7 +89,7 @@
             .modal-button.next {
                 background-color: $primary-color;
             }
-            
+
         }
 
         .modal-footer.space-between {

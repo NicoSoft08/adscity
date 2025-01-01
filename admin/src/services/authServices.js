@@ -25,13 +25,9 @@ const signinUser = async (email, password, deviceInfo) => {
             body: JSON.stringify({ deviceInfo })
         });
 
-        if (!response.ok) {
-            throw new Error('Echec de vérification depuis le serveur.');
-        }
 
-        const verificationResult = await response.json();
-
-        return verificationResult;
+        const result = await response.json();
+        return result;
     } catch (error) {
         throw new Error(error.message);
     }
@@ -66,8 +62,56 @@ const deleteUser = async (userID) => {
 }
 
 
+const updateUserPassword = async (userID, newPassword) => {
+    const response = await fetch(`${backendUrl}/api/auth/update-password`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, newPassword }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+};
+
+
+const sendVerificationCode = async (userID, newEmail) => {
+    const response = await fetch(`${backendUrl}/api/auth/send-verification-code`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, newEmail }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+};
+
+
+const verifyCodeAndUpdateEmail = async (userID, verificationCode, newEmail) => {
+    const response = await fetch(`${backendUrl}/api/auth/verify-code-and-update-email`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, verificationCode, newEmail }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+}
+
+
 export {
     signinUser,
     logoutUser,
     deleteUser,
+    updateUserPassword,
+    sendVerificationCode,
+    verifyCodeAndUpdateEmail,
 };

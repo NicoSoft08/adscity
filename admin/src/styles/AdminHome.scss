@@ -73,7 +73,6 @@
         .main-content {
             flex: 1;
             padding: 20px;
-            
             background: #f0f2f5;
         }
     }
@@ -91,7 +90,7 @@
     @media (max-width: 768px) {
         .sidebar {
             margin-top: 3rem;
-            width: 100% !important;
+            width: 92%;
             
             ul {
                 display: flex;
@@ -111,13 +110,6 @@
             .collapse-btn {
                 display: none;
             }
-        }
-
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            width: 100%;
-            background: #f0f2f5;
         }
     }
 }

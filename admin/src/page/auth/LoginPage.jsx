@@ -73,36 +73,37 @@ export default function LoginPage() {
         try {
             setIsLoading(true);
             const { email, password } = formData;
-
+    
             // Collecte des informations de l'appareil
             const deviceInfo = await collectDeviceInfo();
-
+    
             const result = await signinUser(email, password, deviceInfo);
-
-            if (result.user?.role !== 'admin') {
-                setTimeout(() => {
-                    setToast({
-                        type: 'error',
-                        message: 'Vous n\'avez pas les droits d\'accès à cette page',
-                        show: true,
-                    });
-                    setIsLoading(false);
-                    navigate('/access-denied');
-                })
-                return;
-            }
-
-            setTimeout(() => {
+    
+            if (!result.success) {
                 setToast({
-                    type: 'success',
-                    message: 'User signed in and verified successfully',
+                    type: 'error',
+                    message: `${result.message}, ${result.actionRequired || ''}`,
                     show: true,
                 });
-                setIsLoading(false);
-                navigate('/admin');
+                return;
+            }
+    
+            if (result.user.role !== 'admin') {
+                setToast({
+                    type: 'error',
+                    message: 'Vous n\'êtes pas autorisé à accéder à cette page.',
+                    show: true,
+                });
+                return;
+            }
+    
+            // Si tout est correct
+            setToast({
+                type: 'success',
+                message: result.message,
+                show: true,
             });
-
-            console.log('User signed in and verified successfully');
+            navigate('/admin');
         } catch (error) {
             console.error('Connexion échouée: ', error);
             setToast({

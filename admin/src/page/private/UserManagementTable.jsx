@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import Pagination from '../../components/pagination/Pagination';
+import { IconAvatar } from '../../config/images';
 import '../../styles/UserManagementTable.scss';
 
 export default function UserManagementTable({ users, onToggleActive, onDelete }) {
@@ -26,7 +27,15 @@ export default function UserManagementTable({ users, onToggleActive, onDelete })
         }
 
         return title;
-    }
+    };
+
+    const getProfilePicture = (user) => {
+        if (user.profilURL) {
+            return user.profilURL;
+        } else {
+            return IconAvatar;
+        }
+    };
 
     return (
         <>
@@ -50,7 +59,7 @@ export default function UserManagementTable({ users, onToggleActive, onDelete })
                                 <td>{index + 1}</td>
                                 <td>
                                     <img
-                                        src={user.profilURL || 'https://via.placeholder.com/50'}
+                                        src={getProfilePicture(user)}
                                         alt={user.displayName}
                                         width="50"
                                         height="50"

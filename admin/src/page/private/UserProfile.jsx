@@ -2,15 +2,15 @@ import React, { useContext, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faAddressCard, faCamera, faCheck, faEnvelopeOpen,
-    faFolderOpen, faHome, faLocationDot,
+    faHome, faLocationDot,
     faPhone, faTimes, faUserAltSlash,
     faUserCheck
 } from '@fortawesome/free-solid-svg-icons';
-import Modal from '../../customs/Modal';
 import { AuthContext } from '../../contexts/AuthContext';
 import { IconCover, IconAvatar } from '../../config/images';
 import { uploadProfilePhoto } from '../../services/storageServices';
 import Toast from '../../customs/Toast';
+import Spinner from '../../customs/Spinner';
 import '../../styles/UserProfile.scss';
 
 
@@ -18,10 +18,9 @@ export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [profilePreview, setProfilePreview] = useState(null);
-
-
 
     const validateFile = (file) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -67,9 +66,24 @@ export default function UserProfile() {
 
     const handleConfirm = async () => {
         const userID = currentUser?.uid;
-
+        setIsLoading(true);
         if (selectedFile) {
-            await uploadProfilePhoto(userID, selectedFile);
+            const result = await uploadProfilePhoto(userID, selectedFile);
+            if (result.success) {
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: result.message,
+                });
+                setIsLoading(false);
+            } else {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: result.message,
+                });
+                setIsLoading(false);
+            }
         }
 
         setIsModalOpen(false);
@@ -84,10 +98,11 @@ export default function UserProfile() {
     };
 
 
-    const handleBannerChange = async (e) => { 
-        const file = e.target.files[0];
-        console.log(file);
-    }
+    // const handleBannerChange = async (e) => {
+    //     const file = e.target.files[0];
+    //     console.log(file);
+    // }
+
 
     return (
         <div className='user-profile'>
@@ -97,7 +112,7 @@ export default function UserProfile() {
                     alt="User Banner"
                     className="banner-image"
                 />
-                <label className="update-icon banner-update">
+                {/* <label className="update-icon banner-update">
                     <input
                         type="file"
                         accept="image/*"
@@ -105,7 +120,7 @@ export default function UserProfile() {
                         style={{ display: 'none' }}
                     />
                     <FontAwesomeIcon icon={faCamera} />
-                </label>
+                </label> */}
             </div>
             <div className="profile-content">
                 <img
@@ -138,15 +153,6 @@ export default function UserProfile() {
                 </p>
                 <div className="seperator" />
                 <p>
-                    {userData?.adsCount}
-                    annonce(s)
-                    <FontAwesomeIcon
-                        icon={faFolderOpen}
-                        className='pen'
-                    />
-                </p>
-                <div className="seperator" />
-                <p>
                     {userData?.isActive
                         ? "Actif"
                         : "Désactivé"
@@ -161,7 +167,7 @@ export default function UserProfile() {
                 </p>
                 <div className="seperator" />
                 <p>
-                    {userData?.location}
+                    {userData?.country}, {userData?.city}
                     <FontAwesomeIcon
                         icon={faLocationDot}
                         className='pen'
@@ -193,24 +199,20 @@ export default function UserProfile() {
             </div>
 
             {isModalOpen && (
-                <Modal
-                    onShow={isModalOpen}
-                >
-                    <div className="modal">
-                        <div className="modal-content">
-                            <h3>Aperçu de la nouvelle photo</h3>
-                            <img src={profilePreview} alt="Preview" className="modal-preview" />
-                            <div className="modal-actions">
-                                <button className="btn btn-confirm" onClick={handleConfirm}>
-                                    <FontAwesomeIcon icon={faCheck} /> Valider
-                                </button>
-                                <button className="btn btn-cancel" onClick={handleCancel}>
-                                    <FontAwesomeIcon icon={faTimes} /> Annuler
-                                </button>
-                            </div>
+                <div className="modal">
+                    <div className="modal-content">
+                        <h3>Aperçu de la nouvelle photo</h3>
+                        <img src={profilePreview} alt="Preview" className="modal-preview" />
+                        <div className="modal-actions">
+                            <button className="btn btn-confirm" onClick={handleConfirm}>
+                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} />Valider</>}
+                            </button>
+                            <button className="btn btn-cancel" onClick={handleCancel}>
+                                <FontAwesomeIcon icon={faTimes} /> Annuler
+                            </button>
                         </div>
                     </div>
-                </Modal>
+                </div>
             )}
 
             <Toast

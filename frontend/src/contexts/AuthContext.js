@@ -20,62 +20,50 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged(async (user) => {
-            const userID = user ? user.uid : null;
+        let unsubscribe;
 
-            try {
+        const initializeAuth = async () => {
+            unsubscribe = auth.onAuthStateChanged(async (user) => {
+                setLoading(true); // Commencez le chargement à chaque changement d'état
                 if (user) {
-                    setCurrentUser(user);
-                    const data = await fetchDataByUserID(userID);
-                    setUserData(data);
-                    setUserRole(data.role);
-                    updateUserStatus(true);
+                    try {
+                        // Utilisateur connecté
+                        setCurrentUser(user);
+                        const userData = await fetchDataByUserID(user.uid);
+                        setUserData(userData);
+                        setUserRole(userData.role);
+                        await setUserOnlineStatus(user.uid, true); // Met à jour le statut en ligne
+                    } catch (error) {
+                        console.error("Erreur lors de la récupération des données utilisateur :", error);
+                    }
                 } else {
+                    // Utilisateur déconnecté
+                    if (currentUser) {
+                        await setUserOnlineStatus(currentUser.uid, false);
+                    }
                     setCurrentUser(null);
                     setUserData(null);
                     setUserRole(null);
                 }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            }
-        });
-
-        const updateUserStatus = async (isOnline) => {
-            try {
-                if (currentUser) {
-                    await setUserOnlineStatus(currentUser.uid, isOnline);
-                }
-            } catch (error) {
-                console.error("Error updating online status:", error);
-            }
+                setLoading(false); // Arrêtez le chargement une fois terminé
+            });
         };
 
-        const fetchUserData = async () => {
-            try {
-                if (currentUser) {
-                    const data = await fetchDataByUserID(currentUser.uid);
-                    setUserData(data);
-                    setUserRole(data.role);
-                }
-            } catch (error) {
-                console.error("Error fetching user data:", error);
-            } finally {
-                setLoading(false);
+        initializeAuth();
+
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [currentUser]);
+
+    useEffect(() => {
+        return () => {
+            if (currentUser) {
+                setUserOnlineStatus(currentUser.uid, false).catch((error) => {
+                    console.error("Erreur lors de la mise à jour du statut hors ligne :", error);
+                });
             }
         };
-
-        if (currentUser) {
-            fetchUserData();
-            updateUserStatus(true);
-
-            return () => {
-                updateUserStatus(false);
-            };
-        } else {
-            setLoading(false);
-        }
-
-        return () => unsubscribe();
     }, [currentUser]);
 
 
@@ -93,7 +81,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };

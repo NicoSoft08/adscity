@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import RatingDisplay from '../rating-stars/RatingDisplay';
-import './ReviewForm.scss';
 import Toast from '../../customs/Toast';
+import './ReviewForm.scss';
 
 export default function ReviewForm({ ratings, currentUser, navigate }) {
     const [review, setReview] = useState('');
@@ -17,8 +17,12 @@ export default function ReviewForm({ ratings, currentUser, navigate }) {
             setToast({ show: true, type: 'error', message: 'Veuillez saisir un avis.' });
             return;
         }
-        
-        console.log('Review submitted:', review);
+
+        setToast({
+            show: true,
+            type: 'info',
+            message: "Cette fonctionnalité n'est pas encore disponible.",
+        })
         setReview('');
     };
 
@@ -32,7 +36,12 @@ export default function ReviewForm({ ratings, currentUser, navigate }) {
                 placeholder="Partagez votre expérience..."
             />
             <button onClick={handleSubmit}>Soumettre l'avis</button>
-            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
+            <Toast
+                show={toast.show}
+                type={toast.type}
+                message={toast.message}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </div>
     );
 };

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { faCirclePlus, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { uploadImage } from '../../services/storageServices';
 import Toast from '../../customs/Toast';
 import './ImageUpload.scss';
 
@@ -22,7 +23,6 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
 
     const handleImageChange = async (index, e) => {
         const file = e.target.files[0];
-        const backenUrl = process.env.REACT_APP_BACKEND_URL;
         const userID = currentUser?.uid;
 
         if (file) {
@@ -30,22 +30,16 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
             newImages[index] = URL.createObjectURL(file);
             setSelectedImages(newImages);
 
-            try {
-                const formData = new FormData();
-                formData.append('image', file); // Ajouter le fichier à envoyer dans formData
-                formData.append('userID', userID);
+            const result = await uploadImage(file, userID);
 
-                const response = await fetch( `${backenUrl}/api/upload/image`, {
-                    method: 'POST',
-                    body: formData,
+            if (result.success) {
+                setToast({
+                    show: true,
+                    message: result.message,
+                    type: 'success',
                 });
 
-                if (!response.ok) {
-                    throw new Error('Erreur lors de l\'upload de l\'image.');
-                }
-
-
-                const { imageUrl } = await response.json();
+                const { imageUrl } = result;
 
                 // Remplacer l'URL temporaire de l'image avec l'URL reçue du serveur
                 const updatedImages = [...newImages];
@@ -63,9 +57,12 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
                     message: 'Image ajoutée au formulaire !',
                     show: true,
                 });
-
-            } catch (error) {
-                console.error('Erreur lors de l\'envoi de l\'image au serveur:', error);
+            } else {
+                setToast({
+                    show: true,
+                    message: result.message,
+                    type: 'error',
+                });
             }
         }
     };
@@ -105,10 +102,17 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
     };
 
     const getUserPlanMaxPhotos = (userData) => {
-        const userPlan = Object.keys(userData.plans).find(plan => 
-            userData.plans[plan].max_photos !== undefined
+        if (!userData || !userData.plans) {
+            return null; // Retourne null si les données utilisateur ou les plans sont absents
+        }
+
+        // Recherche d'un plan contenant la propriété 'max_photos'
+        const userPlan = Object.keys(userData.plans).find(plan =>
+            userData.plans[plan]?.max_photos !== undefined
         );
-        return userData.plans[userPlan].max_photos;
+
+        // Si un plan valide est trouvé, retourne le nombre maximal de photos
+        return userPlan ? userData.plans[userPlan].max_photos : null;
     };
 
     return (

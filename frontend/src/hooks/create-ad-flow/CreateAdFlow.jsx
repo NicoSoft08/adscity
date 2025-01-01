@@ -1,15 +1,15 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../contexts/AuthContext';
+import { createAnnonce } from '../../services/adServices';
 import CategorySelection from '../category-selection/CategorySelection';
 import PostAdForm from '../post-ad-form/PostAdForm';
 import LocationForm from '../location-form/LocationForm';
 import ImageUpload from '../image-upload/ImageUpload';
-import ChoosePlan from '../choose-plan/ChoosePlan';
+// import ChoosePlan from '../choose-plan/ChoosePlan';
 import AdReview from '../ad-review/AdReview';
 import ProgressBar from '../../utils/progress-bar/ProgressBar';
 import StepIndicator from '../../utils/step-indicator/StepIndicator';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
-import { createAnnonce } from '../../services/adServices';
 import Toast from '../../customs/Toast';
 import LimitReachedModal from '../../customs/LimitReachedModal';
 import Loading from '../../customs/Loading';
@@ -49,7 +49,6 @@ export default function CreateAdFlow() {
     const handleNext = () => {
         if (step === 4) {
             setStep(5);
-
         } else {
             setStep(step + 1);
         }
@@ -113,38 +112,38 @@ export default function CreateAdFlow() {
     };
 
     const steps = [
+        // {
+        //     id: 1,
+        //     title: 'Forfait',
+        //     component: ChoosePlan,
+        //     progress: 16
+        // },
         {
             id: 1,
             title: 'Choisir une catégorie',
             component: CategorySelection,
-            progress: 16
+            progress: 20
         },
         {
             id: 2,
             title: 'Détails de l\'annonce',
             component: PostAdForm,
-            progress: 32
+            progress: 40
         },
         {
             id: 3,
             title: 'Localisation',
             component: LocationForm,
-            progress: 48
+            progress: 60
         },
         {
             id: 4,
-            title: 'Forfait',
-            component: ChoosePlan,
-            progress: 64
-        },
-        {
-            id: 5,
             title: 'Photos',
             component: ImageUpload,
             progress: 80
         },
         {
-            id: 6,
+            id: 5,
             title: 'Vérification',
             component: AdReview,
             progress: 100

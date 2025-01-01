@@ -10,8 +10,8 @@ export default function ProfileStats({ user }) {
                     <span className="stat-value">{user.profileViewed || 0}</span>
                 </div>
                 {/* <div className="stat-item">
-                    <span className="stat-value">{user.contact_clicks || 0}</span>
                     <span className="stat-label">Contacts</span>
+                    <span className="stat-value">{user.contact_clicks || 0}</span>
                 </div> */}
             </div>
         </div>

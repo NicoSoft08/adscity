@@ -1,5 +1,5 @@
 import React from 'react';
-import { faFacebook, faInstagram, faLinkedin, faTwitter } from '@fortawesome/free-brands-svg-icons';
+import { faFacebook, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { textWhiteWithoutBg } from '../../config/logos';
@@ -21,7 +21,7 @@ export default function Footer() {
                     <h3>À propos</h3>
                     <ul>
                         <li><a href="/about">Qui sommes-nous</a></li>
-                        <li><a href="/advertise">Publicité</a></li>
+                        <li><a href="/business">Pour les entreprises</a></li>
                         <li><a href="/pricing">Tarifs</a></li>
                     </ul>
                 </div>
@@ -63,14 +63,11 @@ export default function Footer() {
                 <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
                     <FontAwesomeIcon icon={faFacebook} />
                 </a>
-                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
-                    <FontAwesomeIcon icon={faTwitter} />
-                </a>
                 <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
                     <FontAwesomeIcon icon={faInstagram} />
                 </a>
-                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
-                    <FontAwesomeIcon icon={faLinkedin} />
+                <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                    <FontAwesomeIcon icon={faYoutube} />
                 </a>
             </div>
 

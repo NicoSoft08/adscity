@@ -22,8 +22,10 @@ export default function PaymentIntents({ userID }) {
 
     useEffect(() => {
         const fetchPayments = async () => {
-            const response = await fetchUserPaymentInfo(userID);
-            setPayments(response.paymentData);
+            const result = await fetchUserPaymentInfo(userID);
+            if (result.success) {
+                setPayments(result.processingPayments);
+            }
         };
 
         fetchPayments();

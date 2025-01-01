@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/Toast.scss';  // Import a custom CSS file for styling
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle, faExclamationCircle, faInfoCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
+import '../styles/Toast.scss';  // Import a custom CSS file for styling
 
 export default function Toast({ type = 'info', message, show, onClose, duration = 3000 }) {
     const [progress, setProgress] = useState(100);

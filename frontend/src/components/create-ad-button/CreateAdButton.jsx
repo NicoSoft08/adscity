@@ -11,7 +11,7 @@ export default function CreateAdButton() {
     const navigate = useNavigate();
 
     const handleNavigate = () => {
-        if (!currentUser) {
+        if (currentUser) {
             navigate('/auth/signin');
         } else if (currentUser && (userData.role !== 'user')) {
             navigate('/access-denied');

@@ -56,26 +56,6 @@ export const allCategories = [
         categoryImage: mode_et_beaute,
         container: [
             {
-                id: 1,
-                sousCategoryId: 300,
-                sousCategoryTitles: {
-                    fr: "Vêtements Homme",
-                    en: "Men's Clothing",
-                },
-                sousCategoryName: 'vetements-homme',
-                sousContainer: [],
-            },
-            {
-                id: 2,
-                sousCategoryId: 301,
-                sousCategoryTitles: {
-                    fr: "Vêtements Femme",
-                    en: "Women's Clothing",
-                },
-                sousCategoryName: 'vetements-femme',
-                sousContainer: [],
-            },
-            {
                 id: 3,
                 sousCategoryId: 302,
                 sousCategoryTitles: {
@@ -113,6 +93,26 @@ export const allCategories = [
                     en: "Women's Shoes",
                 },
                 sousCategoryName: 'chaussures-femme',
+                sousContainer: [],
+            },
+            {
+                id: 7,
+                sousCategoryId: 306,
+                sousCategoryTitles: {
+                    fr: "Vêtements pour adultes",
+                    en: "Clothing for adults",
+                },
+                sousCategoryName: 'clothing-for-adults',
+                sousContainer: [],
+            },
+            {
+                id: 8,
+                sousCategoryId: 307,
+                sousCategoryTitles: {
+                    fr: "Vêtements pour enfants",
+                    en: "Clothing for children",
+                },
+                sousCategoryName: 'clothing-for-children',
                 sousContainer: [],
             },
         ],
@@ -169,26 +169,6 @@ export const allCategories = [
                 sousCategoryName: 'produits-locaux',
                 sousContainer: [],
             },
-            // {
-            //     id: 2,
-            //     sousCategoryId: 1102,
-            //     sousCategoryTitles: {
-            //         fr: "Épices et Condiments",
-            //         en: "Spices and Seasonings",
-            //     },
-            //     sousCategoryName: 'epices-condiments',
-            //     sousContainer: [],
-            // },
-            // {
-            //     id: 3,
-            //     sousCategoryId: 1103,
-            //     sousCategoryTitles: {
-            //         fr: "Céréales et Tubercules",
-            //         en: "Grains and Tubers",
-            //     },
-            //     sousCategoryName: 'cereales-tubercules',
-            //     sousContainer: [],
-            // },
         ],
     }
 ];
@@ -201,50 +181,18 @@ export const businessCategory = [
     "Immobilier",
 ];
 
-export const ventiloType = {
-    fr: ["climatiseur fixe (split)", "climatiseur mobile", "climatiseur réversible", "ventilateur sur pied", "ventilateur de table", "ventilateur de plafond"],
-    en: ["fixed air conditioner (split)", "mobile air conditioner", "reversible air conditioner", "floor fan", "table fan", "ceiling fan"]
-}
-
-export const formeDeTravail = {
-    fr: ["en ligne", "en présentiel", "hybride"],
-    en: ["online", "in person", "hybrid"]
-}
-
-export const typeDeContrat = {
-    fr: ["CDI", "CDD", "Freelance", "Stage", "Intérim"],
-    en: ["Permanent Contract", "Fixed-term Contract", "Stage", "Intérim"]
-}
-
+export const businessCategoryId = [
+    "service-automobile", "mode-et-vetements", "arts-et-spectacles",
+    "beaute-cosmetique-et-soins-personnels", "education",
+    "planificateur-devenements", "finances", "epicerie", "hotel",
+    "medical-sante", "restauration", "achats-et-vente-au-detail",
+    "immobilier",
+];
 export const dishesStuff = {
     fr: ["en porcelaine", "en faïence", "en verre", " de grès", "en terre cuite", "de mélamine"],
     en: ["porcelain", "earthenware", "glass", "stoneware", "terracotta", "melamine"]
 }
 
-export const deviceType = {
-    fr: ["climatiseur mural", "ventilateur portable", "ventilateur de plafond", "ventilateur sur pied"],
-    en: ["wall-mounted air conditioner", "portable fan", "ceiling fan", "floor-standing fan"]
-}
-
-export const controleType = {
-    fr: ["manuellement", "par télécommande", "controle par une application"],
-    en: ["manually", "by remote control", "control by an application"]
-};
-
-export const freezeType = {
-    fr: ["réfrigérateur-congélateur combiné", "réfrigérateur américain", "réfrigérateur à une porte", "congélateur coffre", "congélateur armoire"],
-    en: ["combined refrigerator-freezer", "American refrigerator", "single-door refrigerator", "chest freezer", "cabinet freezer"]
-}
-
-export const energieType = {
-    fr: ["à gaz", "à l'électricité", "autre source d'énergie"],
-    en: ["gas", "electricity", "other energy source"]
-}
-
-export const stateOfVilla = {
-    fr: ["Neuf", "D'occasion", "En construction"],
-    en: ["New", "Used", "Under construction"],
-}
 
 export const computerOS = {
     fr: ["Windows", "macOS", "Linux"],
@@ -261,30 +209,6 @@ export const smartphoneState = {
     en: ["new", "Used", "Refurbished"],
 }
 
-export const bedroomState = {
-    fr: ["Non meublée", "Partiellement meublée", "Entièrement meublée"],
-    en: ["Unfurnished", "Partially furnished", "Fully furnished"]
-};
-
-export const roomState = {
-    fr: ["Non meublé", "Partiellement meublé", "Entièrement meublé", "Rénové récemment", "À rénover"],
-    en: ["Unfurnished", "Partially furnished", "Fully furnished", "Recently renovated", "To renovate"]
-};
-
-export const homeAppliances = {
-    fr: ['Climatisation', 'Réfrigérateur', 'Cuisinière', 'Micro-ondes', 'Lave-linge', 'Télévision', 'Fer à repasser'],
-    en: ['Air conditioning', 'Refrigerator', 'Stove', 'Microwave', 'Washing machine', 'Television', 'Iron'],
-}
-
-export const roomsType = {
-    fr: ["Chambre Individuelle", "Chambre Double", "Suite Parentale"],
-    en: [],
-};
-
-export const includedFurniture = {
-    fr: ["Lit", "Armoire", "Bureau", "Tables de chevet", "Chaise"],
-    en: [],
-};
 
 export const jewelryCategories = {
     fr: ["Montre", "Bracelet", "Collier", "Bague", "Boucles d'oreilles", "Gourmettes"],
@@ -306,15 +230,31 @@ export const jewelsGender = {
     en: ["Man", "Woman", "Unisex"],
 }
 
-export const menClotheCategory = {
-    fr: ["Chemise", "Pantalon", "Veste", "Costume", "T-Shirt", "T-Short", "Pull", "Jeans"],
-    en: ["Shirt", "Pants", "Jacket", "Suit", "T-Shirt", "T-Short", "Sweater", "Jeans"]
+export const elderGender = {
+    fr: ["Homme", "Femme", "Unisexe"],
+    en: ["Man", "Woman", "Unisex"],
 }
 
-export const womenClotheCategory = {
-    fr: ["Robe", "Jupe", "Pantalon", "Blouse", "T-Shirt", "T-Short", "Chemisier"],
-    en: ["Dress", "Skirt", "Pants", "Blouse", "T-Shirt", "T-Shorts", "Blouse"]
+export const childGender = {
+    fr: ["Garçon", "Fille", "Unisexe"],
+    en: ["Boy", "Girl", "Unisexe"],
 }
+
+export const childAge = {
+    fr: ["0-2 ans", "3-5 ans", "6-8 ans", "9-12 ans", "13-18 ans"],
+    en: ["0-2 years", "3-5 years", "6-8 years", "9-12 years", "13-18 years"],
+}
+
+export const childClothingCategory = {
+    fr: ["T-Shirt", "Pantalon", "Veste", "Pull", "Jeans", "Short", "Blouson", "Pyjama", "Robe", "Jupe", "T-Shirt", "Blouse", "Pantalon", "Short", "Cardigan", "Pyjama", "T-Shirt", "Pantalon", "Pull", "Jeans", "Pyjama", "Salopette", "Body"],
+    en: ["T-Shirt", "Pants", "Jacket", "Sweater", "Jeans", "Shorts", "Blazer", "Pajamas", "Dress", "Skirt", "T-Shirt", "Blouse", "Pants", "Shorts", "Cardigan", "Pajamas", "T-Shirt", "Pants", "Sweater", "Jeans", "Pajamas", "Overalls", "Onesie"]
+}
+
+export const elderClothingCategory = {
+    fr: ["Chemise", "Pantalon", "Veste", "Costume", "T-Shirt", "T-Short", "Pull", "Jeans", "Robe", "Jupe", "Blouse", "Chemisier"],
+    en: ["Shirt", "Pants", "Jacket", "Suit", "T-Shirt", "T-Short", "Sweater", "Jeans", "Dress", "Skirt", "Pants", "Blouse", "Blouse"]
+}
+
 
 export const clotheSize = {
     fr: ["S", "M", "L", "XL", "XXL", "3XL"],

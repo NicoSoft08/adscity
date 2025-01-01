@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../../customs/Toast';
 import { updateContactClick } from '../../services/userServices';
-import './OwnerProfileCard.scss';
 import { IconAvatar } from '../../config/images';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
+import './OwnerProfileCard.scss';
 
 
 const OwnerProfileCard = ({ owner, userID }) => {
     const navigate = useNavigate();
     const [showPhone, setShowPhone] = useState(false);
-    const [showEmail, setShowEmail] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     const handlePhoneClick = () => {
@@ -25,20 +26,9 @@ const OwnerProfileCard = ({ owner, userID }) => {
         };
 
         setShowPhone(true);
+        logEvent(analytics, 'contact_click');
     };
 
-    const handleEmailClick = () => {
-        if (!userID) {
-            setToast({
-                show: true,
-                type: 'error',
-                message: "Oups ! Il semble que vous n'êtes pas connecté"
-            });
-            return;
-        };
-
-        setShowEmail(true);
-    };
 
     const handleProfileClick = async (url) => {
         navigate(url);
@@ -76,10 +66,6 @@ const OwnerProfileCard = ({ owner, userID }) => {
                 <button onClick={handlePhoneClick} className='contact-button'>
                     {showPhone ? owner.phoneNumber : "Voir le Numéro"}
                     <FontAwesomeIcon icon={faPhone} className='icon' />
-                </button>
-                <button onClick={handleEmailClick} className='contact-button'>
-                    {showEmail ? owner.email : "Voir le Mail"}
-                    <FontAwesomeIcon icon={faEnvelope} className='icon' />
                 </button>
             </div>
             <div className='action-buttons'>

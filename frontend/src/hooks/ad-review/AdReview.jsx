@@ -109,7 +109,9 @@ export default function AdReview({ formData, onBack, onSubmit, currentUser }) {
             <Modal
                 title={"Publication"}
                 isNext={true}
+                isHide={false}
                 onNext={handleSubmit}
+                hideText={"Non"}
                 nextText={"Oui"}
                 onShow={isOpen}
                 onHide={handleClose}

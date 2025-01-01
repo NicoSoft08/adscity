@@ -13,24 +13,29 @@ export default function NavLinks() {
             navigate('/auth/signin');
             return;
         }
-
-        if (userData && userData.role === 'user') {
-            navigate('/user/dashboard');
-        } else {
-            navigate('/access-denied');
+    
+        switch (userData?.role) {
+            case 'user':
+                navigate('/user/dashboard');
+                break;
+            // case 'admin':
+            //     navigate('/admin/dashboard');
+            //     break;
+            default:
+                navigate('/access-denied');
         }
     };
+
+    // Déterminer l'image de profil à afficher
+    const profileImage = 
+        currentUser && userData?.role === 'user' 
+        ? userData?.profilURL || IconAvatar // Si profilURL est null, utiliser l'image par défaut
+        : IconAvatar;
 
     return (
         <nav className='nav-links' title='Mon Compte'>
             <img onClick={handleNavigate}
-                src={
-                    userData?.role === 'user'
-                    && (userData?.profilURL === null
-                        ? IconAvatar
-                        : userData?.profilURL
-                    )
-                } // Image par défaut si l'utilisateur n'a pas de photo de profil
+                src={profileImage} // Image par défaut si l'utilisateur n'a pas de photo de profil
                 alt="Profile"
                 className="profile-image"
             />

@@ -1,7 +1,5 @@
 import PhonesTablets from '../subcat-forms/PhonesTablets';
 import Computers from '../subcat-forms/Computers';
-import MenClothing from '../subcat-forms/MenClothing';
-import WomenClothing from '../subcat-forms/WomenClothing';
 import WatcheAndJewelry from '../subcat-forms/WatcheAndJewelry';
 import CosmeticsPerfumes from '../subcat-forms/CosmeticsPerfumes';
 import MenShoes from '../subcat-forms/MenShoes';
@@ -9,13 +7,15 @@ import WomenShoes from '../subcat-forms/WomenShoes';
 import LocalProducts from '../subcat-forms/LocalProducts';
 import Delivery from '../subcat-forms/Delivery';
 import HealthyandBeauty from '../subcat-forms/HealthyandBeauty';
+import ElderClothes from '../subcat-forms/ElderClothes';
+import ChildClothes from '../subcat-forms/ChildClothes';
 import '../../styles/main.scss';
 
 const SUBCATEGORY_COMPONENTS = {
     'telephones-et-tablettes': PhonesTablets,
     'ordinateurs': Computers,
-    'vetements-homme': MenClothing,
-    'vetements-femme': WomenClothing,
+    'clothing-for-adults': ElderClothes,
+    'clothing-for-children': ChildClothes,
     'montres-et-bijoux': WatcheAndJewelry,
     'cosmetiques-et-parfums': CosmeticsPerfumes,
     'chaussures-homme': MenShoes,

@@ -1,7 +1,7 @@
 import React from 'react';
 import '../styles/Modal.scss';
 
-export default function Modal({ onShow, onHide, title, children, isNext, onNext, nextText }) {
+export default function Modal({ onShow, onHide, isHide, hideText, title, children, isNext, onNext, nextText }) {
     if (!onShow) {
         return null;
     }
@@ -24,9 +24,11 @@ export default function Modal({ onShow, onHide, title, children, isNext, onNext,
                             {nextText}
                         </button>
                     ) : null}
-                    <button className="modal-button close" onClick={onHide}>
-                        Fermer
-                    </button>
+                    {isHide ? (
+                        <button className="modal-button hide" onClick={onHide}>
+                            {hideText}
+                        </button>
+                    ) : null}
                 </div>
             </div>
         </div>

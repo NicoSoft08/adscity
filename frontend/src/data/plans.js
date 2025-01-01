@@ -1,34 +1,65 @@
-export const plans = {
-    basic: {
+export const plans = [
+    {
+        id: 1,
+        name: "Particulier",
         price: 0,
         validity_days: 30,
         max_ads: 3,
         max_photos: 3,
         visibility: "Basique",
-        support: "24/7"
+        support: "Basique",
+        content: {
+            ads_num: 'Limité',
+            cost_plan: 'Gratuit',
+            ads_visible: 'Standard',
+            support_client: 'Basique',
+            stat_performance: 'Non',
+            special_cat: 'Non',
+            tool_manage_ads: 'Oui',
+            personalize: 'Partielle',
+            credibility: 'Moyenne',
+        }
     },
-    bronze: {
+    {
+        id: 2,
+        name: "Professionnel",
         price: 2000,
         validity_days: 30,
         max_ads: 10,
         max_photos: 9,
         visibility: "Améliorée",
-        support: "24/7"
+        support: "Prioritaire",
+        content: {
+            ads_num: 'Élevé',
+            cost_plan: 'Moyen à élevé',
+            ads_visible: 'Boostée',
+            support_client: 'Prioritaire',
+            stat_performance: 'Basique',
+            special_cat: 'Oui',
+            tool_manage_ads: 'Oui',
+            personalize: 'Moyenne',
+            credibility: 'Bonne',
+        }
     },
-    silver: {
+    {
+        id: 3,
+        name: "Entreprise",
         price: 4000,
         validity_days: 30,
         max_ads: 20,
         max_photos: 12,
         visibility: "Premium",
-        support: "24/7"
-    },
-    gold: {
-        price: 6000,
-        validity_days: 30,
-        max_ads: 30,
-        max_photos: 15,
-        visibility: "Exclusive",
-        support: "24/7"
+        support: "VIP",
+        content: {
+            ads_num: 'illimité',
+            cost_plan: 'Élevé',
+            ads_visible: 'Maximum',
+            support_client: 'VIP',
+            stat_performance: 'Avancé',
+            special_cat: 'Oui',
+            tool_manage_ads: 'Oui',
+            personalize: 'Complète',
+            credibility: 'Excellente',
+        }
     }
-}
+]; 

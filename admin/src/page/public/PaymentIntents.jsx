@@ -161,7 +161,7 @@ export default function PaymentIntents() {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="10" align='center'>Chargement des informations de paiement.</td>
+                            <td colSpan="10" align='center'>Aucunes informations de paiements.</td>
                         </tr>
                     )}
                 </tbody>

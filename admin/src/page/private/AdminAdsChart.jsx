@@ -32,9 +32,9 @@ export default function AdminAdsChart() {
                 ]);
 
                 // Set the ads data
-                setAdsPending(pendingAds);
-                setAdsApproved(approvedAds);
-                setAdsRefused(refusedAds);
+                setAdsPending(pendingAds?.pendingAds);
+                setAdsApproved(approvedAds?.approvedAds);
+                setAdsRefused(refusedAds?.refusedAds);
             } catch (error) {
                 console.error('Erreur lors de la récupération des annonces:', error);
             }

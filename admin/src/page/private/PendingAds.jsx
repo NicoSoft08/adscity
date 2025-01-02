@@ -153,7 +153,7 @@ export default function PendingAds({ pendingAds }) {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="10" align='center'>Chargement des annonces en attente d'approbation.</td>
+                                <td colSpan="10" align='center'>Aucunes annonces en attente de vérification.</td>
                             </tr>
                         )
                     }

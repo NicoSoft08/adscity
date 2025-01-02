@@ -6,7 +6,6 @@ import Spinner from '../../customs/Spinner';
 import Toast from '../../customs/Toast';
 import { signinUser } from '../../services/authServices';
 import '../../styles/LoginPage.scss';
-import { collectDeviceInfo } from '../../services/trackServices';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -73,11 +72,8 @@ export default function LoginPage() {
         try {
             setIsLoading(true);
             const { email, password } = formData;
-    
-            // Collecte des informations de l'appareil
-            const deviceInfo = await collectDeviceInfo();
-    
-            const result = await signinUser(email, password, deviceInfo);
+        
+            const result = await signinUser(email, password);
     
             if (!result.success) {
                 setToast({
@@ -103,7 +99,7 @@ export default function LoginPage() {
                 message: result.message,
                 show: true,
             });
-            navigate('/admin');
+            navigate('/admin/dashboard');
         } catch (error) {
             console.error('Connexion échouée: ', error);
             setToast({

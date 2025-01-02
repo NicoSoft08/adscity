@@ -84,9 +84,9 @@ export default function AdsStatistics() {
     const [adsRefused, setAdsRefused] = useState([]);
 
     const adminLevels = [
-        { value: 'ads_admin', label: 'Gestion des Annonces' },
-        { value: 'user_admin', label: 'Gestion des Utilisateurs' },
-        { value: 'payment_admin', label: 'Gestion des Paiements' },
+        { value: 'MANAGE_ADS', label: 'Gestion des Annonces' },
+        { value: 'MANAGE_USERS', label: 'Gestion des Utilisateurs' },
+        { value: 'MANAGE_PAYMENTS', label: 'Gestion des Paiements' },
         { value: 'super_admin', label: 'Super Admin' }
     ];
 
@@ -102,10 +102,10 @@ export default function AdsStatistics() {
                 ]);
 
                 // Set the ads data
-                setAds(allAds);
-                setAdsPending(pendingAds);
-                setAdsApproved(approvedAds);
-                setAdsRefused(refusedAds);
+                setAds(allAds?.allAds);
+                setAdsPending(pendingAds?.pendingAds);
+                setAdsApproved(approvedAds?.approvedAds);
+                setAdsRefused(refusedAds?.refusedAds);
             } catch (error) {
                 console.error('Erreur lors de la récupération des annonces:', error);
             }

@@ -1,10 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import Modal from '../../customs/Modal';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
-import { getUserDevices, updateUserFields } from '../../services/userServices';
-import DeviceItem from '../../utils/device-item/DeviceItem';
+import { updateUserFields } from '../../services/userServices';
 import { useNavigate } from 'react-router-dom';
 import {
     logoutUser,
@@ -21,7 +20,6 @@ export default function Settings() {
         message: '',
         type: '',
     });
-    const [devices, setDevices] = useState([]);
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -41,18 +39,6 @@ export default function Settings() {
     });
     const [step, setStep] = useState("form"); // "form" | "verification"
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchUserDevices = async () => {
-            const userID = currentUser?.uid;
-            const result = await getUserDevices(userID);
-            setDevices(result.devices);
-        }
-
-        fetchUserDevices();
-
-    }, [currentUser]);
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -326,14 +312,6 @@ export default function Settings() {
                         {isLoading ? <Spinner /> : "Enregistrer"}
                     </button>
                 </form>
-            </section>
-
-            <section className="connectivity">
-                <h2>Connectivité</h2>
-                <p>Appareils connectés</p>
-                {devices.map((device, index) => (
-                    <DeviceItem key={index} device={device} />
-                ))}
             </section>
 
             <section className="danger-zone">

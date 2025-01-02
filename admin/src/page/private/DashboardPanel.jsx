@@ -13,8 +13,10 @@ export default function DashboardPanel() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const pendingAds = await fetchPendingAds();
-                setAdsPending(pendingAds);
+                const result = await fetchPendingAds();
+                if (result.success) {
+                    setAdsPending(result.pendingAds);
+                }
             } catch (error) {
                 console.error('Erreur lors de la récupération des annonces en attente:', error);
             }

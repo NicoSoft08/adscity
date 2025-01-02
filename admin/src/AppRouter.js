@@ -17,7 +17,7 @@ export default function AppRouter() {
             <Routes>
                 <Route path='/' element={<LoginPage />} />
                 <Route element={<AdminLayout />}>
-                    <Route path='/admin' element={<AdminHome />} />
+                    <Route path='/admin/dashboard' element={<AdminHome />} />
                 </Route>
                 <Route path='/access-denied' element={<AccessDenied />} />
                 <Route path='*' element={<NotFoundPage />} />

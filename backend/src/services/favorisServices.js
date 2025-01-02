@@ -47,9 +47,8 @@ router.get('/users/:userID', async (req, res) => {
     }
 
     try {
-        const userRef = firestore.collection('USERS').doc(userID);
-        const userDoc = await userRef.get();
-        
+        // Charger les données utilisateur
+        const userDoc = await firestore.collection('USERS').doc(userID).get();
         if (!userDoc.exists) {
             return res.status(404).json({
                 success: false,
@@ -59,25 +58,24 @@ router.get('/users/:userID', async (req, res) => {
 
         const userData = userDoc.data();
         const adsSaved = userData.adsSaved || [];
+
         // Charger les annonces favorites en fonction de leurs IDs
-        const adsPromises = adsSaved.map(async (adID) =>
-            await firestore.collection('POSTS').doc(adID).get()
-        );
-
-
-        await adsPromises.map(async (adPromise) => {
-            const adDoc = await adPromise;
+        const adsPromises = adsSaved.map(async (adID) => {
+            const adDoc = await firestore.collection('POSTS').doc(adID).get();
             if (!adDoc.exists) {
-                console.log(`Annonce avec l'ID ${adID} non trouvée.`);
-                return null;
+                console.warn(`Annonce avec l'ID ${adID} non trouvée.`);
+                return null; // Annonce non trouvée
             }
-            const favorisData = adDoc.data();
-            res.status(200).json({
-                success: true,
-                message: 'Favoris récupérés avec succès',
-                favorisData: favorisData,
-            });
-            return;
+            return { id: adID, ...adDoc.data() };
+        });
+
+        // Attendre que toutes les annonces soient récupérées
+        const favorisData = (await Promise.all(adsPromises)).filter((ad) => ad !== null);
+
+        return res.status(200).json({
+            success: true,
+            message: 'Favoris récupérés avec succès',
+            favorisData: favorisData,
         });
     } catch (error) {
         console.error('Erreur favoris:', error);

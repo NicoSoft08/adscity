@@ -77,7 +77,7 @@ export default function PaymentIntents({ userID }) {
                         ))
                     ) : (
                         <tr>
-                            <td colSpan="6">Aucun paiement trouvé.</td>
+                            <td colSpan="6">Vous n'avez aucun paiement.</td>
                         </tr>
                     )}
                 </tbody>

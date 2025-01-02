@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { faCheck, faCheckCircle, faCheckDouble, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCheckCircle, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { formatTimeDistance } from '../../func';
+import { formateDate, parseTimestamp } from '../../func';
 import { letterWhiteBgBlue } from '../../config/logos';
 import Menu from '../../customs/Menu';
 import { markNotificationAsRead } from '../../services/notificationServices';
@@ -10,7 +10,7 @@ import './Notifications.scss';
 
 
 const NotificationItem = ({ userID, notification, setNotifications }) => {
-    const timeDistance = formatTimeDistance(notification.timestamp);
+    const sentAt = parseTimestamp(notification?.timestamp);
 
     const [showMenu, setShowMenu] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -75,12 +75,20 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
                     {notification.type === 'ad_refusal' && notification.message}
                 </p>
                 <span className="timestamp">
-                    {timeDistance}
+                    {formateDate(sentAt)}
                 </span>
             </div>
+            {notification.isRead
+                ? <span className='options'>Lu</span>
+                : <FontAwesomeIcon
+                    className='options'
+                    icon={faEllipsisH}
+                    onClick={(e) => handleMenuClick(e, notification.isRead)}
+                />
+            }
             <FontAwesomeIcon
                 className='options'
-                icon={notification.isRead ? faCheckDouble : faEllipsisH}
+                icon={notification.isRead ? "Lu" : faEllipsisH}
                 onClick={(e) => handleMenuClick(e, notification.isRead)}
             />
             <Menu
@@ -113,7 +121,7 @@ export default function NotificationList({ notifications, setNotifications, user
                         setNotifications={setNotifications}
                     />
                 ))
-                : null
+                : <p>Vous n'avez aucunes notifications</p>
             }
         </div>
     );

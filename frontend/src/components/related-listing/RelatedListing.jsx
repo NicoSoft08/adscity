@@ -4,14 +4,18 @@ import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import './RelatedListing.scss';
 
-export default function RelatedListing({ adID, currentCategory }) {
+export default function RelatedListing({ adID, category }) {
     const [relatedAds, setRelatedAds] = useState([]);
 
     useEffect(() => {
         const fetchRelatedAds = async () => {
             try {
-                const relatedAds = await fetchRelatedListings(adID, currentCategory);
-                setRelatedAds(relatedAds);
+                const result = await fetchRelatedListings(adID, category);
+                if (result.success) {
+                    const relatedAds = Array.isArray(result?.relatedAds) ? result?.relatedAds : [];
+                    setRelatedAds(relatedAds);
+                }
+                // setRelatedAds(relatedAds);
             } catch (error) {
                 console.error('Error fetching related ads:', error);
             }
@@ -20,7 +24,7 @@ export default function RelatedListing({ adID, currentCategory }) {
         if (adID) {
             fetchRelatedAds();
         }
-    }, [adID, currentCategory]);
+    }, [adID, category]);
 
     return (
         <div className='ads-connexes'>

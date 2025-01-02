@@ -4,7 +4,7 @@ import { auth } from "../firebaseConfig";
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 
-const signinUser = async (email, password, deviceInfo) => {
+const signinUser = async (email, password) => {
     try {
         // User authentication
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
@@ -22,7 +22,6 @@ const signinUser = async (email, password, deviceInfo) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ deviceInfo })
         });
 
 

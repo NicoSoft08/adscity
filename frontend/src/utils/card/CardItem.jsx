@@ -9,7 +9,6 @@ import {
     faEyeSlash,
     faFlag,
     faGavel,
-    faHeart,
     faShare
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
@@ -26,45 +25,51 @@ import {
 import { fetchProfileByUserID } from '../../services/storageServices';
 import Menu from '../../customs/Menu';
 import Toast from '../../customs/Toast';
+import { toggleFavorites } from '../../services/favorisServices';
 import './CardItem.scss';
 
-export default function CardItem({ ad, isLiked, onToggleFavorites }) {
-    const { currentUser } = useContext(AuthContext);
+export default function CardItem({ ad, onToggleFavorite }) {
+    const { currentUser, userData } = useContext(AuthContext);
     const { id, userID, adDetails, images,
         location, category, subcategory, views,
         posted_at, expiry_date, isActive,
     } = ad;
     const [showMenu, setShowMenu] = useState(false);
+    const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [profilURL, setProfilURL] = useState();
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (currentUser && userData && userData.adsSaved?.includes(ad.id)) {
+            setIsFavorite(true);
+        }
+
         const fetchProfilURL = async () => {
             const response = await fetchProfileByUserID(userID);
             setProfilURL(response.profilURL);
         };
 
         fetchProfilURL();
-    }, [userID]);
+    }, [userID, currentUser, userData, ad]);
 
     const reportReasons = [
-        { 
-            id: 1, 
-            label: 'Contenu inapproprié', 
+        {
+            id: 1,
+            label: 'Contenu inapproprié',
             icon: faBan,
             action: () => handleReportWithReason(ad.id, 'Contenu inapproprié')
         },
-        { 
-            id: 2, 
-            label: 'Produit illégal', 
+        {
+            id: 2,
+            label: 'Produit illégal',
             icon: faGavel,
             action: () => handleReportWithReason(ad.id, 'Produit illégal')
         },
-        { 
-            id: 3, 
-            label: 'Annonce frauduleuse', 
+        {
+            id: 3,
+            label: 'Annonce frauduleuse',
             icon: faExclamationTriangle,
             action: () => handleReportWithReason(ad.id, 'Annonce frauduleuse')
         },
@@ -179,6 +184,51 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
     }
 
 
+    const handleToggleFavorite = async (adID) => {
+        const userID = currentUser.uid;
+        if (!currentUser) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Vous devez être connecté pour ajouter aux favoris.',
+            });
+            return;
+        }
+
+        try {
+            const result = await toggleFavorites(adID, userID);
+            if (result.success) {
+                setIsFavorite(result.isFavorite);
+                setToast({
+                    show: true,
+                    type: result.isFavorite ? 'success' : 'info',
+                    message: result.isFavorite
+                        ? 'Annonce ajoutée aux favoris !'
+                        : 'Annonce retirée des favoris.',
+                });
+
+                // Si la prop onToggleFavorite est définie, l'appeler
+                if (onToggleFavorite && !result.isFavorite) {
+                    onToggleFavorite(adID);
+                }
+            } else {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Erreur lors de la mise à jour des favoris.',
+                });
+            }
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour des favoris:', error);
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Une erreur s\'est produite.',
+            });
+        }
+    }
+
+
 
     // Vérifier si l'annonce a expiré
     function parseTimestamp(timestamp) {
@@ -245,28 +295,15 @@ export default function CardItem({ ad, isLiked, onToggleFavorites }) {
                     <FontAwesomeIcon icon={faEllipsisV} color='#343a40' />
                 </button>
                 <button
-                    className={`like-button ${isLiked ? 'active' : ''}`}
+                    className={`like-button ${isFavorite ? 'active' : ''}`}
                     // className="like-button"
-                    title={isActive ? 'Ajouter aux favoris' : 'Inactif - indisponible'}
-                    onClick={(e) => { e.stopPropagation(); isActive && onToggleFavorites(ad.id); }}
+                    title={isActive ? (isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris') : 'Inactif - indisponible'}
+                    onClick={(e) => { e.stopPropagation(); isActive && handleToggleFavorite(ad.id); }}
                 >
-                    <FontAwesomeIcon icon={faHeart} color={isLiked ? "red" : "#343a40"} />
+                    {isFavorite ? '❤️' : '🤍'}
+                    {/* <FontAwesomeIcon icon={faHeart} color={isFavorite ? 'red' : '#343a40'} /> */}
                 </button>
             </div>
-            {/* <div className="card-stats">
-                <span>
-                    <FontAwesomeIcon className='favoris-count' icon={faHeart} />
-                    {" "}{favorites || 0}
-                </span>
-                <span>
-                    <FontAwesomeIcon className='comment-count' icon={faComments} />
-                    {" "}{comments || 0}
-                </span>
-                <span>
-                    <FontAwesomeIcon className='share-count' icon={faShare} />
-                    {" "}{shares}
-                </span>
-            </div> */}
             <Menu
                 options={options}
                 isOpen={showMenu}

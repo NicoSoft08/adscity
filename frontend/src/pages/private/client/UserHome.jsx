@@ -8,6 +8,7 @@ import Settings from './Settings';
 import MyAds from './MyAds';
 import PaymentIntents from '../../../components/payment/PaymentIntents';
 import MyNotifications from '../MyNotifications';
+import MyFavorites from '../MyFavorites';
 import { AuthContext } from '../../../contexts/AuthContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
@@ -15,6 +16,7 @@ import {
     faBullhorn, 
     faChartLine, 
     faCogs, 
+    faHeartCircleCheck, 
     faMoneyBill, 
     faUserCircle 
 } from '@fortawesome/free-solid-svg-icons';
@@ -56,13 +58,13 @@ export default function UserHome() {
                             <FontAwesomeIcon icon={faBullhorn} />
                             {!isCollapsed ? <span>Annonces</span> : null}
                         </li>
-                        {/* <li
+                        <li
                             className={`${activeSection === "favoris" ? 'active' : ''}`}
                             onClick={() => setActiveSection('favoris')}
                         >
                             <FontAwesomeIcon icon={faHeartCircleCheck} />
                             {!isCollapsed ? <span>Favoris</span> : null}
-                        </li> */}
+                        </li>
                         <li
                             className={`${activeSection === "notifications" ? 'active' : ''}`}
                             onClick={() => setActiveSection('notifications')}
@@ -100,7 +102,7 @@ export default function UserHome() {
                 <div className="main-content">
                     {activeSection === "panel" && <DashboardPanel />}
                     {activeSection === "ads" && <MyAds currentUser={currentUser} />}
-                    {/* {activeSection === "favoris" && <MyFavorites currentUser={currentUser} />} */}
+                    {activeSection === "favoris" && <MyFavorites currentUser={currentUser} />}
                     {activeSection === "notifications" && <MyNotifications />}
                     {activeSection === "payments" && <PaymentIntents userID={currentUser?.uid} />}
                     {activeSection === "profile" && <UserProfile />}

@@ -93,8 +93,8 @@ const fetchAdsByCategory = async (categoryName) => {
             body: JSON.stringify({ categoryName }),
         });
 
-        const ads = await response.json();
-        return ads;
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error('Erreur lors de la requête de récupération des annonces:', error);
         return [];

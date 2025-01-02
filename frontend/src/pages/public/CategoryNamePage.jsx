@@ -13,8 +13,10 @@ export default function CategoryNamePage() {
 
     useEffect(() => {
         const getAdsByCategory = async () => {
-            const ads = await fetchAdsByCategory(categoryName);
-            setAdsCategory(ads);
+            const result = await fetchAdsByCategory(categoryName);
+            if (result.success) {
+                setAdsCategory(result?.ads);
+            }
         }
 
         getAdsByCategory();

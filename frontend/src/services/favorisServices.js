@@ -16,7 +16,6 @@ const toggleFavorites = async (adID, userID) => {
         }
 
         const result = await response.json();
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour des favoris:', error);
@@ -35,7 +34,6 @@ const getUserFavorites = async (userID) => {
             },
         });
         const result = await response.json();
-        console.log(result)
         return result;
 
         // if (result.success) {

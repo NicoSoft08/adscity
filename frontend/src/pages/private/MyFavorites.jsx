@@ -18,6 +18,11 @@ export default function MyFavorites({ currentUser }) {
         fetchFavoris();
     }, [currentUser]);
 
+    const handleRemoveFromFavorites = (adID) => {
+        // Mettre à jour l'état pour retirer l'annonce supprimée
+        setFavoris((prevFavoris) => prevFavoris.filter((ad) => ad.id !== adID));
+    };
+
     return (
         <div className='my-favoris'>
             <h2>Mes Favoris</h2>
@@ -27,6 +32,7 @@ export default function MyFavorites({ currentUser }) {
                         <CardItem
                             key={index}
                             ad={item}
+                            onToggleFavorite={handleRemoveFromFavorites}
                         />
                     ))}
                 </CardList>

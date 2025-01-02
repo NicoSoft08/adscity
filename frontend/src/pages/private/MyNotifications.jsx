@@ -12,8 +12,9 @@ export default function MyNotifications() {
         const getNotifications = async () => {
             const userID = currentUser.uid;
             const result = await fetchNotifications(userID);
-            setNotifications(result)
-
+            if (result.success) {
+                setNotifications(result?.notifications);
+            }
         }
 
         getNotifications();

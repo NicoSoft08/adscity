@@ -89,7 +89,7 @@ const refuseDevice = async (deviceID, verificationToken) => {
 
 
 
-const signinUser = async (email, password, deviceInfo) => {
+const signinUser = async (email, password) => {
     // User authentication
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
@@ -106,7 +106,6 @@ const signinUser = async (email, password, deviceInfo) => {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
         },
-        body: JSON.stringify({ deviceInfo }),
     });
 
     if (!response.ok) {

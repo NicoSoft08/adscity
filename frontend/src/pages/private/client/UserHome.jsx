@@ -56,6 +56,13 @@ export default function UserHome() {
                             <FontAwesomeIcon icon={faBullhorn} />
                             {!isCollapsed ? <span>Annonces</span> : null}
                         </li>
+                        {/* <li
+                            className={`${activeSection === "favoris" ? 'active' : ''}`}
+                            onClick={() => setActiveSection('favoris')}
+                        >
+                            <FontAwesomeIcon icon={faHeartCircleCheck} />
+                            {!isCollapsed ? <span>Favoris</span> : null}
+                        </li> */}
                         <li
                             className={`${activeSection === "notifications" ? 'active' : ''}`}
                             onClick={() => setActiveSection('notifications')}
@@ -93,6 +100,7 @@ export default function UserHome() {
                 <div className="main-content">
                     {activeSection === "panel" && <DashboardPanel />}
                     {activeSection === "ads" && <MyAds currentUser={currentUser} />}
+                    {/* {activeSection === "favoris" && <MyFavorites currentUser={currentUser} />} */}
                     {activeSection === "notifications" && <MyNotifications />}
                     {activeSection === "payments" && <PaymentIntents userID={currentUser?.uid} />}
                     {activeSection === "profile" && <UserProfile />}

@@ -107,16 +107,23 @@ const calculateEndDate = (duration) => {
 };
 
 
-const formatTimeDistance = (dateString) => {
-    // Conversion de la chaîne au format ISO 8601
-    const parsedDate = new Date(dateString);
+const formatTimeDistance = (timestamp) => {
+    // Vérification si le timestamp est un Firestore timestamp
+    if (typeof timestamp === 'object' && '_seconds' in timestamp) {
+        timestamp = new Date(timestamp._seconds * 1000); // Conversion des secondes en millisecondes
+    } else if (typeof timestamp === 'string' || timestamp instanceof Date) {
+        timestamp = new Date(timestamp); // Conversion directe pour les chaînes de date ou instances Date
+    } else {
+        return 'Date non valide';
+    }
 
-    if (isNaN(parsedDate.getTime())) {
+    // Vérifier si la date est valide
+    if (isNaN(timestamp.getTime())) {
         return 'Date non valide';
     }
 
     const now = new Date();
-    const seconds = Math.floor((now - parsedDate) / 1000);
+    const seconds = Math.floor((now - timestamp) / 1000);
     const minutes = Math.floor(seconds / 60);
     const hours = Math.floor(minutes / 60);
     const days = Math.floor(hours / 24);

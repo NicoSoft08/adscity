@@ -104,14 +104,14 @@ const fetchAdsByCategory = async (categoryName) => {
 
 
 // Fetch Related Listings
-const fetchRelatedListings = async (adID, currentCategory) => {
+const fetchRelatedListings = async (adID, category) => {
     try {
         const response = await fetch(`${backendUrl}/api/ads/related-category`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ adID, category: currentCategory }),
+            body: JSON.stringify({ adID, category }),
         });
 
         const relatedAds = await response.json();

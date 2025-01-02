@@ -6,7 +6,6 @@ import Spinner from '../../customs/Spinner';
 import Loading from '../../customs/Loading';
 import { signinUser } from '../../services/authServices';
 import Toast from '../../customs/Toast';
-import { collectDeviceInfo } from '../../services/trackServices';
 import '../../styles/LoginPage.scss';
 
 
@@ -67,11 +66,8 @@ export default function LoginPage() {
         try {
             const { email, password } = formData;
 
-            // Collecte des informations de l'appareil
-            const deviceInfo = await collectDeviceInfo();
-
             // Envoi des informations au backend avec les identifiants de connexion
-            const verificationResult = await signinUser(email, password, deviceInfo);
+            const verificationResult = await signinUser(email, password);
 
             if (verificationResult.success) {
                 navigate('/');

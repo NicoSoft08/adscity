@@ -20,25 +20,29 @@ export default function AdDetailPage() {
 
     useEffect(() => {
         const fetchAdsData = async () => {
-            const adData = await fetchAnnonceByAdID(adID);
-            setAds(adData);
+            const result = await fetchAnnonceByAdID(adID);
+            if (result.success) {
+                setAds(result?.adData);
+            }
         };
         fetchAdsData();
+
     }, [adID]);
 
-    const { adDetails = {}, location = {}, images = [], posted_at, views } = ads || {};
+    const { adDetails = {}, location = {}, images = [], posted_at, views, category, subcategory } = ads || {};
     const { title = '', price = 0, priceType = '', currency = '' } = adDetails || {};
     const { address = '', city = '', country = '' } = location || {};
 
     useEffect(() => {
-        if (ads.userID) {
+        if (ads && ads?.userID) {
             const fetchProfilData = async () => {
-                const userData = await fetchDataByUserID(ads.userID);
+                const userData = await fetchDataByUserID(ads?.userID);
                 setProfilData(userData);
             };
             fetchProfilData();
         }
-    }, [ads.userID]);
+    }, [ads]);
+
 
     const postedAtDate = parseTimestamp(posted_at);
 
@@ -140,9 +144,9 @@ export default function AdDetailPage() {
                     <section className="meta-info">
                         <h2>Informations supplémentaires</h2>
                         <ul>
-                            <li><strong>Catégorie :</strong> {ads.category}</li>
-                            <li><strong>Sous-catégorie :</strong> {ads.subcategory}</li>
-                            <li><strong>Vues :</strong> {ads.views}</li>
+                            <li><strong>Catégorie :</strong> {category}</li>
+                            <li><strong>Sous-catégorie :</strong> {subcategory}</li>
+                            <li><strong>Vues :</strong> {views}</li>
                         </ul>
                     </section>
                 </div>
@@ -154,7 +158,7 @@ export default function AdDetailPage() {
                 </div>
             </div>
 
-            <RelatedListing adID={adID} currentCategory={ads?.category} />
+            <RelatedListing adID={adID} category={category} />
         </div>
     );
 }

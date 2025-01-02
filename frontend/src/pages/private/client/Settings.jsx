@@ -1,12 +1,16 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../../contexts/AuthContext';
 import Toast from '../../../customs/Toast';
 import { useNavigate } from 'react-router-dom';
-import { logoutUser, sendVerificationCode, updateUserPassword, verifyCodeAndUpdateEmail } from '../../../services/authServices';
-import { getUserDevices, updateUserFields } from '../../../services/userServices';
+import { 
+    logoutUser, 
+    sendVerificationCode, 
+    updateUserPassword, 
+    verifyCodeAndUpdateEmail 
+} from '../../../services/authServices';
+import { updateUserFields } from '../../../services/userServices';
 import Spinner from '../../../customs/Spinner';
 import Modal from '../../../customs/Modal';
-import DeviceItem from '../../../utils/device-item/DeviceItem';
 import '../../../styles/Settings.scss';
 
 export default function Settings() {
@@ -17,7 +21,6 @@ export default function Settings() {
         message: '',
         type: '',
     });
-    const [devices, setDevices] = useState([]);
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -36,17 +39,6 @@ export default function Settings() {
         password: "",
     });
     const [step, setStep] = useState("form"); // "form" | "verification"
-
-    useEffect(() => {
-        const fetchUserDevices = async () => {
-            const userID = currentUser?.uid;
-            const result = await getUserDevices(userID);
-            setDevices(result.devices);
-        }
-
-        fetchUserDevices();
-
-    }, [currentUser]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -324,14 +316,6 @@ export default function Settings() {
                 <h2>Assistance</h2>
                 <button onClick={() => navigate('/contact-us')} className='help-button'>Support Client</button>
                 <button onClick={() => navigate('/help-center/faq')} className='help-button'>FAQs</button>
-            </section>
-
-            <section className="connectivity">
-                <h2>Connectivité</h2>
-                <p>Appareils connectés</p>
-                {devices.map((device, index) => (
-                    <DeviceItem key={index} device={device} />
-                ))}
             </section>
 
             <section className="danger-zone">

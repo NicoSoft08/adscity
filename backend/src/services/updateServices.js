@@ -20,31 +20,36 @@ router.post('/update/interaction', async (req, res) => {
         const adRef = firestore.collection('POSTS').doc(adID);
         const userRef = firestore.collection('USERS').doc(userID);
 
-        const [adDoc, userDoc] = await Promise.all([
-            adRef.get(),
-            userRef.get()
-        ]);
+        const adData = adDoc.data();
+        const userData = userDoc.data();
 
-        const uniqueInteractedUsers = new Set([
-            ...(adDoc.data().interactedUsers || []),
-            userID
-        ]);
+        // Vérifier si l'utilisateur a déjà vu l'annonce
+        const hasAlreadyViewed = adData.interactedUsers?.includes(userID);
 
+        if (!hasAlreadyViewed) {
+            // Ajouter l'utilisateur à la liste des utilisateurs ayant vu l'annonce
+            const uniqueInteractedUsers = new Set([
+                ...(adData.interactedUsers || []),
+                userID
+            ]);
+
+            await adRef.update({
+                clicks: admin.firestore.FieldValue.increment(1),
+                views: admin.firestore.FieldValue.increment(1),
+                interactedUsers: Array.from(uniqueInteractedUsers)
+            });
+        }
+
+        // Ajouter l'annonce à la liste des annonces vues par l'utilisateur
         const uniqueViewedIDs = new Set([
-            ...(userDoc.data().adsViewed || []),
+            ...(userData.adsViewed || []),
             adID
-        ])
+        ]);
 
         await userRef.update({
             totalAdsViewed: admin.firestore.FieldValue.increment(1),
             adsViewed: Array.from(uniqueViewedIDs),
             categoriesViewed: admin.firestore.FieldValue.arrayUnion(category)
-        });
-
-        await adRef.update({
-            clicks: admin.firestore.FieldValue.increment(1),
-            views: admin.firestore.FieldValue.increment(1),
-            interactedUsers: Array.from(uniqueInteractedUsers)
         });
 
         return res.status(200).json({

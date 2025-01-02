@@ -373,34 +373,35 @@ router.get('/refused', async (req, res) => {
 router.get('/:adID', async (req, res) => {
     const { adID } = req.params;
 
+    if (!adID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'annonce manquant.'
+        });
+    }
+
     try {
         const adDoc = await firestore.collection('POSTS').doc(adID).get();
 
         if (!adDoc.exists) {
-            res.status(404).json({ 
+            return res.status(404).json({
                 success: false,
-                message: 'Annonce non trouvée.' 
+                message: 'Annonce non trouvée.'
             });
         }
 
         const adData = adDoc.data();
         if (adData.status !== 'approved') {
-            res.status(403).json({ 
+            return res.status(403).json({ 
                 success: false,
                 message: 'L\'annonce n\'est pas approuvée.' 
             });
         }
 
-        const data = [];
-        data.push({
-            id: adDoc.id,
-            ...adData,
-        });
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message: 'Annonce récupérée avec succès.',
-            data: data,
+            adData: adData,
         });
     } catch (error) {
         console.error(`Erreur lors de la récupération de l\'annonce avec ${adID}:`, error);
@@ -614,12 +615,14 @@ router.post('/category', async (req, res) => {
 // Route pour collecter les annonces relative à la catégorie de l'actuelle annonce
 router.post('/related-category', async (req, res) => {
     const { adID, category } = req.body;
+    console.log(adID, category)
 
     if (!category) {
         res.status(400).json({
             success: false,
             message: 'Catégorie de l\'annonce requise pour la recherche des annonces similaires'
         });
+        return;
     }
 
     try {

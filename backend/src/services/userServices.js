@@ -113,7 +113,11 @@ router.get('/:userID/notifications', async (req, res) => {
             ...doc.data(),
         }));
 
-        res.status(200).send(notifications);
+        res.status(200).send({
+            success: true,
+            message: 'Notifications récupérées avec succès',
+            notifications: notifications,
+        });
     } catch (error) {
         console.error('Erreur lors de la récupération des notifications :', error);
         res.status(500).send({ message: 'Erreur lors de la récupération des notifications' });

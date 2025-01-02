@@ -1,9 +1,9 @@
-const admin = require('firebase-admin');
+const { firestore, admin } = require('../config/firebase-admin');
 
 
 const updateAdInteraction = async (adID, userID) => {
     try {
-        const adRef = admin.firestore().collection('POSTS').doc(adID);
+        const adRef = firestore.collection('POSTS').doc(adID);
         const adDoc = await adRef.get();
 
         if (!adDoc.exists) {
@@ -36,9 +36,8 @@ const updateAdInteraction = async (adID, userID) => {
 };
 
 const onToggleFavorite = async (adID, userID) => {
-
-    const adRef = admin.firestore().collection('POSTS').doc(adID);
-    const userRef = admin.firestore().collection('USERS').doc(userID);
+    const adRef = firestore.collection('POSTS').doc(adID);
+    const userRef = firestore.collection('USERS').doc(userID);
 
     // Get current data
     const [adDoc, userDoc] = await Promise.all([
@@ -46,7 +45,6 @@ const onToggleFavorite = async (adID, userID) => {
         userRef.get()
     ]);
 
-    // Specific error messages for each case
     if (!adDoc.exists) {
         throw new Error('Annonce introuvable');
     }
@@ -54,32 +52,35 @@ const onToggleFavorite = async (adID, userID) => {
         throw new Error('Utilisateur introuvable');
     }
 
-    const favoritedBy = adDoc.data().favoritedBy || [];
-    const adsSaved = userDoc.data().adsSaved || [];
+    const isFavorite = (adDoc.data().favoritedBy || []).includes(userID);
 
-    // Update both collections
-    if (favoritedBy.includes(userID)) {
+    if (isFavorite) {
+        // Retirer des favoris
         await Promise.all([
             adRef.update({
-                favoritedBy: favoritedBy.filter(id => id !== userID),
+                favoritedBy: admin.firestore.FieldValue.arrayRemove(userID),
                 favorites: admin.firestore.FieldValue.increment(-1)
             }),
             userRef.update({
-                adsSaved: adsSaved.filter(id => id !== adID)
+                adsSaved: admin.firestore.FieldValue.arrayRemove(adID)
             })
         ]);
     } else {
+        // Ajouter aux favoris
         await Promise.all([
             adRef.update({
-                favoritedBy: [...favoritedBy, userID],
+                favoritedBy: admin.firestore.FieldValue.arrayUnion(userID),
                 favorites: admin.firestore.FieldValue.increment(1)
             }),
             userRef.update({
-                adsSaved: [...adsSaved, adID]
+                adsSaved: admin.firestore.FieldValue.arrayUnion(adID)
             })
         ]);
     }
+
+    return !isFavorite; // Retourne le nouvel état : true si ajouté, false si retiré
 };
+
 
 
 

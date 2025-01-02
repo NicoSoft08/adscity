@@ -1,10 +1,11 @@
-const admin = require('firebase-admin');
+const { firestore } = require('../config/firebase-admin');
 
 
 const getRelatedAds = async (adID, category) => {
 
-    const adsCollection = admin.firestore().collection('POSTS');
+    const adsCollection = firestore.collection('POSTS');
     const relatedAdsQuery = adsCollection
+        .where('status', '==', 'approved')
         .where('category', '==', category)
         .limit(12);
 
@@ -19,7 +20,7 @@ const getRelatedAds = async (adID, category) => {
 
 const getUserAds = async (userID) => {
     try {
-        const adsCollection = admin.firestore().collection('POSTS');
+        const adsCollection = firestore.collection('POSTS');
         const userAdsQuery = adsCollection.where('userID', '==', userID);
         const querySnapshot = await userAdsQuery.get();
 
@@ -40,7 +41,7 @@ const getUserAds = async (userID) => {
 
 const getUserActiveAds = async (userID) => {
     try {
-        const adsCollection = admin.firestore().collection('POSTS');
+        const adsCollection = firestore.collection('POSTS');
         const userAdsQuery = adsCollection
             .where('userID', '==', userID)
             .where('status', '==', 'approved')
@@ -65,7 +66,7 @@ const getUserActiveAds = async (userID) => {
 
 const getUserInactiveAds = async (userID) => {
     try {
-        const adsCollection = admin.firestore().collection('POSTS');
+        const adsCollection = firestore.collection('POSTS');
         const userAdsQuery = adsCollection
             .where('userID', '==', userID)
             .where('status', '==', 'approved')

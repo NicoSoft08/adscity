@@ -4,7 +4,7 @@ const { firestore, admin, auth } = require('../config/firebase-admin');
 const { createUser } = require("../firebase/auth");
 const { sendWelcomeEmail, sendNewDeviceAlert, sendCode } = require('../controllers/emailController');
 const { verifyToken, signinUser, getUserData } = require('../controllers/userController');
-const { handleDeviceVerification, generateVerificationCode } = require('../func');
+const { generateVerificationCode } = require('../func');
 const verificationCodes = new Map(); // Stocke les codes temporairement
 
 // Route pour créer un utilisateur
@@ -68,7 +68,6 @@ router.post('/signin', async (req, res) => {
 router.post('/verify/user-token', verifyToken, async (req, res) => {
     try {
         const user = req.user;
-        const { deviceInfo } = req.body;
 
         if (!user || !user.uid) {
             return res.status(401).json({
@@ -84,13 +83,6 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
             });
         }
 
-        // Validation de deviceInfo
-        if (!deviceInfo?.browser?.name || !deviceInfo?.os?.name || !deviceInfo?.ipAddress) {
-            return res.status(400).json({
-                success: false,
-                message: 'Informations du périphérique manquantes ou invalides',
-            });
-        }
 
         const userID = user.uid;
         const userDoc = await firestore.collection('USERS').doc(userID).get();
@@ -139,38 +131,6 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
                 user: { email, displayName, role },
             });
         }
-
-        // Vérification des appareils connus pour les connexions suivantes
-        const deviceSnapshot = await admin.firestore()
-            .collection('USERS')
-            .doc(userID)
-            .collection('DEVICES')
-            .where('browser.name', '==', deviceInfo.browser.name)
-            .where('os.name', '==', deviceInfo.os.name)
-            .where('device', '==', deviceInfo.device)
-            .where('ipAddress', '==', deviceInfo.ipAddress)
-            .get();
-
-        if (deviceSnapshot.empty) {
-            // Appareil inconnu détecté
-            const deviceID = admin.firestore().collection('USERS').doc().id;
-
-            await admin.auth().updateUser(userID, { disabled: true });
-            
-            // Envoyer une alerte pour l'appareil inconnu
-            await sendNewDeviceAlert(email, displayName, deviceInfo, deviceID);
-
-            console.log('Appareil inconnu détecté');
-            return res.status(401).json({
-                success: false,
-                message: 'Votre compte a été désactivé en raison d’un appareil inconnu détecté.',
-                actionRequired: 'Vérifiez vos emails pour autoriser ou refuser cet appareil.',
-            });
-        }
-
-        // Si l'appareil est connu, mettre à jour la dernière utilisation
-        const deviceRef = deviceSnapshot.docs[0].ref;
-        await deviceRef.update({ lastUsed: admin.firestore.FieldValue.serverTimestamp() });
 
         // Mettre à jour loginCount et lastLoginAt
         await admin.firestore().collection('USERS').doc(userID).update({

@@ -99,19 +99,6 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
 
         // Si c'est la première connexion
         if (loginCount === 0) {
-            await admin.firestore()
-                .collection('USERS')
-                .doc(userID)
-                .collection('DEVICES')
-                .add({
-                    browser: deviceInfo.browser,
-                    os: deviceInfo.os,
-                    device: deviceInfo.device,
-                    ipAddress: deviceInfo.ipAddress,
-                    isTrusted: true,
-                    lastUsed: admin.firestore.FieldValue.serverTimestamp(),
-                });
-
             try {
                 console.log('Appel à sendWelcomeEmail...');
                 await sendWelcomeEmail(email, displayName);

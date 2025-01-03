@@ -418,8 +418,13 @@ const sendSupportEmail = async (email, firstName, lastName, message, object, tic
     }
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log('Message reçu avec succès', ticketID);
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Erreur lors de l\'envoi de l\'email:', error);
+            } else {
+                console.log('Email envoyé avec succès:', info.response);
+            }
+        });
     } catch (error) {
         console.error('Erreur lors de l\'envoi des emails:', error);
     }
@@ -531,7 +536,13 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
         `,
     };
 
-    await transporter.sendMail(mailOptions);
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email:', error);
+        } else {
+            console.log('Email envoyé avec succès:', info.response);
+        }
+    });
 };
 
 const sendCustomerPaymentIntentEmail = async (paymentData) => {
@@ -593,8 +604,13 @@ const sendCustomerPaymentIntentEmail = async (paymentData) => {
         `,
     };
 
-    await transporter.sendMail(mailOptions);
-    console.log('Message reçu avec succès');
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email:', error);
+        } else {
+            console.log('Email envoyé avec succès:', info.response);
+        }
+    });
 };
 
 

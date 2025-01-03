@@ -2,6 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
 const path = require('path');
+
+const nodemailer = require('nodemailer');
+
 const dotenv = require('dotenv');
 dotenv.config();
 
@@ -30,6 +33,48 @@ cron.schedule('0 0 * * *', async () => {
     await checkFreeTrialExpiry();
 });
 
+
+const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    secure: true,
+    auth: {
+        user: process.env.SMTP_MAIL,
+        pass: process.env.SMTP_PASS,
+    },
+    logger: true, // Active les logs
+    debug: true,  // Active le mode debug
+});
+
+const mailOptions = {
+    from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
+    to: 'n.dahpenielnicolas123@gmail.com',
+    replyTo: process.env.SMTP_MAIL,
+    subject: '🎉 Bienvenue à AdsCity ! Nous sommes ravis de vous compter parmi nous.',
+    html: `
+    <html>
+    <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+    <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
+                   
+                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">
+                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                    </p>
+                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                </footer>
+    </body>
+    </html>
+    `,
+}
+
+transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+        console.error('Erreur lors de l\'envoi de l\'e-mail :', error);
+    } else {
+        console.log('E-mail envoyé avec succès :', info.response);
+    }
+});
 
 // Runs every hour
 cron.schedule('0 * * * *', async () => {

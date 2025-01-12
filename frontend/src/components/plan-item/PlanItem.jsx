@@ -9,7 +9,7 @@ export default function PlanItem({ plan, id, onSelect, selectedPlan, setSelected
         setSelectedPlan(id);
     };
 
-    const isParticulierPlan = plan?.name.toLowerCase() === "particulier";
+    const isParticulierPlan = plan?.name.toLowerCase() === "particulier" || plan?.name.toLowerCase() === "professionnel";
 
     return (
         <div

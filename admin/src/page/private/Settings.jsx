@@ -192,7 +192,6 @@ export default function Settings() {
             await logoutUser();
             navigate('/');
             setOpen(false);
-            console.log('User signed out successfully');
         } catch (error) {
             console.error('Error signing out:', error);
         }

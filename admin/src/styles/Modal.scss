@@ -67,6 +67,7 @@
 
         .modal-footer {
             display: flex;
+            justify-content: space-between;
             padding-top: 10px;
             border-top: 1px solid #e9ecef;
 
@@ -90,14 +91,6 @@
                 background-color: $primary-color;
             }
 
-        }
-
-        .modal-footer.space-between {
-            justify-content: space-between;
-        }
-
-        .modal-footer.flex-end {
-            justify-content: flex-end;
         }
     }
 }

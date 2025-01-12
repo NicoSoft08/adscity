@@ -7,7 +7,7 @@ import {
     faPlusSquare,
     faEye,
     faEyeSlash,
-    faEnvelope
+    faEnvelope,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -20,6 +20,7 @@ import Modal from '../../customs/Modal';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
 import '../../styles/AdsStatistics.scss';
+import { addNewAdmin } from '../../services/authServices';
 
 
 const Stats = ({ allAds, pendingAds, approvedAds, refusedAds }) => {
@@ -72,9 +73,10 @@ export default function AdsStatistics() {
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
+        firstName: '',
+        lastName: '',
         email: '',
         password: '',
-        level: '',
         permissions: []
     });
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -87,7 +89,7 @@ export default function AdsStatistics() {
         { value: 'MANAGE_ADS', label: 'Gestion des Annonces' },
         { value: 'MANAGE_USERS', label: 'Gestion des Utilisateurs' },
         { value: 'MANAGE_PAYMENTS', label: 'Gestion des Paiements' },
-        { value: 'super_admin', label: 'Super Admin' }
+        { value: 'SUPER_ADMIN', label: 'Super Admin' }
     ];
 
     useEffect(() => {
@@ -117,19 +119,30 @@ export default function AdsStatistics() {
 
     const validateInputs = () => {
         const formErrors = {};
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+        if (!formData.firstName) {
+            formErrors.firstName = 'Veuillez entrer un prénom';
+        }
+        if (!formData.lastName) {
+            formErrors.lastName = 'Veuillez entrer un nom de famille';
+        }
         if (!formData.email) {
             formErrors.email = 'Veuillez entrer un email';
+        }
+        if (!emailRegex.test(formData.email)) {
+            formErrors.email = 'Veuillez entrer un email valide';
         }
         if (!formData.password) {
             formErrors.password = 'Veuillez entrer un mot de passe';
         }
-        if (!formData.level) {
-            formErrors.level = 'Veuillez sélectionner un niveau';
+        if (!formData.permissions.length) {
+            formErrors.permissions = 'Veuillez sélectionner au moins une permission';
         }
 
         return formErrors;
     };
+
 
     const handleColse = () => setIsOpen(false);
 
@@ -137,9 +150,10 @@ export default function AdsStatistics() {
         setConfirm(false);
         setIsOpen(false);
         setFormData({
+            firstName: '',
+            lastName: '',
             email: '',
             password: '',
-            level: '',
             permissions: []
         });
     };
@@ -150,8 +164,19 @@ export default function AdsStatistics() {
     };
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        const { name, value, type, checked } = e.target;
+    
+        // Gestion des cases à cocher
+        if (type === 'checkbox') {
+            const updatedPermissions = checked
+                ? [...formData.permissions, value]
+                : formData.permissions.filter(permission => permission !== value);
+    
+            setFormData({ ...formData, permissions: updatedPermissions });
+        } else {
+            // Gestion des champs classiques
+            setFormData({ ...formData, [name]: value });
+        }
     };
 
 
@@ -164,17 +189,44 @@ export default function AdsStatistics() {
             return;
         };
 
+        // handleColse();
         setConfirm(true);
     }
 
-    const handleAddAdmin = (e) => {
-
-
-
+    const handleAddAdmin = async (e) => {
+        e.preventDefault();
         setIsLoading(true);
-        handleCloseConfirm();
 
+        const result = await addNewAdmin({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            email: formData.email,
+            password: formData.password,
+            permissions: formData.permissions,
+        })
+
+        if (result.success) {
+            setTimeout(() => {
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: 'Admin ajouté avec succès !'
+                });
+                setIsLoading(false);
+                handleColse();
+                handleCloseConfirm();
+                setFormData({
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    password: '',
+                    permissions: []
+                });
+            }, 3000);
+
+        }
     }
+
 
     return (
         <div className='ads-stats'>
@@ -199,12 +251,39 @@ export default function AdsStatistics() {
                     onShow={isOpen}
                     onHide={handleColse}
                     isNext={true}
+                    isHide={false}
                     onNext={handleConfirm}
                     nextText={"Créer"}
                     hideText={"Annuler"}
                 >
+                    <label htmlFor="identity">Nom & Prénoms</label>
                     <div className='password-toggle'>
+                        <input
+                            className={`input-field ${errors.firstName ? 'error' : ''}`}
+                            type="text"
+                            name='firstName'
+                            placeholder='Prénom'
+                            id="firstName"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                        />
+                        {errors.firstName && <div className="error-text">{errors.firstName}</div>}
+                    </div>
 
+                    <div className='password-toggle'>
+                        <input
+                            className={`input-field ${errors.lastName ? 'error' : ''}`}
+                            type="text"
+                            name='lastName'
+                            placeholder='Nom'
+                            id="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                        />
+                        {errors.lastName && <div className="error-text">{errors.lastName}</div>}
+                    </div>
+
+                    <div className='password-toggle'>
                         <label htmlFor="email">Identifiant</label>
                         <input
                             className={`input-field ${errors.email ? 'error' : ''}`}
@@ -218,7 +297,6 @@ export default function AdsStatistics() {
                     </div>
 
                     {errors.email && <div className="error-text">{errors.email}</div>}
-
 
                     <div className='password-toggle'>
                         <label htmlFor="password">Mot de passe</label>
@@ -241,20 +319,27 @@ export default function AdsStatistics() {
 
                     {errors.password && <div className="error-text">{errors.password}</div>}
 
-                    <label htmlFor="level">Niveau</label>
-                    <select
-                        className={`select-field ${errors.level ? 'error' : ''}`}
-                        value={formData.level}
-                        onChange={handleChange}
-                    >
-                        <option value="">Sélectionner un niveau</option>
-                        {adminLevels.map(level => (
-                            <option key={level.value} value={level.value}>
-                                {level.label}
-                            </option>
+                    <label htmlFor="permissions">Permissions</label>
+                    <div className="permissions-group">
+                        {adminLevels.map(permission => (
+                            <div key={permission.value} className="checkbox-container">
+                                <label htmlFor={permission.value}>
+                                    <input
+                                        type="checkbox"
+                                        id={permission.value}
+                                        name="permissions"
+                                        value={permission.value}
+                                        checked={formData.permissions.includes(permission.value)}
+                                        onChange={handleChange}
+                                    />
+                                    {permission.label}
+                                </label>
+                            </div>
                         ))}
-                    </select>
+                    </div>
+                    {errors.permissions && <div className="error-text">{errors.permissions}</div>}
                 </Modal>
+
             )}
 
             {confirm && (
@@ -267,7 +352,10 @@ export default function AdsStatistics() {
                     nextText={isLoading ? <Spinner /> : "Confirmer"}
                     hideText={"Annuler"}
                 >
-                    <p>Confirmez-vous ajouter <strong>{formData.email}</strong> comme Admin ? </p>
+                    <p>
+                        Confirmez-vous ajouter <strong>{formData.firstName} {formData.lastName}</strong> (<i>{formData.email}</i>)
+                        en tant qu'administrateur au niveau <strong>{formData.permissions}</strong> ?
+                    </p>
                 </Modal>
             )}
 

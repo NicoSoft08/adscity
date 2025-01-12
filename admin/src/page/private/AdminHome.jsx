@@ -9,6 +9,7 @@ import DashboardPanel from './DashboardPanel';
 import Settings from './Settings';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
+    faBell,
     faBullhorn, 
     faChartLine, 
     faCogs, 
@@ -19,6 +20,7 @@ import {
 import PaymentIntents from '../public/PaymentIntents';
 import ManageAds from './ManageAds';
 import '../../styles/AdminHome.scss';
+import Notifications from './Notifications';
 
 
 export default function AdminHome() {
@@ -78,6 +80,13 @@ export default function AdminHome() {
                             {!isCollapsed ? <span>Profile</span> : null}
                         </li>
                         <li
+                            className={`${activeSection === "notifications" ? 'active' : ''}`}
+                            onClick={() => setActiveSection('notifications')}
+                        >
+                            <FontAwesomeIcon icon={faBell} />
+                            {!isCollapsed ? <span>Notifications</span> : null}
+                        </li>
+                        <li
                             className={`${activeSection === "settings" ? 'active' : ''}`}
                             onClick={() => setActiveSection('settings')}
                         >
@@ -96,6 +105,7 @@ export default function AdminHome() {
                     {activeSection === "users" && <ManageUsers />}
                     {activeSection === "payments" && <PaymentIntents />}
                     {activeSection === "profile" && <UserProfile />}
+                    {activeSection === "notifications" && <Notifications />}
                     {activeSection === "settings" && <Settings />}
                 </div>
             </div>

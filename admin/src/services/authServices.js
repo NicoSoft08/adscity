@@ -3,6 +3,17 @@ import { auth } from "../firebaseConfig";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const addNewAdmin = async (adminData) => {
+    const response = await fetch(`${backendUrl}/api/auth/add-new-admin`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(adminData),
+    });
+    const result = await response.json();
+    return result;
+}
 
 const signinUser = async (email, password) => {
     try {
@@ -107,6 +118,7 @@ const verifyCodeAndUpdateEmail = async (userID, verificationCode, newEmail) => {
 
 
 export {
+    addNewAdmin,
     signinUser,
     logoutUser,
     deleteUser,

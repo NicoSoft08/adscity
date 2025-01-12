@@ -3,7 +3,7 @@ const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
-const { formateDateTimestamp, generateVerificationToken } = require('../func');
+const { formateDateTimestamp, generateVerificationToken, createNodemailerTransport } = require('../func');
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
@@ -196,7 +196,7 @@ const sendWelcomeEmail = async (displayName, email) => {
     });
 
     const mailOptions = {
-        from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
         to: email,
         replyTo: 'contact@adscity.net',
         subject: '🎉 Bienvenue à AdsCity ! Nous sommes ravis de vous compter parmi nous.',
@@ -430,6 +430,7 @@ const sendSupportEmail = async (email, firstName, lastName, message, object, tic
     }
 };
 
+
 const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
     const { browser, os, ipAddress } = deviceInfo;
     const verificationToken = generateVerificationToken();
@@ -545,6 +546,7 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
     });
 };
 
+
 const sendCustomerPaymentIntentEmail = async (paymentData) => {
     // Envoi du code par email
     let transporter = nodemailer.createTransport({
@@ -614,9 +616,68 @@ const sendCustomerPaymentIntentEmail = async (paymentData) => {
 };
 
 
+const sendAdminEmail = async (email, password, displayName) => {
+    const admin_url = process.env.ADMIN_URL;
+
+    // Envoi du code par email
+    const transporter = createNodemailerTransport()
+    console.log("Nodemailer transport created", transporter);
+
+    const mailOptions = {
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
+        to: email,
+        replyTo: process.env.SMTP_MAIL,
+        subject: 'Création de compte administrateur',
+        html: `
+        <html>
+            <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                    <h3 style="color: #417abc;">Bonjour ${displayName},</h3>
+                    <p>Nous avons créé un compte administrateur pour vous sur la plateforme <strong>AdsCity</strong>.</p>
+                    <p>Votre adresse email : <strong style="font-size: 18px;">${email}</strong>.</p>
+                    <p>Votre mot de passe par défaut : <strong style="font-size: 18px;">${password}</strong>.</p>
+                    <p>Veuillez vous <a href="${admin_url}">connecter à votre compte</a> en utilisant ces informations et suivez les instructions pour activer votre compte.</p>
+                    <p>Nous vous invitons à changer ce mot de passe et de choisir le votre.</p>
+                    
+                    <p style="color: red; font-weight: bold; margin-top: 20px;">
+                        Attention : ne communiquez jamais ce mot de passe à qui que ce soit. AdsCity ne vous demandera jamais de partager votre mot de passe ou toute autre information confidentielle.
+                    </p>
+
+                    <p style="margin-top: 20px;">Cordialement,</p>
+                    <p style="font-style: italic; color: #777;">L'équipe AdsCity</p>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <small style="color: #777;">Ce message vous est généré automatiquement et ne nécessite aucune réponse de votre part.</small>
+                </div>
+                <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
+                    <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
+                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                    </a>
+                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">
+                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                    </p>
+                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                </footer>
+            </body>
+        </html>
+        `,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email:', error);
+        } else {
+            console.log('Email envoyé avec succès:', info.response);
+        }
+    });
+}
+
+
 module.exports = {
     sendCode,
     verifyCode,
+    sendAdminEmail,
     sendUserAdsApprovedEmail,
     sendUserAdsRefusedEmail,
     sendWelcomeEmail,

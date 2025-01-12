@@ -4,6 +4,7 @@ const { format, isToday, isYesterday } = require('date-fns');
 const { fr } = require('date-fns/locale');
 const crypto = require('crypto');
 const { admin, firestore } = require('../config/firebase-admin');
+const nodemailer = require('nodemailer');
 
 
 const generateVerificationToken = () => {
@@ -190,10 +191,31 @@ const handleDeviceVerification = async (userID, deviceInfo) => {
     };
 };
 
+const createNodemailerTransport = () => {
+    const nodemailerTransport =  nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: process.env.SMTP_PORT,
+        secure: true,
+        logger: true,
+        debug: true,
+        secureConnection: false,
+        auth: {
+            user: process.env.SMTP_MAIL,
+            pass: process.env.SMTP_PASS,
+        },
+        tls: {
+            ciphers: 'SSLv3',
+            rejectUnauthorized: false
+        }
+    });
+    return nodemailerTransport;
+};
+
 
 
 
 module.exports = { 
+    createNodemailerTransport,
     formateDateTimestamp,
     generateVerificationCode, 
     generateVerificationToken,

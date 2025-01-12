@@ -1,8 +1,8 @@
-const admin = require('firebase-admin');
+const { storage } = require('../config/firebase-admin');
 
 const uploadFileToStorage = async (file) => {
     try {
-        const bucket = admin.storage().bucket(process.env.FIRBASE_STORAGE_BUCKET);
+        const bucket = storage.bucket(process.env.FIRBASE_STORAGE_BUCKET);
         const fileName = `profile-images/${Date.now()}_${file.originalname}`;
 
         const fileUpload = bucket.file(fileName);

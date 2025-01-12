@@ -173,11 +173,44 @@ const updateUserInteraction = async (userID, adID) => {
 };
 
 
+const getUserPermissions = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
 
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            const response = {
+                success: false,
+                message: "Utilisateur non trouvé"
+            };
+            return response;
+        }
+
+        const userData = userDoc.data();
+        const permissions = userData.permissions || [];
+        const response = {
+            success: true,
+            message: "Permissions récupérées avec succès",
+            permissions: permissions,
+        };
+        console.log("Permissions récupérées avec succès", permissions);
+        return response;
+    } catch (error) {
+        const response = {
+            success: false,
+            message: "Erreur lors de la récupération des permissions de l'utilisateur",
+            error: error.message
+        };
+        console.error("Erreur lors de la récupération des permissions de l'utilisateur", error);
+        return  response;
+    }
+}
 
 
 module.exports = {
     getUserData,
+    getUserPermissions,
     saveFcmToken,
     setUserOnlineStatus,
     sendUserNotification,

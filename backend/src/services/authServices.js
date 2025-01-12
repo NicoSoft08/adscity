@@ -1,11 +1,31 @@
 const express = require('express');
 const router = express.Router();
 const { firestore, admin, auth } = require('../config/firebase-admin');
-const { createUser } = require("../firebase/auth");
+const { createUser, createAdmin } = require("../firebase/auth");
 const { sendWelcomeEmail, sendNewDeviceAlert, sendCode } = require('../controllers/emailController');
 const { verifyToken, signinUser, getUserData } = require('../controllers/userController');
 const { generateVerificationCode } = require('../func');
 const verificationCodes = new Map(); // Stocke les codes temporairement
+
+
+// Route pour créer un administrateur
+router.post('/add-new-admin', async (req, res) => {
+    const { firstName, lastName, email, password, permissions } = req.body;
+    try {
+        const newUser = await createAdmin(email, password, permissions, lastName, firstName);
+        res.status(200).json({
+            success: true,
+            message: 'Utilisateur créé avec succès',
+            user: newUser
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur serveur',
+        });
+    }
+});
+
 
 // Route pour créer un utilisateur
 router.post('/create/user', async (req, res) => {
@@ -60,6 +80,47 @@ router.post('/signin', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ message: 'Erreur lors de la connexion', error: error.message });
+    }
+});
+
+
+router.post('/check-email-availability', async (req, res) => {
+    const { email } = req.body;
+
+    try {
+        // Vérifier si l'email existe dans Firebase Authentication
+        const isEmailUsed = await auth.getUserByEmail(email);
+
+        if (isEmailUsed) {
+            return res.status(200).json({
+                success: false,
+                message: "L'email est déjà utilisé.",
+            });
+        }
+
+        // Vérifier si l'email existe dans la collection Firestore USERS (facultatif)
+        const userSnapshot = await firestore
+            .collection('USERS')
+            .where('email', '==', email)
+            .get();
+
+        if (!userSnapshot.empty) {
+            return res.status(200).json({
+                success: false,
+                message: "L'email est déjà utilisé.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "L'email est disponible.",
+        });
+    } catch (error) {
+        console.error("Erreur lors de la vérification de l'email :", error);
+        return res.status(500).json({
+            success: false,
+            message: "Erreur interne du serveur.",
+        });
     }
 });
 
@@ -141,143 +202,143 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
 
 
 // Route pour autoriser un appareil
-router.post('/verify-device/:deviceID/:verificationToken', verifyToken, async (req, res) => {
-    try {
-        const { deviceID, verificationToken } = req.params;
-        const user = req.user;
+// router.post('/verify-device/:deviceID/:verificationToken', verifyToken, async (req, res) => {
+//     try {
+//         const { deviceID, verificationToken } = req.params;
+//         const user = req.user;
 
-        if (!user || !user.uid) {
-            return res.status(401).json({
-                success: false,
-                message: 'Utilisateur non authentifié',
-            });
-        }
+//         if (!user || !user.uid) {
+//             return res.status(401).json({
+//                 success: false,
+//                 message: 'Utilisateur non authentifié',
+//             });
+//         }
 
-        const userID = user.uid;
-        const userDoc = await admin.firestore().collection('USERS').doc(userID).get();
+//         const userID = user.uid;
+//         const userDoc = await admin.firestore().collection('USERS').doc(userID).get();
 
-        if (!userDoc.exists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Utilisateur introuvable',
-            });
-        }
+//         if (!userDoc.exists) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Utilisateur introuvable',
+//             });
+//         }
 
-        const tokenDoc = await admin.firestore().collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
-        if (!tokenDoc.exists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Token de vérification introuvable',
-            });
-        }
+//         const tokenDoc = await admin.firestore().collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
+//         if (!tokenDoc.exists) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Token de vérification introuvable',
+//             });
+//         }
 
-        const tokenData = tokenDoc.data();
-        if (tokenData.token !== verificationToken) {
-            return res.status(400).json({
-                success: false,
-                message: 'Token de vérification invalide',
-            });
-        }
+//         const tokenData = tokenDoc.data();
+//         if (tokenData.token !== verificationToken) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Token de vérification invalide',
+//             });
+//         }
 
-        if (tokenData.expiresAt < new Date()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Token de vérification expiré',
-            });
-        }
+//         if (tokenData.expiresAt < new Date()) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Token de vérification expiré',
+//             });
+//         }
 
-        // Désactiver le compte utilisateur
-        await admin.auth().updateUser(userID, { disabled: true });
+//         // Désactiver le compte utilisateur
+//         await admin.auth().updateUser(userID, { disabled: true });
 
-        // Approuver l'appareil
-        await admin.firestore()
-            .collection('USERS')
-            .doc(userID)
-            .collection('DEVICES')
-            .doc(deviceID)
-            .update({ isTrusted: true });
+//         // Approuver l'appareil
+//         await admin.firestore()
+//             .collection('USERS')
+//             .doc(userID)
+//             .collection('DEVICES')
+//             .doc(deviceID)
+//             .update({ isTrusted: true });
 
-        // Marquer le token comme utilisé
-        await tokenDoc.ref.update({ used: true });
+//         // Marquer le token comme utilisé
+//         await tokenDoc.ref.update({ used: true });
 
-        res.status(200).json({
-            success: true,
-            message: 'Appareil approuvé avec succès',
-        });
-    } catch (error) {
-        console.error('Erreur lors de la vérification du jeton utilisateur :', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur',
-        });
-    }
-});
+//         res.status(200).json({
+//             success: true,
+//             message: 'Appareil approuvé avec succès',
+//         });
+//     } catch (error) {
+//         console.error('Erreur lors de la vérification du jeton utilisateur :', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Erreur interne du serveur',
+//         });
+//     }
+// });
 
 
 // Route pour refuser un appareil
-router.post('/decline-device/:deviceID/:verificationToken', verifyToken, async (req, res) => {
-    try {
-        const { deviceID, verificationToken } = req.params;
-        const user = req.user;
+// router.post('/decline-device/:deviceID/:verificationToken', verifyToken, async (req, res) => {
+//     try {
+//         const { deviceID, verificationToken } = req.params;
+//         const user = req.user;
 
-        if (!user || !user.uid) {
-            return res.status(401).json({
-                success: false,
-                message: 'Utilisateur non authentifié',
-            });
-        }
+//         if (!user || !user.uid) {
+//             return res.status(401).json({
+//                 success: false,
+//                 message: 'Utilisateur non authentifié',
+//             });
+//         }
 
-        const userID = user.uid;
-        const userDoc = await admin.firestore().collection('USERS').doc(userID).get();
+//         const userID = user.uid;
+//         const userDoc = await admin.firestore().collection('USERS').doc(userID).get();
 
-        if (!userDoc.exists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Utilisateur introuvable',
-            });
-        }
+//         if (!userDoc.exists) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Utilisateur introuvable',
+//             });
+//         }
 
-        const tokenDoc = await admin.firestore().collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
-        if (!tokenDoc.exists) {
-            return res.status(404).json({
-                success: false,
-                message: 'Token de vérification introuvable',
-            });
-        }
+//         const tokenDoc = await admin.firestore().collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
+//         if (!tokenDoc.exists) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Token de vérification introuvable',
+//             });
+//         }
 
-        const tokenData = tokenDoc.data();
-        if (tokenData.token !== verificationToken) {
-            return res.status(400).json({
-                success: false,
-                message: 'Token de vérification invalide',
-            });
-        }
+//         const tokenData = tokenDoc.data();
+//         if (tokenData.token !== verificationToken) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Token de vérification invalide',
+//             });
+//         }
 
-        if (tokenData.expiresAt < new Date()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Token de vérification expiré',
-            });
-        }
+//         if (tokenData.expiresAt < new Date()) {
+//             return res.status(400).json({
+//                 success: false,
+//                 message: 'Token de vérification expiré',
+//             });
+//         }
 
-        // Désactiver le compte utilisateur
-        await admin.auth().updateUser(userID, { disabled: true });
+//         // Désactiver le compte utilisateur
+//         await admin.auth().updateUser(userID, { disabled: true });
 
-        // Marquer le token comme utilisé
-        await tokenDoc.ref.update({ used: true });
+//         // Marquer le token comme utilisé
+//         await tokenDoc.ref.update({ used: true });
 
-        res.status(200).json({
-            success: true,
-            message: 'Appareil rejeté. Compte sécurisé.',
-        });
-    } catch (error) {
-        console.error('Erreur lors de la vérification du jeton utilisateur :', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne du serveur',
-        });
-    }
-})
+//         res.status(200).json({
+//             success: true,
+//             message: 'Appareil rejeté. Compte sécurisé.',
+//         });
+//     } catch (error) {
+//         console.error('Erreur lors de la vérification du jeton utilisateur :', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Erreur interne du serveur',
+//         });
+//     }
+// })
 
 
 // Route pour activer une utilisateur

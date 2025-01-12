@@ -1,4 +1,4 @@
-const admin = require('firebase-admin');
+const { storage, firestore } = require('../config/firebase-admin');
 
 
 // Upload User Profile URL
@@ -8,7 +8,7 @@ const uploadProfilURLByUserID = async (userID, file) => {
     }
 
     try {
-        const bucket = admin.storage().bucket();
+        const bucket = storage.bucket();
         const fileName = `profile-images/${Date.now()}_${file.name}`;
 
         const fileUpload = bucket.file(fileName);
@@ -18,7 +18,7 @@ const uploadProfilURLByUserID = async (userID, file) => {
 
         const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
 
-        await admin.firestore().collection('USERS').doc(userID).update({
+        await firestore.collection('USERS').doc(userID).update({
             profilURL: publicUrl,
         });
 
@@ -33,5 +33,4 @@ const uploadProfilURLByUserID = async (userID, file) => {
 
 module.exports = {
     uploadProfilURLByUserID,
-    updateUserByField
 };

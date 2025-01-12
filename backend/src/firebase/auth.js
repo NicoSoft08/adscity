@@ -1,5 +1,5 @@
-const admin = require('firebase-admin');
-const { sendCode } = require('../controllers/emailController');
+const { auth, firestore, admin } = require('../config/firebase-admin');
+const { sendCode, sendAdminEmail } = require('../controllers/emailController');
 const { monthNames, generateVerificationCode, getUserProfileNumber } = require('../func');
 
 const currentDate = new Date();
@@ -9,8 +9,8 @@ oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
 
 
 const createDefaultAdmin = async () => {
-    const adminEmail = 'admin@adscity.net';
-    const adminPassword = 'nico_soft08';
+    const adminEmail = 'n.dahpenielnicolas123@gmail.com';
+    const adminPassword = 'admin1234';
     const firstName = "Nicolas";
     const lastName = "N'DAH";
     const country = 'Russie';
@@ -22,16 +22,18 @@ const createDefaultAdmin = async () => {
 
     try {
         // Vérifiez si l'utilisateur existe déjà dans Firebase Authentication
-        const userRecord = await admin.auth().getUserByEmail(adminEmail);
+        const userRecord = await auth.getUserByEmail(adminEmail);
         console.log(`Super administrateur existant : ${userRecord.email}`);
 
         // Vérifiez si le document existe déjà dans Firestore
-        const userRef = admin.firestore().collection('USERS').doc(userRecord.uid);
+        const userRef = firestore.collection('USERS').doc(userRecord.uid);
         const userDoc = await userRef.get();
 
         if (userDoc.exists) {
             console.log('Le super administrateur existe déjà dans Firestore.');
         } else {
+            await sendAdminEmail(adminEmail, `${firstName} ${lastName}`, adminPassword);
+
             // Ajoutez les informations supplémentaires dans Firestore si elles manquent
             await userRef.set({
                 displayName: `${firstName} ${lastName}`,
@@ -50,18 +52,7 @@ const createDefaultAdmin = async () => {
                 profilURL: profilURL,
                 role: 'admin',
                 userID: userRecord.uid,
-                permissions: [
-                    "MANAGE_USERS",          // Gérer les utilisateurs (création, modification, suppression)
-                    "MANAGE_ADS",            // Modérer les annonces
-                    "MANAGE_PAYMENTS",       // Gérer les abonnements et les paiements
-                    "VIEW_REPORTS",          // Accéder aux rapports et statistiques
-                    "ACCESS_ALL_DATA",       // Accès à toutes les données de la plateforme
-                    "MODIFY_SETTINGS",       // Modifier les paramètres de la plateforme
-                    "SEND_NOTIFICATIONS",    // Envoyer des notifications globales
-                    "MANAGE_SECURITY",       // Gérer les configurations de sécurité
-                    "MANAGE_TESTS",          // Superviser les tests et fonctionnalités bêta
-                    "MANAGE_ROLES",
-                ],
+                permissions: ["SUPER_ADMIN", "MANAGE_USERS", "MANAGE_ADS", "MANAGE_PAYMENTS"],
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
             console.log('Super administrateur ajouté dans Firestore.');
@@ -69,7 +60,7 @@ const createDefaultAdmin = async () => {
     } catch (error) {
         if (error.code === 'auth/user-not-found') {
             // Si l'utilisateur n'existe pas, créez-le dans Firebase Authentication
-            const newAdmin = await admin.auth().createUser({
+            const newAdmin = await auth.createUser({
                 email: adminEmail,
                 password: adminPassword,
                 disabled: false,
@@ -82,7 +73,7 @@ const createDefaultAdmin = async () => {
             console.log(`Super administrateur créé : ${newAdmin.email}`);
 
             // Ensuite, enregistrez-le dans Firestore
-            const userRef = admin.firestore().collection('USERS').doc(newAdmin.uid);
+            const userRef = firestore.collection('USERS').doc(newAdmin.uid);
 
             await userRef.set({
                 displayName: `${firstName} ${lastName}`,
@@ -101,21 +92,9 @@ const createDefaultAdmin = async () => {
                 profilURL: profilURL,
                 role: 'admin',
                 userID: newAdmin.uid,
-                permissions: [
-                    "MANAGE_USERS",          // Gérer les utilisateurs (création, modification, suppression)
-                    "MANAGE_ADS",            // Modérer les annonces
-                    "MANAGE_PAYMENTS",       // Gérer les abonnements et les paiements
-                    "VIEW_REPORTS",          // Accéder aux rapports et statistiques
-                    "ACCESS_ALL_DATA",       // Accès à toutes les données de la plateforme
-                    "MODIFY_SETTINGS",       // Modifier les paramètres de la plateforme
-                    "SEND_NOTIFICATIONS",    // Envoyer des notifications globales
-                    "MANAGE_SECURITY",       // Gérer les configurations de sécurité
-                    "MANAGE_TESTS",          // Superviser les tests et fonctionnalités bêta
-                    "MANAGE_ROLES",
-                ],
+                permissions: ["SUPER_ADMIN", "MANAGE_USERS", "MANAGE_ADS", "MANAGE_PAYMENTS"],
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
-
             console.log('Super administrateur ajouté dans Firestore.');
         } else {
             console.error('Erreur lors de la création du super administrateur:', error);
@@ -124,9 +103,75 @@ const createDefaultAdmin = async () => {
 }
 
 
+const createAdmin = async (firstName, lastName, email, password, permissions) => {
+    const cleanedEmail = email.trim();
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+    if (!validateEmail(cleanedEmail)) {
+        return res.status(400).json({
+            success: false,
+            message: "L'adresse e-mail est invalide.",
+        });
+    }
+
+    try {
+        const userRecord = await auth.createUser({
+            email: email,
+            password: password,
+            displayName: `${firstName} ${lastName}`,
+            disabled: false,
+            emailVerified: true,
+            phoneNumber: null,
+            photoURL: null,
+        });
+        console.log('Admin créé avec succès:', userRecord.uid);
+
+        const profileNumber = getUserProfileNumber();
+
+        // Ajouter les informations de l'utilisateur dans Firestore
+        const userRef = firestore.collection('USERS').doc(userRecord.uid);
+        await userRef.set({
+            displayName: `${firstName} ${lastName}`,
+            email,
+            firstName,
+            lastName,
+            phoneNumber: null,
+            profileNumber: profileNumber,
+            city: null,
+            country: null,
+            address: null,
+            emailVerified: true,
+            permissions,
+            isActive: true,
+            isOnline: false,
+            location: null,
+            profilURL: null,
+            role: 'admin',
+            userID: userRecord.uid,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        })
+        await sendAdminEmail(email, `${firstName} ${lastName}`, password);
+        console.log('Super administrateur ajouté dans Firestore.', userRecord.uid);
+
+        // Enregistrer une notification pour l'admin
+        const notification = {
+            type: 'new_admin',
+            title: 'Nouvel Admin',
+            message: `Un nouvel utilisateur ajouté : ${displayName} avec les identifiants suivants : ${email}, ${password}`,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            read: false,
+        };
+
+        await firestore.collection('NOTIFICATIONS').add(notification);
+    } catch (error) {
+        console.error('Erreur lors de la création de l\'admin:', error);
+    }
+}
+
+
 const createUser = async (email, password, displayName, firstName, lastName, phoneNumber, country, city, address) => {
     try {
-        const userRecord = await admin.auth().createUser({
+        const userRecord = await auth.createUser({
             email: email,
             password: password,
             disabled: false,
@@ -143,7 +188,7 @@ const createUser = async (email, password, displayName, firstName, lastName, pho
         const profileNumber = getUserProfileNumber();
 
         // Ajouter les informations de l'utilisateur dans Firestore
-        const userRef = admin.firestore().collection('USERS').doc(userRecord.uid);
+        const userRef = firestore.collection('USERS').doc(userRecord.uid);
 
         await userRef.set({
             address,
@@ -240,6 +285,16 @@ const createUser = async (email, password, displayName, firstName, lastName, pho
             verificationCode: code,
         });
 
+        // Enregistrer une notification pour l'admin
+        const notification = {
+            type: 'new_user',
+            title: 'Nouvelle inscription',
+            message: `Un nouvel utilisateur s'est inscrit : ${displayName}. Code de vérification : ${code}`,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            read: false,
+        };
+
+        await firestore.collection('NOTIFICATIONS').add(notification);
 
         // Envoi du code par email
         sendCode(displayName, email, code)
@@ -262,7 +317,7 @@ const createUser = async (email, password, displayName, firstName, lastName, pho
 
 const updateUser = async (email, updatedData) => {
     try {
-        const userSnapshot = await admin.firestore().collection('USERS')
+        const userSnapshot = await firestore.collection('USERS')
             .where('email', '==', email)
             .limit(1)
             .get();
@@ -274,7 +329,7 @@ const updateUser = async (email, updatedData) => {
 
         const userDocID = userSnapshot.docs[0].id;
 
-        await admin.firestore().collection('USERS').doc(userDocID).update(updatedData);
+        await firestore.collection('USERS').doc(userDocID).update(updatedData);
         console.log('Données utilisateur mises à jour avec succès');
         return true;
     } catch (error) {
@@ -286,6 +341,7 @@ const updateUser = async (email, updatedData) => {
 
 module.exports = {
     createDefaultAdmin,
+    createAdmin,
     createUser,
     updateUser
 };

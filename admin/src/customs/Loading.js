@@ -1,5 +1,5 @@
 import React from 'react';
-import { letterWhiteBgBlue, textBlueWithoutBg } from '../config/logos';
+import { letterWhiteBgBlue, textBlueBgWhite } from '../config/logos';
 import '../styles/Loading.scss';
 
 export default function Loading() {
@@ -8,7 +8,7 @@ export default function Loading() {
             <div className="loading-container">
                 <img src={letterWhiteBgBlue} alt="AdsCity" className="loading-logo" />
                 <div className="loading-header">
-                    <img src={textBlueWithoutBg} alt="AdsCity" className="loading-text" />
+                    <img src={textBlueBgWhite} alt="AdsCity" className="loading-text" />
                 </div>
                 <span className="loading-span">Publiez, Vendez, Echangez</span>
                 <div className="loading-spinner"></div>

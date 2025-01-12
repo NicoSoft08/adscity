@@ -1,0 +1,96 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.notification-item {
+    padding: 10px 20px;
+    display: flex;
+    flex-direction: column;
+    background-color: $white;
+    position: relative;
+    margin-bottom: 1rem;
+
+
+    .avatar-container {
+        display: flex;
+        align-items: start;
+
+        img {
+            width: 50px;
+            height: 50px;
+        }
+
+
+        .username-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+
+            h3 {
+                font-weight: $font-regular;
+                color: $two;
+                font-size: 16px;
+                margin-left: 10px;
+            }
+
+            .verified-badge {
+                margin-left: 10px;
+                color: $two;
+            }
+        }
+    }
+
+    .notification-content {
+        margin-bottom: 20px;
+
+        .title {
+            font-size: 15px;
+            font-weight: $font-light;
+            margin: 0;
+        }
+
+        .type {
+            font-weight: $font-light;
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .timestamp {
+            font-weight: $font-light;
+            font-size: 12px;
+            color: $gray;
+        }
+    }
+
+    .options {
+        position: absolute;
+        cursor: pointer;
+        top: 85%;
+        margin-bottom: 10px;
+    }
+
+    span {
+        font-size: 13px;
+        color: $dark;
+    }
+}
+
+
+.notification-item.unread {
+    border-left: 3px solid $two;
+}
+
+.notification-item.read {
+    border-left: 3px solid $white;
+}
+
+
+.notification-list {
+    margin-top: 4rem;
+    padding: 10px 20px;
+
+
+    @media (max-width: 768px) {
+        margin-top: 0;
+    }
+}

@@ -3,6 +3,10 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { doc, setDoc } from 'firebase/firestore';
 import { fr } from 'date-fns/locale';
 
+const parseTimestamp = (timestamp) => {
+    const timestampDate = new Date(timestamp?._seconds * 1000 + timestamp?._nanoseconds / 1000000);
+    return timestampDate;
+}
 
 
 const formateDateTimestamp = (adTimestamp) => {
@@ -100,6 +104,7 @@ const calculateEndDate = (duration) => {
 
 
 export {
+    parseTimestamp,
     calculateExpiryDate,
     formateDate,
     formateDateTimestamp,

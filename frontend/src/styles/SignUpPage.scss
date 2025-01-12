@@ -120,6 +120,14 @@
             color: $danger;
         }
 
+        .error {
+            font-size: 12px;
+            font-weight: $font-light;
+            color: $danger;
+            margin-top: 10px;
+            text-align: center;
+        }
+
         .navigation-buttons {
             display: flex;
             justify-content: space-between;

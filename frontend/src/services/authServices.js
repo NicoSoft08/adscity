@@ -88,6 +88,19 @@ const refuseDevice = async (deviceID, verificationToken) => {
 };
 
 
+const checkEmailAvailability = async (email) => {
+    const response = await fetch(`${backendUrl}/api/auth/check-email-availability`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+    });
+    const result = await response.json();
+    return result;
+};
+
+
 
 const signinUser = async (email, password) => {
     // User authentication
@@ -205,6 +218,7 @@ const logoutUser = async () => {
 
 export {
     createUser,
+    checkEmailAvailability,
     getCurrentUser,
     logoutUser,
     passwordReset,

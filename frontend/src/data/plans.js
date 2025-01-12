@@ -18,6 +18,7 @@ export const plans = [
             tool_manage_ads: 'Oui',
             personalize: 'Partielle',
             credibility: 'Moyenne',
+            ads_status: 'Non inclus',
         }
     },
     {
@@ -39,6 +40,7 @@ export const plans = [
             tool_manage_ads: 'Oui',
             personalize: 'Moyenne',
             credibility: 'Bonne',
+            ads_status: 'Inclus : 7x, 24h/durée',
         }
     },
     {
@@ -60,6 +62,7 @@ export const plans = [
             tool_manage_ads: 'Oui',
             personalize: 'Complète',
             credibility: 'Excellente',
+            ads_status: 'Inclus : 14x, 24h/durée',
         }
     }
 ]; 

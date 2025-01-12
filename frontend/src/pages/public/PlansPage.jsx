@@ -12,6 +12,7 @@ export default function PlansPage() {
     const { currentUser } = useContext(AuthContext);
     const [selectedPlan, setSelectedPlan] = useState(null);
     const [isOpen, setIsOpen] = useState(false);
+    const [showSelectCategory, setShowSelectCategory] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const navigate = useNavigate();
@@ -29,8 +30,14 @@ export default function PlansPage() {
         });
     };
 
+
+
+
     const CTAButton = ({ className, selectedPlan, isLoading, currentUser, setToast, navigate }) => {
         if (!selectedPlan) return null;
+
+        const isParticulierPlan = selectedPlan?.name.toLowerCase() === "professionnel";
+        console.log(isParticulierPlan);
 
         const handleClick = () => {
             // Redirection pour un plan payant
@@ -42,6 +49,15 @@ export default function PlansPage() {
                     message: "Connectez-vous pour continuer !!"
                 });
                 return;
+            }
+
+            if (isParticulierPlan) {
+                setShowSelectCategory(true);
+                setToast({
+                    type: 'error',
+                    show: true,
+                    message: "Ce plan est réservé aux professionnels !"
+                });
             }
             setIsLoading(true);
             setTimeout(() => {
@@ -129,55 +145,71 @@ export default function PlansPage() {
                                 </tr>
                                 <tr>
                                     <td>
-                                    Coût des plans
+                                        Coût des plans
                                     </td>
                                     <td>{selectedPlan?.content.cost_plan}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Visibilité des annonces
+                                        Visibilité des annonces
                                     </td>
                                     <td>{selectedPlan?.content.ads_visible}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Support client
+                                        Support client
                                     </td>
                                     <td>{selectedPlan?.content.support_client}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Rapports de performance
+                                        Rapports de performance
                                     </td>
                                     <td>{selectedPlan?.content.stat_performance}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Catégories spécialisées
+                                        Catégories spécialisées
                                     </td>
                                     <td>{selectedPlan?.content.special_cat}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Outils de gestion
+                                        Outils de gestion
                                     </td>
                                     <td>{selectedPlan?.content.tool_manage_ads}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Personnalisation
+                                        Personnalisation
                                     </td>
                                     <td>{selectedPlan?.content.personalize}</td>
                                 </tr>
                                 <tr>
                                     <td>
-                                    Crédibilité perçue
+                                        Crédibilité perçue
                                     </td>
                                     <td>{selectedPlan?.content.credibility}</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Status publicitaires
+                                    </td>
+                                    <td>{selectedPlan?.content.ads_status}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
+                </Modal>
+            )}
+
+            {showSelectCategory && (
+                <Modal
+                    onShow={showSelectCategory}
+                    title={`Sélectionner une catégorie`}
+                    onHide={() => setShowSelectCategory(false)}
+                >
+
                 </Modal>
             )}
 

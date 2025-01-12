@@ -16,6 +16,7 @@ export default function SignUpPage() {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [errors, setErrors] = useState({});
+    const [message, setMessage] = useState("");
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [isSignupSuccess, setIsSignupSuccess] = useState(false);
@@ -153,8 +154,13 @@ export default function SignUpPage() {
                     navigate('/auth/signup-success', { state: { userData: userData } });
                 }, 3000);
             } else {
+                setMessage(result.message);
                 setLoading(false);
-                setToast({ show: true, type: 'error', message: result.message });
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: result.message
+                });
             }
         } catch (error) {
             console.error('Inscription échouée: ', error);
@@ -327,7 +333,7 @@ export default function SignUpPage() {
                 </label>
 
                 {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
-
+                {message && (<div className='error'>{message}</div>)}
                 <div className="navigation-buttons">
                     {step > 1 && (
                         <button className='prev' onClick={prevStep}>Retour</button>
@@ -353,7 +359,13 @@ export default function SignUpPage() {
                 )
             }
 
-            {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />}
+            {toast &&
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, show: false })}
+                />
+            }
         </div >
     )
 }

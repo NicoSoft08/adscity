@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import Loading from '../../customs/Loading';
-import { signinUser } from '../../services/authServices';
+import { checkEmailAvailability, signinUser } from '../../services/authServices';
 import Toast from '../../customs/Toast';
 import '../../styles/LoginPage.scss';
 
@@ -65,6 +65,18 @@ export default function LoginPage() {
 
         try {
             const { email, password } = formData;
+
+            const isEmailAlreadyUsed = await checkEmailAvailability(email);
+            if (isEmailAlreadyUsed.success) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Cet email est déjà utilisé. Veuillez utiliser un autre email.'
+                });
+                setMessage('Cet email est déjà utilisé. Veuillez utiliser un autre email.');
+                setLoading(false);
+                return;
+            }
 
             // Envoi des informations au backend avec les identifiants de connexion
             const verificationResult = await signinUser(email, password);
@@ -151,7 +163,7 @@ export default function LoginPage() {
                 </button>
                 <p>Aucun compte utilisateur ? <Link to={'/auth/create-user'}>S'inscrire</Link></p>
             </form>
-            <Toast message={toast.message} type={toast.type} show={toast.show} onClose={() => setToast({ ...toast, show: false }) }/>
+            <Toast message={toast.message} type={toast.type} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

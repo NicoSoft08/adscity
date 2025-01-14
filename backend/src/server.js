@@ -24,7 +24,7 @@ const updateServices = require('./services/updateServices');
 const notificationServices = require('./services/notificationServices');
 const { checkFreeTrialExpiry, adStatusChecker } = require('./cron');
 const { createDefaultAdmin } = require('./firebase/auth');
-const { createNodemailerTransport } = require('./func');
+
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit
@@ -32,7 +32,6 @@ cron.schedule('0 0 * * *', async () => {
     console.log('Vérification quotidienne des périodes d\'essai...');
     await checkFreeTrialExpiry();
 });
-
 
 
 // Runs every hour

@@ -1,9 +1,12 @@
 const admin = require('firebase-admin');
-const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
-const { formateDateTimestamp, generateVerificationToken, createNodemailerTransport } = require('../func');
+const {
+    formateDateTimestamp,
+    generateVerificationToken,
+    createNodemailerTransport
+} = require('../func');
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
@@ -11,16 +14,7 @@ const logoPath = path.resolve(__dirname, '../assets/blue-no-bg.png');
 const logoBase64 = fs.readFileSync(logoPath, { encoding: 'base64' });
 
 const sendCode = async (displayName, email, code) => {
-    // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
@@ -50,7 +44,7 @@ const sendCode = async (displayName, email, code) => {
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                         <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
-                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
                         Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
@@ -62,27 +56,19 @@ const sendCode = async (displayName, email, code) => {
         `,
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('Email envoyé avec succès à:', email);
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
-        throw new Error('Erreur lors de l\'envoi de l\'email de vérification.');
-    }
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
 };
 
 const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) => {
 
     // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
@@ -106,7 +92,7 @@ const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) =>
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                         <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
-                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
                         Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
@@ -118,26 +104,18 @@ const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) =>
         `
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('Email envoyé avec succès à:', email);
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
-        throw new Error('Erreur lors de l\'envoi de l\'email de vérification.');
-    }
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
 };
 
 const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, reason) => {
     // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
@@ -162,7 +140,7 @@ const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, rea
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                         <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
-                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
                         Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
@@ -174,26 +152,19 @@ const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, rea
         `
     };
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('Email envoyé avec succès à:', email);
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
-    }
-}
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
+};
 
 const sendWelcomeEmail = async (displayName, email) => {
 
     // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
@@ -248,7 +219,7 @@ const sendWelcomeEmail = async (displayName, email) => {
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                         <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
-                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
                         Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
@@ -260,20 +231,16 @@ const sendWelcomeEmail = async (displayName, email) => {
         `
     };
 
-    try {
-        // Envoyer l'email après un délai de 5 minutes
-        setTimeout(() => {
-            transporter.sendMail(mailOptions, (error, info) => {
-                if (error) {
-                    console.error('Erreur lors de l\'envoi de l\'email:', error);
-                } else {
-                    console.log('Email envoyé avec succès:', info.response);
-                }
-            });
-        }, 5 * 60 * 1000); // Délai de 5 minutes
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi de l\'email:', error);
-    }
+    // Envoyer l'email après un délai de 5 minutes
+    setTimeout(() => {
+        nodemailerTransport.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Erreur lors de l\'envoi de l\'email :', error);
+            } else {
+                console.log('Email envoyé :', info.response);
+            }
+        });
+    }, 5 * 60 * 1000); // Délai de 5 minutes
 };
 
 
@@ -341,15 +308,7 @@ const verifyCode = async (email, code) => {
 const sendUserEmailWithTicket = async (firstName, lastName, email, object, message, ticketID) => {
 
     // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity Contact" <${process.env.SMTP_MAIL}>`,
@@ -375,7 +334,7 @@ const sendUserEmailWithTicket = async (firstName, lastName, email, object, messa
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                         <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
-                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
                         Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
@@ -387,27 +346,20 @@ const sendUserEmailWithTicket = async (firstName, lastName, email, object, messa
         `,
     }
 
-    try {
-        await transporter.sendMail(mailOptions);
-        console.log('Message reçu avec succès', ticketID);
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi des emails:', error);
-    }
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
 };
 
 
 const sendSupportEmail = async (email, firstName, lastName, message, object, ticketID) => {
 
     // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
@@ -417,17 +369,13 @@ const sendSupportEmail = async (email, firstName, lastName, message, object, tic
         text: `Détails du message:\n\nNom: ${firstName} ${lastName}\nEmail: ${email}\nObjet: ${object}\nMessage: ${message}\n\nTicket ID: ${ticketID}`,
     }
 
-    try {
-        transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-                console.error('Erreur lors de l\'envoi de l\'email:', error);
-            } else {
-                console.log('Email envoyé avec succès:', info.response);
-            }
-        });
-    } catch (error) {
-        console.error('Erreur lors de l\'envoi des emails:', error);
-    }
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
 };
 
 
@@ -449,15 +397,7 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
             used: false
         });
 
-    const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const currentDate = new Date().toLocaleString('fr-FR', {
         day: 'numeric',
@@ -525,7 +465,7 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
                         <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                             <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                         </a>
-                        <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                        <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                         <p style="font-size: 12px; color: #777;">
                             2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone : +7 (951) 516-95-31 |
                             Email : <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
@@ -537,11 +477,11 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
         `,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.error('Erreur lors de l\'envoi de l\'email:', error);
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
         } else {
-            console.log('Email envoyé avec succès:', info.response);
+            console.log('Email envoyé :', info.response);
         }
     });
 };
@@ -549,15 +489,7 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
 
 const sendCustomerPaymentIntentEmail = async (paymentData) => {
     // Envoi du code par email
-    let transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: process.env.SMTP_PORT,
-        secure: false,
-        auth: {
-            user: process.env.SMTP_MAIL,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
@@ -594,7 +526,7 @@ const sendCustomerPaymentIntentEmail = async (paymentData) => {
                         <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                             <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                         </a>
-                        <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                        <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                         <p style="font-size: 12px; color: #777;">
                             2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone : +7 (951) 516-95-31 |
                             Email : <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
@@ -606,11 +538,11 @@ const sendCustomerPaymentIntentEmail = async (paymentData) => {
         `,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.error('Erreur lors de l\'envoi de l\'email:', error);
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
         } else {
-            console.log('Email envoyé avec succès:', info.response);
+            console.log('Email envoyé :', info.response);
         }
     });
 };
@@ -620,8 +552,7 @@ const sendAdminEmail = async (email, password, displayName) => {
     const admin_url = process.env.ADMIN_URL;
 
     // Envoi du code par email
-    const transporter = createNodemailerTransport()
-    console.log("Nodemailer transport created", transporter);
+    const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
@@ -652,7 +583,7 @@ const sendAdminEmail = async (email, password, displayName) => {
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
                         <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
-                    <p style="font-size: 12px; color: #777;">2024 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
                         Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
@@ -664,11 +595,11 @@ const sendAdminEmail = async (email, password, displayName) => {
         `,
     };
 
-    transporter.sendMail(mailOptions, (error, info) => {
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
         if (error) {
-            console.error('Erreur lors de l\'envoi de l\'email:', error);
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
         } else {
-            console.log('Email envoyé avec succès:', info.response);
+            console.log('Email envoyé :', info.response);
         }
     });
 }

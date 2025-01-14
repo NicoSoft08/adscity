@@ -286,15 +286,15 @@ const createUser = async (email, password, displayName, firstName, lastName, pho
         });
 
         // Enregistrer une notification pour l'admin
-        const notification = {
-            type: 'new_user',
-            title: 'Nouvelle inscription',
-            message: `Un nouvel utilisateur s'est inscrit : ${displayName}. Code de vérification : ${code}`,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            read: false,
-        };
+        // const notification = {
+        //     type: 'new_user',
+        //     title: 'Nouvelle inscription',
+        //     message: `Un nouvel utilisateur s'est inscrit : ${displayName}. Code de vérification : ${code}`,
+        //     timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        //     isRead: false,
+        // };
 
-        await firestore.collection('NOTIFICATIONS').add(notification);
+        // await firestore.collection('NOTIFICATIONS').add(notification);
 
         // Envoi du code par email
         sendCode(displayName, email, code)

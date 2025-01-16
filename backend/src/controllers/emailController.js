@@ -19,8 +19,7 @@ const sendCode = async (displayName, email, code) => {
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
         to: email,
-        replyTo: 'contact@adscity.net',
-        subject: 'Vérification de votre adresse email',
+        subject: '✉️ Vérification de votre adresse email',
         html: `
         <html>
             <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
@@ -42,7 +41,7 @@ const sendCode = async (displayName, email, code) => {
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
@@ -169,7 +168,6 @@ const sendWelcomeEmail = async (displayName, email) => {
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
         to: email,
-        replyTo: 'contact@adscity.net',
         subject: '🎉 Bienvenue à AdsCity ! Nous sommes ravis de vous compter parmi nous.',
         html: `
         <html>

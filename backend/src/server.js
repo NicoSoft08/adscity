@@ -9,10 +9,6 @@ dotenv.config();
 const PORT = process.env.PORT || 4000;
 
 
-const {
-    markNotificationAsRead,
-} = require('./firebase/firestore');
-
 const authServices = require('./services/authServices');
 const userServices = require('./services/userServices');
 const adServices = require('./services/adServices');
@@ -40,6 +36,7 @@ cron.schedule('0 * * * *', async () => {
     await adStatusChecker();
 });
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -48,19 +45,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('', async (req, res) => {
     res.send('AdsCity Server is running')
-});
-
-
-app.patch('/notifications/:notificationID/read', async (req, res) => {
-    const { notificationID } = req.params;
-
-    try {
-        await markNotificationAsRead(notificationID);
-
-        res.status(200).json({ message: 'Notification marquée comme lue.' });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
 });
 
 

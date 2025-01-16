@@ -29,10 +29,10 @@ router.post('/add-new-admin', async (req, res) => {
 
 // Route pour créer un utilisateur
 router.post('/create/user', async (req, res) => {
-    const { email, password, displayName, firstName, lastName, phoneNumber, country, city, address } = req.body;
+    const { address, city, country, email, password, firstName, lastName, phoneNumber, displayName } = req.body;
 
     try {
-        const newUser = await createUser(email, password, displayName, lastName, firstName, phoneNumber, country, city, address);
+        const newUser = await createUser(address, city, country, email, password, firstName, lastName, phoneNumber, displayName);
         res.status(200).json({
             success: true,
             message: 'Utilisateur créé avec succès',
@@ -163,7 +163,7 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
         if (loginCount === 0) {
             try {
                 console.log('Appel à sendWelcomeEmail...');
-                await sendWelcomeEmail(email, displayName);
+                await sendWelcomeEmail(displayName, email);
                 console.log('Email envoyé.');
             } catch (error) {
                 console.error('Erreur lors de l\'envoi de l\'email de bienvenue :', error);

@@ -169,7 +169,7 @@ const createAdmin = async (firstName, lastName, email, password, permissions) =>
 }
 
 
-const createUser = async (email, password, displayName, firstName, lastName, phoneNumber, country, city, address) => {
+const createUser = async (address, city, country, email, password, firstName, lastName, phoneNumber, displayName) => {
     try {
         const userRecord = await auth.createUser({
             email: email,

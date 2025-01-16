@@ -6,7 +6,6 @@ const path = require('path');
 const dotenv = require('dotenv');
 dotenv.config();
 
-
 const PORT = process.env.PORT || 4000;
 
 
@@ -22,9 +21,11 @@ const paymentServices = require('./services/paymentServices');
 const favorisServices = require('./services/favorisServices');
 const updateServices = require('./services/updateServices');
 const notificationServices = require('./services/notificationServices');
-const { checkFreeTrialExpiry, adStatusChecker } = require('./cron');
+const { 
+    checkFreeTrialExpiry, 
+    adStatusChecker 
+} = require('./cron');
 const { createDefaultAdmin } = require('./firebase/auth');
-
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit

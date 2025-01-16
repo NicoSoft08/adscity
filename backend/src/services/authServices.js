@@ -36,7 +36,8 @@ router.post('/create/user', async (req, res) => {
         res.status(200).json({
             success: true,
             message: 'Utilisateur créé avec succès',
-            user: newUser
+            user: newUser.userRecord,
+            code: newUser.code
         });
     } catch (error) {
         res.status(500).json({

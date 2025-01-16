@@ -286,15 +286,15 @@ const createUser = async (email, password, displayName, firstName, lastName, pho
         });
 
         // Enregistrer une notification pour l'admin
-        // const notification = {
-        //     type: 'new_user',
-        //     title: 'Nouvelle inscription',
-        //     message: `Un nouvel utilisateur s'est inscrit : ${displayName}. Code de vérification : ${code}`,
-        //     timestamp: admin.firestore.FieldValue.serverTimestamp(),
-        //     isRead: false,
-        // };
+        const notification = {
+            type: 'new_user',
+            title: 'Nouvelle inscription',
+            message: `Un nouvel utilisateur s'est inscrit : ${displayName}. Code de vérification : ${code}`,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            isRead: false,
+        };
 
-        // await firestore.collection('NOTIFICATIONS').add(notification);
+        await firestore.collection('NOTIFICATIONS').add(notification);
 
         // Envoi du code par email
         sendCode(displayName, email, code)
@@ -308,7 +308,7 @@ const createUser = async (email, password, displayName, firstName, lastName, pho
 
         console.log('Utilisateur créé avec succès', userRecord.uid);
 
-        return userRecord;
+        return { userRecord, code };
     } catch (error) {
         console.error('Erreur lors de la création de l\'utilisateur:', error);
     }

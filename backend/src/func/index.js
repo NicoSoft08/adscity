@@ -195,7 +195,7 @@ const createNodemailerTransport = () => {
     const nodemailerTransport =  nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
-        secure: false,
+        secure: true,
         logger: true,
         debug: true,
         auth: {

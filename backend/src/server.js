@@ -22,6 +22,7 @@ const {
     adStatusChecker 
 } = require('./cron');
 const { createDefaultAdmin } = require('./firebase/auth');
+const { createNodemailerTransport } = require('./func');
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit
@@ -37,8 +38,6 @@ cron.schedule('0 * * * *', async () => {
 });
 
 
-
-
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -47,6 +46,26 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('', async (req, res) => {
     res.send('AdsCity Server is running')
+});
+
+// Route pour tester l'envoi d'email
+app.get('/send-test-email', async (req, res) => {
+    const nodemailerTransporter = createNodemailerTransport();
+    const mailOptions = {
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
+        to: 'contact.nicosoft@gmail.com', // Remplacez par votre adresse de test
+        subject: 'Test Email',
+        text: 'This is a test email sent from your Node.js application.',
+    };
+
+    try {
+        const info = await nodemailerTransporter.sendMail(mailOptions);
+        console.log('Email sent:', info.response);
+        res.status(200).json({ success: true, message: 'Email sent successfully!', info });
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).json({ success: false, message: 'Error sending email', error: error.message });
+    }
 });
 
 

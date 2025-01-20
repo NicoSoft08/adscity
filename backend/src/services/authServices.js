@@ -342,6 +342,44 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
 // })
 
 
+// Route pour supprimer un utilisateur
+router.delete('/delete/user/:userID', async (req, res) => {
+    const { userID } = req.params;
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'utilisateur manquant',
+        });
+    };
+
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            return res.status(404).json({
+                success: false,
+                message: 'Utilisateur introuvable',
+            });
+        };
+
+        await auth.deleteUser(userID);
+        await userRef.delete();
+        res.status(200).json({
+            success: true,
+            message: 'Utilisateur supprimé avec succès',
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Erreur lors de la suppression de l\'utilisateur',
+        });
+    }
+});
+
+
 // Route pour activer une utilisateur
 router.post('/enable/user/:userID', async (req, res) => {
     const { userID } = req.params;

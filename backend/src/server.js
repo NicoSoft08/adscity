@@ -17,9 +17,9 @@ const paymentServices = require('./services/paymentServices');
 const favorisServices = require('./services/favorisServices');
 const updateServices = require('./services/updateServices');
 const notificationServices = require('./services/notificationServices');
-const { 
-    checkFreeTrialExpiry, 
-    adStatusChecker 
+const {
+    checkFreeTrialExpiry,
+    adStatusChecker
 } = require('./cron');
 const { createDefaultAdmin } = require('./firebase/auth');
 const { createNodemailerTransport } = require('./func');
@@ -49,11 +49,11 @@ app.get('', async (req, res) => {
 });
 
 // Route pour tester l'envoi d'email
-app.get('/send-test-email', async (req, res) => {
+app.get('/api/send-test-email', async (req, res) => {
     const nodemailerTransporter = createNodemailerTransport();
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
-        to: 'contact.nicosoft@gmail.com', // Remplacez par votre adresse de test
+        to: 'n.dahpenielnicolas123@gmail.com', // Remplacez par votre adresse de test
         subject: 'Test Email',
         text: 'This is a test email sent from your Node.js application.',
     };

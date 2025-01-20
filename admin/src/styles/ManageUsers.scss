@@ -4,9 +4,12 @@
 
 .manage-user {
 
+    @media (max-width: 768px) {
+        margin-top: 10rem;
+    }
 
     h2 {
-        color: $white;
+        color: $dark;
     }
 
 
@@ -19,11 +22,24 @@
         border-radius: 12px;
         margin: 10px 0;
 
+        @media (max-width: 768px) {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
 
         label {
             font-size: 14px;
             font-weight: $font-light;
             color: $white;
+
+            @media (max-width: 768px) {
+                width: 100%;
+                margin-bottom: 10px;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+            }
         }
 
         input[type=date] {
@@ -33,6 +49,11 @@
             font-family: 'Ubuntu',sans-serif;
             font-weight: $font-light;
             outline: none;
+
+            @media (max-width: 768px) {
+                margin-left: 0;
+                margin-top: 5px;
+            }
         }
 
 
@@ -43,6 +64,11 @@
             font-family: 'Ubuntu',sans-serif;
             font-weight: $font-light;
             outline: none;
+
+            @media (max-width: 768px) {
+                margin-left: 0;
+                margin-top: 5px;
+            }
         }
 
 
@@ -55,6 +81,11 @@
             border: 1px solid $secondary-color;
             cursor: pointer;
             color: $white;
+
+            @media (max-width: 768px) {
+                margin-top: 10px;
+                width: 100%;
+            }
         }
     }
 }

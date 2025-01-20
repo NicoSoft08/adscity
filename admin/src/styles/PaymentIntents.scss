@@ -25,9 +25,12 @@
 
 .payment-intents {
 
+    @media (max-width: 768px) {
+        margin-top: 10rem;
+    }
+
     h2 {
-        font-weight: $font-regular;
-        color: $white;
+        color: $dark;
     }
 
 

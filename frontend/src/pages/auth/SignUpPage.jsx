@@ -305,7 +305,6 @@ export default function SignUpPage() {
         }
     }
 
-
     return (
         <div className='signup-page'>
             <div className="form">
@@ -349,6 +348,7 @@ export default function SignUpPage() {
 
                 <p>Avez-vous déjà un compte utilisateur ? <Link to={'/auth/signin'}>Se connecter</Link></p>
             </div>
+
             {
                 isSignupSuccess && (
                     <SignupSuccessModal

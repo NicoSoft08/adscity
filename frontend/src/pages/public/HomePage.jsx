@@ -46,7 +46,12 @@ export default function HomePage() {
                 <p>Aucunes annonces publiées</p>
             }
 
-            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
+            <Toast
+                show={toast.show}
+                type={toast.type}
+                message={toast.message}
+                onClose={() => setToast({ ...toast, show: false })}
+            />
         </div>
     );
 };

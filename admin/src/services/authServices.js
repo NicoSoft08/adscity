@@ -59,12 +59,11 @@ const logoutUser = async (userID) => {
 
 
 const deleteUser = async (userID) => {
-    const response = await fetch(`${backendUrl}/api/auth/delete/user`, {
+    const response = await fetch(`${backendUrl}/api/auth/delete/user/${userID}`, {
         method: 'DELETE',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userID }),
     });
 
     const result = await response.json();

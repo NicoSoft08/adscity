@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import { fetchAllUsers } from '../../services/userServices';
 import { deleteUser } from '../../services/authServices';
 import UserManagementTable from './UserManagementTable';
 import '../../styles/ManageUsers.scss';
+import { AuthContext } from '../../contexts/AuthContext';
+import Toast from '../../customs/Toast';
 
 
 export default function ManageUsers() {
+    const { currenttUser, userData } = useContext(AuthContext); 
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [filters, setFilters] = useState({
         createdAt: '',
         role: '',
         isActive: ''
     });
 
-
     useEffect(() => {
         const fetchUsers = async () => {
             const allUsers = await fetchAllUsers();
             setUsers(allUsers);
             setFilteredUsers(allUsers);
-        }
+        };
 
         fetchUsers();
     }, []);
@@ -80,8 +83,14 @@ export default function ManageUsers() {
 
     const handleDelete = async (id) => {
         setUsers(users.filter(user => user.id !== id));
-        await deleteUser(id);
-        console.log(`User ${id} deleted`);
+        if (!currenttUser && userData && userData.permissions.includes('MANAGE_USERS')) {
+            await deleteUser(id);
+            setToast({ show: true, type: 'success', message: 'Utilisateur supprimé avec succès.' });
+            console.log(`User ${id} deleted`);
+        } else {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les permissions pour supprimer des utilisateurs.' });
+            console.log(`User ${id} couldn't be deleted`);
+        }
     };
 
     return (
@@ -132,6 +141,8 @@ export default function ManageUsers() {
                 onDelete={handleDelete}
                 onToggleActive={handleToggleActive}
             />
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>
     )
 }

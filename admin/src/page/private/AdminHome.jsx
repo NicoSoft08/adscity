@@ -19,8 +19,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import PaymentIntents from '../public/PaymentIntents';
 import ManageAds from './ManageAds';
-import '../../styles/AdminHome.scss';
 import Notifications from './Notifications';
+import '../../styles/AdminHome.scss';
 
 
 export default function AdminHome() {

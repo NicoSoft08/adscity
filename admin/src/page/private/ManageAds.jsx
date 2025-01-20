@@ -4,7 +4,7 @@ import '../../styles/ManageAds.scss';
 export default function ManageAds() {
     return (
         <div className="ads-section">
-            <h3>Gestion des Annonces</h3>
+            <h2>Gestion des Annonces</h2>
 
             <div className="ads-tools">
                 <div className="stats">

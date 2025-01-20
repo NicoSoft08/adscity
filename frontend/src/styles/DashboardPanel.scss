@@ -6,6 +6,11 @@
     display: flex;
     flex-direction: column;
 
+    @media (max-width: 768px) {
+        margin-top: 9rem;
+
+    };
+
     h2 {
         color: $dark;
     }

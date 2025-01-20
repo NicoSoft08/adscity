@@ -89,8 +89,10 @@
     
     @media (max-width: 768px) {
         .sidebar {
+            position: fixed;
             margin-top: 3rem;
             width: 92%;
+            z-index: 100;
             
             ul {
                 display: flex;

@@ -4,12 +4,12 @@
 
 .home-page {
     background-color: $white;
-    // min-height: 100vh;
-    text-align: center;
-
-
+    
+    
     p {
-        font-size: 1.5rem;
+        text-align: center;
+        font-size: 15px;
+        color: $dark;
         font-family: 'Ubuntu', sans-serif;
         font-weight: $font-regular;
     }

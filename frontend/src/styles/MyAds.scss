@@ -9,6 +9,11 @@
     background-color: $white;
 
 
+    @media (max-width: 768px) {
+        margin-top: 9rem;
+    }
+
+
     h2 {
         padding: 10px 0;
         font-weight: $font-regular;

@@ -11,12 +11,10 @@ import UserLayout from './layouts/UserLayout';
 
 // pages
 import AccessDenied from './pages/public/AccessDenied';
-import AdDetailPage from './pages/public/AdDetailPage';
 import CategoryNamePage from './pages/public/CategoryNamePage';
 import CategoryPage from './pages/public/CategoryNamePage';
 import ConditionPage from './pages/public/ConditionPage';
 import ContactPage from './pages/public/ContactPage';
-import CreateAdPage from './pages/public/CreateAdPage';
 import FAQsPage from './pages/public/FAQsPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import HelpPage from './pages/public/HelpPage';
@@ -38,6 +36,9 @@ import { DeclineDevice, VerifyDevice } from './pages/auth/DeviceActions';
 import Business from './pages/public/Business';
 import QuickStartGuide from './pages/public/QuickStartGuide';
 import FeedbackForm from './pages/private/FeedbackForm';
+import PostDetailPage from './pages/public/PostDetailPage';
+import CreatePostPage from './pages/public/CreatePostPage';
+import FiltersPage from './pages/public/FiltersPage';
 
 export default function AppRouter() {
 
@@ -48,21 +49,22 @@ export default function AppRouter() {
                     <Route path='/' element={<HomePage />} />
                     <Route path='/category' element={<CategoryPage />} />
                     <Route path='/category/:categoryName' element={<CategoryNamePage />} />
-                    <Route path='/auth/create-announcement' element={<CreateAdPage />} />
+                    <Route path='/auth/create-post' element={<CreatePostPage />} />
 
                     <Route path='/contact-us' element={<ContactPage />} />
 
                     <Route path='/pricing' element={<PlansPage />} />
                     <Route path='/search-results' element={<SearchResultPage />} />
+                    <Route path="/filters" element={<FiltersPage />} />
 
                     <Route path='/legal/privacy' element={<PrivacyPage />} />
                     <Route path='/legal/terms' element={<ConditionPage />} />
-                    <Route path='/legal/announcement-rules' element={<RulesPage />} />
+                    <Route path='/legal/post-rules' element={<RulesPage />} />
 
                     <Route path='/business' element={<Business />} />
                     <Route path='/about' element={<TeamPage />} />
-                    <Route path="/ads/:category/:subcategory/:adID" element={<AdDetailPage />} />
-                    <Route path='/users/show/:userID' element={<ShowUserPage />} />
+                    <Route path="/posts/:category/:subcategory/:postID" element={<PostDetailPage />} />
+                    <Route path='/users/user/:userID/profile/show' element={<ShowUserPage />} />
                     <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />
 
                     <Route path='/start-guide' element={<QuickStartGuide />} />

@@ -10,9 +10,9 @@ const verificationCodes = new Map(); // Stocke les codes temporairement
 
 // Route pour créer un administrateur
 router.post('/add-new-admin', async (req, res) => {
-    const { firstName, lastName, email, password, permissions } = req.body;
+    const { firstName, lastName, email, phoneNumber, password, permissions } = req.body;
     try {
-        const newUser = await createAdmin(email, password, permissions, lastName, firstName);
+        const newUser = await createAdmin(firstName, lastName, email, phoneNumber, password, permissions);
         res.status(200).json({
             success: true,
             message: 'Utilisateur créé avec succès',
@@ -343,6 +343,8 @@ router.post('/verify/user-token', verifyToken, async (req, res) => {
 
 
 // Route pour supprimer un utilisateur
+
+
 router.delete('/delete/user/:userID', async (req, res) => {
     const { userID } = req.params;
 
@@ -444,16 +446,29 @@ router.post('/logout/user', verifyToken, async (req, res) => {
 
 // Mettre à jour le mot de passe
 router.post('/update-password', async (req, res) => {
-    const { userID, newPassword } = req.body;
+    const { email, newPassword } = req.body;
 
-    if (!userID || !newPassword) {
+    if (!email || !newPassword) {
         return res.status(400).json({
             success: false,
-            message: 'ID de l\'utilisateur et le nouveau mot de passe sont requis'
+            message: 'Email et le nouveau mot de passe sont requis'
         });
-    }
+    };
 
     try {
+        // Vérifier si l'utilisateur existe
+        const userRef = firestore.collection('USERS').where('email', '==', email).limit(1);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            return res.status(404).json({
+                success: false,
+                message: 'Utilisateur non trouvé'
+            });
+        }
+
+        // Récupérer l'ID de l'utilisateur
+        const userID = userDoc.docs[0].id;
+        
         // Mettre à jour le mot de passe dans Firebase Authentication
         await auth.updateUser(userID, { password: newPassword });
 

@@ -46,7 +46,7 @@ const sendCode = async (displayName, email, code) => {
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -70,7 +70,7 @@ const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) =>
     const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
-        from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
         to: email,
         replyTo: 'support@adscity.net',
         subject: 'Approbation d\'annonces',
@@ -94,7 +94,7 @@ const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) =>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -117,7 +117,7 @@ const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, rea
     const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
-        from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
         to: email,
         replyTo: 'support@adscity.net',
         subject: 'Approbation d\'annonces',
@@ -142,7 +142,7 @@ const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, rea
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -220,7 +220,7 @@ const sendWelcomeEmail = async (displayName, email) => {
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -242,82 +242,21 @@ const sendWelcomeEmail = async (displayName, email) => {
 };
 
 
-const verifyCode = async (email, code) => {
-    try {
-        // Recherche l'utilisateur dans Firestore par email
-        const userSnapshot = await admin.firestore().collection('USERS')
-            .where('email', '==', email)
-            .limit(1)
-            .get();
-
-        if (userSnapshot.empty) {
-            console.log('Utilisateur non trouvé');
-            return false;
-        }
-
-        console.log('Utilisateur trouvé');
-
-        // Récupère le document de l'utilisateur
-        const userDoc = userSnapshot.docs[0];
-        const userData = userDoc.data();
-        const { verificationCode, expirationTime } = userData
-
-        console.log('Code stocké dans la base de données:', verificationCode);
-        console.log('Code fourni par l\'utilisateur:', code);
-
-        // Comparer le code fourni avec le code stocké
-        if (verificationCode !== parseInt(code)) {
-            console.error('Code incorrect');
-            throw new Error('Code incorrect');
-        }
-
-        // Check expiration using Timestamp comparison
-        const currentTime = Date.now();
-        const expirationMillis = expirationTime._seconds * 1000;
-
-        if (currentTime > expirationMillis) {
-            throw new Error('Code expiré');
-        }
-
-        // Si tout est correct
-        console.log('Code vérifié avec succès');
-
-        const userRecord = await admin.auth().getUserByEmail(email);
-        await admin.auth().updateUser(userRecord.uid, {
-            emailVerified: true,
-        });
-
-
-        await admin.firestore().collection('USERS').doc(userDoc.id).update({
-            emailVerified: true,
-            verificationCode: null,
-            expirationTime: null,
-        });
-
-        console.log('Utilisateur mis à jour avec succès');
-        return true;
-    } catch (error) {
-        console.error('Erreur lors de la vérification du code:', error);
-        return false;
-    }
-};
-
-
-const sendUserEmailWithTicket = async (firstName, lastName, email, object, message, ticketID) => {
+const sendUserEmailWithTicket = async (displayName, email, object, message, ticketID) => {
 
     // Envoi du code par email
     const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
-        from: `"AdsCity Contact" <${process.env.SMTP_MAIL}>`,
+        from: `"AdsCity Support" <${process.env.SMTP_MAIL}>`,
         to: email,
-        replyTo: 'contact@adscity.net',
+        replyTo: 'support@adscity.net',
         subject: `Accusé de réception - Ticket: ${ticketID}`,
         html: `
         <html>
             <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
-                    <h3 style="color: #417abc;">Bonjour ${firstName} ${lastName},</h3>
+                    <h3 style="color: #417abc;">Bonjour ${displayName},</h3>
                     <p>Nous avons bien reçu votre message concernant : <strong>${object}</strong>.</p>
                     <p>Notre équipe vous répondra dans les plus brefs délais.</p>
                     <p>Voici votre numéro de ticket : <strong>${ticketID}</strong>.</p>
@@ -335,7 +274,7 @@ const sendUserEmailWithTicket = async (firstName, lastName, email, object, messa
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -354,17 +293,17 @@ const sendUserEmailWithTicket = async (firstName, lastName, email, object, messa
 };
 
 
-const sendSupportEmail = async (email, firstName, lastName, message, object, ticketID) => {
+const sendSupportEmail = async (email, displayName, message, object, ticketID) => {
 
     // Envoi du code par email
     const nodemailerTransport = createNodemailerTransport();
 
     const mailOptions = {
-        from: `"AdsCity Info" <${process.env.SMTP_MAIL}>`,
+        from: `"AdsCity Mail Info" <${process.env.SMTP_MAIL}>`,
         to: 'support@adscity.net',
         replyTo: email,
-        subject: `Nouveau message de ${firstName} ${lastName} - Ticket #${ticketID}`,
-        text: `Détails du message:\n\nNom: ${firstName} ${lastName}\nEmail: ${email}\nObjet: ${object}\nMessage: ${message}\n\nTicket ID: ${ticketID}`,
+        subject: `Nouveau message de ${displayName} - Ticket #${ticketID}`,
+        text: `Détails du message:\n\nNom: ${displayName}\nEmail: ${email}\nObjet: ${object}\nMessage: ${message}\n\nTicket ID: ${ticketID}`,
     }
 
     nodemailerTransport.sendMail(mailOptions, (error, info) => {
@@ -584,7 +523,7 @@ const sendAdminEmail = async (email, password, displayName) => {
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
                         2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
-                        Email: <a href="mailto:contact@adscity.net" style="color: #417abc; text-decoration: none;">contact@adscity.net</a>
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
                     <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
                 </footer>
@@ -605,7 +544,6 @@ const sendAdminEmail = async (email, password, displayName) => {
 
 module.exports = {
     sendCode,
-    verifyCode,
     sendAdminEmail,
     sendUserAdsApprovedEmail,
     sendUserAdsRefusedEmail,

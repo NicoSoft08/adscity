@@ -7,13 +7,16 @@ const { admin, firestore } = require('../config/firebase-admin');
 const nodemailer = require('nodemailer');
 
 
+
+
+
 const generateVerificationToken = () => {
     // Generate a 32-byte random token
     const token = crypto.randomBytes(32).toString('hex');
-    
+
     // Add timestamp to ensure uniqueness
     const timestamp = Date.now().toString(36);
-    
+
     return `${token}${timestamp}`;
 };
 
@@ -48,22 +51,6 @@ const monthNames = [
     "September", "October", "November", "December"
 ];
 
-
-const greetings = () => {
-    const hours = new Date().getHours();
-    let say = "";
-
-    if (hours <= 12) {
-        say = "Bonjour";
-    } else if (hours > 12 && hours < 18) {
-        say = "Bonsoir";
-    } else {
-        say = "Bonne nuit";
-    }
-
-    return say;
-};
-
 const formateDate = (newDate) => {
     const date = new Date(newDate);
 
@@ -77,7 +64,6 @@ const formateDate = (newDate) => {
 
     return format(date, "d MMMM yyyy 'à' HH:mm", { locale: fr });
 }
-
 
 const formateDateTimestamp = (adTimestamp) => {
     const adDate = new Date(adTimestamp * 1000); // Convertir le timestamp en millisecondes
@@ -104,10 +90,9 @@ const formateDateTimestamp = (adTimestamp) => {
     }
 };
 
-
 const trackFirstLoginDevice = async (userID, deviceInfo) => {
     const userDeviceRef = admin.firestore().doc(`USERS/${userID}/DEVICES/INITIAL`);
-    
+
     await userDeviceRef.set({
         firstLoginDate: admin.firestore.FieldValue.serverTimestamp(),
         device: {
@@ -119,10 +104,9 @@ const trackFirstLoginDevice = async (userID, deviceInfo) => {
         },
         isActive: true
     });
-    
+
     return true;
 };
-
 
 const trackUserDevice = async () => {
     const parser = new UAParser();
@@ -145,9 +129,11 @@ const fetchIPAddress = async () => {
     return data.ip;
 };
 
-
+const storage = multer.memoryStorage();
+const limits = { fileSize: 5 * 1024 * 1024 }; // 5MB
 const upload = multer({
-    storage: multer.memoryStorage(),
+    storage: storage,
+    limits: limits,
 });
 
 
@@ -184,15 +170,15 @@ const handleDeviceVerification = async (userID, deviceInfo) => {
             lastLogin: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-    return { 
-        isKnown: false, 
+    return {
+        isKnown: false,
         deviceID: newDeviceRef.id,
         reason: "Un nouvel appareil a été détecté."
     };
 };
 
 const createNodemailerTransport = () => {
-    const nodemailerTransport =  nodemailer.createTransport({
+    const nodemailerTransport = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
         port: process.env.SMTP_PORT,
         secure: false,
@@ -206,21 +192,29 @@ const createNodemailerTransport = () => {
     return nodemailerTransport;
 };
 
+const generateSlug = (title) => {
+    return title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '') // Retire les caractères spéciaux
+        .replace(/\s+/g, '-')     // Remplace les espaces par des tirets
+        .replace(/--+/g, '-')     // Évite les doubles tirets
+        .trim();
+};
 
 
 
-module.exports = { 
+module.exports = {
     createNodemailerTransport,
     formateDateTimestamp,
-    generateVerificationCode, 
+    generateVerificationCode,
     generateVerificationToken,
-    monthNames, 
-    getUserProfileNumber, 
-    greetings,
-    upload, 
+    monthNames,
+    getUserProfileNumber,
+    upload,
     formateDate,
     generateTicketID,
     trackUserDevice,
     trackFirstLoginDevice,
     handleDeviceVerification,
+    generateSlug,
 };

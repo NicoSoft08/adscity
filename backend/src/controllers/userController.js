@@ -1,54 +1,153 @@
-const { admin, auth, firestore, messaging } = require("../config/firebase-admin");
+const { firestore, messaging } = require("../config/firebase-admin");
+const {
+    getUsers,
+    getUser,
+    setUserOnlineStatus,
+    collectUsersOnline,
+    collectUsersOffline,
+    collectUserPermissions,
+    updateUserFields,
+    addRemoveFavorites,
+    collectUserFavorites,
+    collectUserNotifications,
+    markNotificationAsRead
+} = require("../firebase/user");
 
-const getUserData = async (userID) => {
+
+const getUsersData = async (req, res) => {
     try {
-        const userRecord = auth.getUser(userID);
-
-        const userDoc = await firestore
-            .collection('USERS')
-            .doc(userID)
-            .get();
-
-        if (userDoc.exists) {
-            return {
-                ...(await userRecord).toJSON(),
-                ...userDoc.data(),
-            };
-        } else {
-            return (await userRecord).toJSON();
-        }
+        const allUsers = await getUsers();
+        if (!allUsers) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucun utilisateur trouvé"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Données des utilisateurs récupérées avec succès",
+            allUsers: allUsers,
+        });
     } catch (error) {
         console.error("Erreur lors de la récupération des données utilisateur :", error);
-        throw error;
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des données utilisateur"
+        });
     }
 };
 
-const setUserOnlineStatus = async (userID, isOnline) => {
+const getUserData = async (req, res) => {
+    const { userID } = req.params;
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: "ID de l'utilisateur manquant"
+        });
+    };
+
     try {
-        await firestore
-            .collection('USERS')
-            .doc(userID)
-            .update({
-                isOnline: isOnline,
-                lastOnline: admin.firestore.FieldValue.serverTimestamp()
+        const data = await getUser(userID);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur non trouvé"
             });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Données de l'utilisateur récupérées avec succès",
+            data: data
+        });
     } catch (error) {
-        console.error("Erreur lors de la mise à jour de l'état en ligne :", error);
+        console.error("Erreur lors de la récupération des données utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des données utilisateur"
+        });
+
     }
 };
 
+const setUserOnline = async (req, res) => {
+    const { userID, isOnline } = req.body;
 
-const saveFcmToken = async (userID, token) => {
+    if (!userID || isOnline === undefined) {
+        return res.status(400).json({
+            success: false,
+            message: "ID de l'utilisateur ou statut en ligne manquant"
+        });
+    };
+
     try {
-        const userRef = firestore.collection('USERS').doc(userID);
-        await userRef.update({ fcmToken: token });
-        console.log('Token FCM enregistré avec succès');
-        return { success: true };
+        const isOnlineUpdated = await setUserOnlineStatus(userID, isOnline);
+        if (!isOnlineUpdated) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur non trouvé"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Statut en ligne de l'utilisateur mis à jour avec succès"
+        });
     } catch (error) {
-        console.error('Erreur lors de l\'enregistrement du token FCM', error);
+        console.error("Erreur lors de la mise à jour du statut en ligne de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la mise à jour du statut en ligne de l'utilisateur"
+        });
     }
 };
 
+const getUsersOnline = (req, res) => {
+    try {
+        const usersOnline = collectUsersOnline();
+        if (!usersOnline) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucun utilisateur en ligne trouvé"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Utilisateurs en ligne récupérés avec succès",
+            usersOnline: usersOnline
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des utilisateurs en ligne :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des utilisateurs en ligne"
+        });
+
+    }
+};
+
+const getUsersOffline = (req, res) => {
+    try {
+        const usersOffline = collectUsersOffline();
+        if (!usersOffline) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucun utilisateur hors ligne trouvé"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Utilisateurs hors ligne récupérés avec succès",
+            usersOffline: usersOffline
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des utilisateurs hors ligne :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des utilisateurs hors ligne"
+        });
+
+    }
+};
 
 const sendUserNotification = async (userID, title, message) => {
     try {
@@ -86,135 +185,178 @@ const sendUserNotification = async (userID, title, message) => {
     }
 };
 
+const updateInteractionByUserID = async (userID, postID) => {};
 
-const verifyToken = async (req, res, next) => {
+const getUserPermissions = async (req, res) => {
+    const { userID } = req.params;
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: "ID de l'utilisateur manquant"
+        });
+    };
+
     try {
-        const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return res.status(401).json({ message: 'Token manquant ou invalide' });
-        }
-
-        const token = authHeader.split(' ')[1];
-
-        const decodedToken = await auth.verifyIdToken(token);
-
-        req.user = {
-            uid: decodedToken.uid,
-            email: decodedToken.email,
-            emailVerified: decodedToken.email_verified,
+        const userPermissions = await collectUserPermissions(userID);
+        if (!userPermissions) {
+            return res.status(404).json({
+                success: false,
+                message: "Permissions de l'utilisateur non trouvées"
+            });
         };
-
-        next();
+        res.status(200).json({
+            success: true,
+            message: "Permissions de l'utilisateur récupérées avec succès",
+            userPermissions: userPermissions
+        });
     } catch (error) {
-        console.error('Erreur lors de la vérification du token:', error);
-        return res.status(403).json({ message: 'Accès refusé: token invalide ou expiré' });
-    }
-};
-
-
-const signinUser = async (email) => {
-    try {
-        const user = auth.getUserByEmail(email);
-
-        const userSnapshot = await firestore.collection('USERS')
-            .where('email', '==', email)
-            .limit(1)  // Limite à un seul résultat
-            .get();
-
-        if (userSnapshot.empty) {
-            console.log('Aucun utilisateur trouvé avec cet email.');
-            return null;
-        }
-
-        const userData = userSnapshot.docs[0].data();
-
-        if (!userData.emailVerified) {
-            return res.status(400).json({ message: 'Votre email n\'est pas encore vérifié. Veuillez vérifier votre email.' });
-        }
-
-        console.log('Connexion réussie', user.uid);
-        return userData;
-    } catch (error) {
-        console.error('Erreur lors de la connexion', error);
-    }
-};
-
-
-const updateUserInteraction = async (userID, adID) => {
-    try {
-        const userRef = firestore.collection('USERS').doc(userID);
-        const userDoc = await userRef.get();
-
-        if (!userDoc.exists) {
-            console.log("Utilisateur non trouvé");
-            return;
-        }
-
-        const userData = userDoc.data();
-        const adsClicked = userData.adsClicked || [];
-
-        // Si l'utilisateur a déjà cliqué sur cette annonce, ne pas mettre à jour les compteurs
-        if (adsClicked.includes(adID)) {
-            console.log("L'utilisateur a déjà cliqué sur cette annonce");
-            return;
-        }
-
-        // Mise à jour des interactions
-        await userRef.update({
-            clicksOnAds: admin.firestore.FieldValue.increment(1),
-            totalAdsViewed: admin.firestore.FieldValue.increment(1),
-            adsClicked: admin.firestore.FieldValue.arrayUnion(adID) // Ajouter l'ID de l'annonce
+        console.error("Erreur lors de la récupération des permissions de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des permissions de l'utilisateur"
         });
 
-        console.log("Interaction de l'utilisateur mise à jour");
-    } catch (error) {
-        console.error("Erreur lors de la mise à jour des interactions utilisateur", error);
     }
 };
 
+const modifyUserFields = async (req, res) => {
+    const { userID } = req.params;
+    const { updatedFields } = req.body;
 
-const getUserPermissions = async (userID) => {
     try {
-        const userRef = firestore.collection('USERS').doc(userID);
-        const userDoc = await userRef.get();
-
-        if (!userDoc.exists) {
-            console.log("Utilisateur non trouvé");
-            const response = {
+        const fieldsUpdated = await updateUserFields(userID, updatedFields);
+        if (!fieldsUpdated) {
+            return res.status(404).json({
                 success: false,
-                message: "Utilisateur non trouvé"
-            };
-            return response;
-        }
-
-        const userData = userDoc.data();
-        const permissions = userData.permissions || [];
-        const response = {
+                message: "Champs de l'utilisateur non trouvés"
+            });
+        };
+        res.status(200).json({
             success: true,
-            message: "Permissions récupérées avec succès",
-            permissions: permissions,
-        };
-        console.log("Permissions récupérées avec succès", permissions);
-        return response;
+            message: "Champs de l'utilisateur modifiés avec succès",
+        });
     } catch (error) {
-        const response = {
+        console.error("Erreur lors de la modification des champs de l'utilisateur :", error);
+        res.status(500).json({
             success: false,
-            message: "Erreur lors de la récupération des permissions de l'utilisateur",
-            error: error.message
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
+
+const toggleFavorites = async (req, res) => {
+    const { userID } = req.params;
+    const { postID } = req.body;
+
+    try {
+        const status = await addRemoveFavorites(postID, userID);
+        if (!status) {
+            return res.status(404).json({
+                success: false,
+                message: "Erreur lors de la mise à jour des favoris"
+            });
         };
-        console.error("Erreur lors de la récupération des permissions de l'utilisateur", error);
-        return  response;
-    }
-}
+        res.status(200).json({
+            success: true,
+            message: "Favoris mis à jour avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur réseau lors de la mise à jour des favoris :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
+
+const getUserFavorites = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const postsSaved = await collectUserFavorites(userID);
+        if (!postsSaved) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucun favori trouvé pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Favoris récupérés avec succès",
+            postsSaved: postsSaved
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des favoris de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
+
+const getUserNotifications = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const data = await collectUserNotifications(userID);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Notifications récupérées avec succès",
+            data: data
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des notifications de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
+
+const readUserNotification = async (req, res) => {
+    const { userID, notificationID } = req.params;
+
+    try {
+        const isRead = await markNotificationAsRead(userID, notificationID);
+        if (!isRead) {
+            return res.status(404).json({
+                success: false,
+                message: "Notification non trouvée"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Notification marquée comme lue avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la lecture de la notification de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
 
 
 module.exports = {
+    getUsersOnline,
+    getUsersOffline,
+    getUsersData,
     getUserData,
+    getUserFavorites,
+    getUserNotifications,
     getUserPermissions,
-    saveFcmToken,
-    setUserOnlineStatus,
+    modifyUserFields,
+    readUserNotification,
+    setUserOnline,
     sendUserNotification,
-    signinUser,
-    verifyToken,
-    updateUserInteraction
+    toggleFavorites,
+    updateInteractionByUserID
 };

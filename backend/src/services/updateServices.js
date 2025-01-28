@@ -1,15 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const { admin, firestore } = require("../config/firebase-admin");
-const { verifyCode } = require('../controllers/emailController');
 const { updateUserByField } = require('../firebase/firestore');
 
 
 // Update Interaction
 router.post('/update/interaction', async (req, res) => {
-    const { adID, userID, category } = req.body;
+    const { postID, userID, category } = req.body;
 
-    if (!adID || !userID) {
+    if (!postID || !userID) {
         return res.status(400).json({
             success: false,
             message: "Identifiants requis"
@@ -17,19 +16,21 @@ router.post('/update/interaction', async (req, res) => {
     }
 
     try {
-        const adRef = firestore.collection('POSTS').doc(adID);
+        const postRef = firestore.collection('POSTS').doc(postID);
         const userRef = firestore.collection('USERS').doc(userID);
 
-        const adData = adDoc.data();
+        const postDoc = await postRef.get();
+
+        const postData = postDoc.data();
         const userData = userDoc.data();
 
         // Vérifier si l'utilisateur a déjà vu l'annonce
-        const hasAlreadyViewed = adData.interactedUsers?.includes(userID);
+        const hasAlreadyViewed = postData.interactedUsers?.includes(userID);
 
         if (!hasAlreadyViewed) {
             // Ajouter l'utilisateur à la liste des utilisateurs ayant vu l'annonce
             const uniqueInteractedUsers = new Set([
-                ...(adData.interactedUsers || []),
+                ...(postData.interactedUsers || []),
                 userID
             ]);
 
@@ -43,7 +44,7 @@ router.post('/update/interaction', async (req, res) => {
         // Ajouter l'annonce à la liste des annonces vues par l'utilisateur
         const uniqueViewedIDs = new Set([
             ...(userData.adsViewed || []),
-            adID
+            postID
         ]);
 
         await userRef.update({
@@ -95,36 +96,6 @@ router.post('/update/contact-click', async (req, res) => {
             message: 'Erreur lors de la mise à jour des interactions'
         });
 
-    }
-});
-
-
-// Route pour valider le Code de vérification
-router.post('/verify/code', async (req, res) => {
-    const { email, code } = req.body;
-
-    try {
-        const result = await verifyCode(email, code);
-
-        if (result) {
-            res.status(200).json({
-                success: true,
-                message: 'Code vérifié avec succès'
-            });
-            return;
-        }
-
-        res.status(400).json({
-            success: false,
-            message: 'Code incorrect ou expiré'
-        });
-
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: 'Erreur interne lors de la vérification du code',
-            error: error.message
-        });
     }
 });
 
@@ -181,102 +152,6 @@ router.get('/check/:userID/free-trial-status', async (req, res) => {
         res.status(500).json({ error: 'Erreur serveur' });
     }
 });
-
-
-router.get('/search-results', async (req, res) => {
-    const { query } = req.query;
-    const searchTerms = query.toLowerCase().split(' ');
-
-    // Vérifier si la requête de recherche est présente
-    if (!query) {
-        return res.status(400).json({ 
-            error: 'La requête de recherche est requise' 
-        });
-    }
-
-    // Effectuer la recherche dans Firestore
-    const searchResults = await firestore
-        .collection('POSTS')
-        .where('searchableTerms', 'array-contains-any', searchTerms)
-        .limit(10)
-        .get();
-
-    const results = [];
-    searchResults.forEach(doc => {
-        results.push({
-            id: doc.id,
-            ...doc.data()
-        });
-    });
-
-    res.json(results);
-});
-
-
-// Route pour signaler une annonce
-router.post('/report/ad', async (req, res) => {
-    const { adID, userID, reason } = req.body;
-
-    if (!adID || !userID || !reason) {
-        return res.status(400).json({
-            success: false,
-            message: 'Tous les champs sont requis'
-        });
-    }
-
-    const userRef = firestore.collection('USERS').doc(userID);
-    const adRef = firestore.collection('POSTS').doc(adID);
-
-    try {
-        const userDoc = await userRef.get();
-        const adDoc = await adRef.get();
-
-        if (!userDoc.exists || !adDoc.exists) {
-            return res.status(404).json({ 
-                successs: false,
-                message: 'Utilisateur ou annonce non trouvé' 
-            });
-        }
-
-        // Rechercher un rapport existant pour cet utilisateur et cette annonce
-        const existingReportQuery = await firestore
-            .collection('REPORTS')
-            .where('adID', '==', adID)
-            .where('userID', '==', userID)
-            .get();
-
-        // Si un rapport existe, refuser l'opération
-        if (!existingReportQuery.empty) {
-            res.status(400).send({ 
-                success: false, 
-                message: "Vous avez déjà signalé cette annonce." 
-            });
-        }
-
-        await firestore.collection('REPORTS').add({
-            adID,
-            userID,
-            reason,
-            timestamp: admin.firestore.FieldValue.serverTimestamp()
-        });
-
-        await adRef.update({
-            reportCount: admin.firestore.FieldValue.increment(1)
-        });
-
-        res.status(200).json({
-            success: true,
-            message: 'Signalement enregistré avec succès'
-        });
-    } catch (error) {
-        console.error('Erreur lors du signalement:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erreur lors du signalement'
-        });
-    }
-});
-
 
 
 module.exports = router;

@@ -1,172 +1,11 @@
 const { auth, firestore, admin } = require('../config/firebase-admin');
-const { sendCode, sendAdminEmail } = require('../controllers/emailController');
+const { sendCode, sendWelcomeEmail, sendAdminEmail } = require('../controllers/emailController');
 const { monthNames, generateVerificationCode, getUserProfileNumber } = require('../func');
 
 const currentDate = new Date();
 const expirationTime = new Date().setMinutes(currentDate.getMinutes() + 15); // Ajouter 15 minutes
 const oneMonthLater = new Date(currentDate);
 oneMonthLater.setMonth(oneMonthLater.getMonth() + 1);
-
-
-const createDefaultAdmin = async () => {
-    const adminEmail = 'n.dahpenielnicolas123@gmail.com';
-    const adminPassword = 'admin1234';
-    const firstName = "Nicolas";
-    const lastName = "N'DAH";
-    const country = 'Russie';
-    const city = 'Rostov-Na-Donu';
-    const address = 'Ulitsa 2-ya Krasnodarskaya 113/1';
-    const adminPhoneNumber = '+79017087027';
-    const profilURL = null;
-    const profileNumber = getUserProfileNumber();
-
-    try {
-        // Vérifiez si l'utilisateur existe déjà dans Firebase Authentication
-        const userRecord = await auth.getUserByEmail(adminEmail);
-        console.log(`Super administrateur existant : ${userRecord.email}`);
-
-        // Vérifiez si le document existe déjà dans Firestore
-        const userRef = firestore.collection('USERS').doc(userRecord.uid);
-        const userDoc = await userRef.get();
-
-        if (userDoc.exists) {
-            console.log('Le super administrateur existe déjà dans Firestore.');
-        } else {
-            await sendAdminEmail(adminEmail, `${firstName} ${lastName}`, adminPassword);
-
-            // Ajoutez les informations supplémentaires dans Firestore si elles manquent
-            await userRef.set({
-                displayName: `${firstName} ${lastName}`,
-                email: adminEmail,
-                firstName: firstName,
-                lastName: lastName,
-                phoneNumber: adminPhoneNumber,
-                profileNumber: profileNumber,
-                city: city,
-                country: country,
-                address: address,
-                emailVerified: true,
-                isActive: true,
-                isOnline: false,
-                location: `${country}, ${city}, ${address}`,
-                profilURL: profilURL,
-                role: 'admin',
-                userID: userRecord.uid,
-                permissions: ["SUPER_ADMIN", "MANAGE_USERS", "MANAGE_ADS", "MANAGE_PAYMENTS"],
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            console.log('Super administrateur ajouté dans Firestore.');
-        }
-    } catch (error) {
-        if (error.code === 'auth/user-not-found') {
-            // Si l'utilisateur n'existe pas, créez-le dans Firebase Authentication
-            const newAdmin = await auth.createUser({
-                email: adminEmail,
-                password: adminPassword,
-                disabled: false,
-                emailVerified: true,
-                phoneNumber: adminPhoneNumber,
-                displayName: `${firstName} ${lastName}`,
-                profilURL: profilURL,
-            });
-
-            console.log(`Super administrateur créé : ${newAdmin.email}`);
-
-            // Ensuite, enregistrez-le dans Firestore
-            const userRef = firestore.collection('USERS').doc(newAdmin.uid);
-
-            await userRef.set({
-                displayName: `${firstName} ${lastName}`,
-                email: adminEmail,
-                firstName: firstName,
-                lastName: lastName,
-                phoneNumber: adminPhoneNumber,
-                profileNumber: profileNumber,
-                city: city,
-                country: country,
-                address: address,
-                emailVerified: true,
-                isActive: true,
-                isOnline: false,
-                location: `${country}, ${city}, ${address}`,
-                profilURL: profilURL,
-                role: 'admin',
-                userID: newAdmin.uid,
-                permissions: ["SUPER_ADMIN", "MANAGE_USERS", "MANAGE_ADS", "MANAGE_PAYMENTS"],
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-            console.log('Super administrateur ajouté dans Firestore.');
-        } else {
-            console.error('Erreur lors de la création du super administrateur:', error);
-        }
-    }
-}
-
-
-const createAdmin = async (firstName, lastName, email, password, permissions) => {
-    const cleanedEmail = email.trim();
-    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!validateEmail(cleanedEmail)) {
-        return res.status(400).json({
-            success: false,
-            message: "L'adresse e-mail est invalide.",
-        });
-    }
-
-    try {
-        const userRecord = await auth.createUser({
-            email: email,
-            password: password,
-            displayName: `${firstName} ${lastName}`,
-            disabled: false,
-            emailVerified: true,
-            phoneNumber: null,
-            photoURL: null,
-        });
-        console.log('Admin créé avec succès:', userRecord.uid);
-
-        const profileNumber = getUserProfileNumber();
-
-        // Ajouter les informations de l'utilisateur dans Firestore
-        const userRef = firestore.collection('USERS').doc(userRecord.uid);
-        await userRef.set({
-            displayName: `${firstName} ${lastName}`,
-            email,
-            firstName,
-            lastName,
-            phoneNumber: null,
-            profileNumber: profileNumber,
-            city: null,
-            country: null,
-            address: null,
-            emailVerified: true,
-            permissions,
-            isActive: true,
-            isOnline: false,
-            location: null,
-            profilURL: null,
-            role: 'admin',
-            userID: userRecord.uid,
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        })
-        await sendAdminEmail(email, `${firstName} ${lastName}`, password);
-        console.log('Super administrateur ajouté dans Firestore.', userRecord.uid);
-
-        // Enregistrer une notification pour l'admin
-        const notification = {
-            type: 'new_admin',
-            title: 'Nouvel Admin',
-            message: `Un nouvel utilisateur ajouté : ${displayName} avec les identifiants suivants : ${email}, ${password}`,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            read: false,
-        };
-
-        await firestore.collection('NOTIFICATIONS').add(notification);
-    } catch (error) {
-        console.error('Erreur lors de la création de l\'admin:', error);
-    }
-}
 
 
 const createUser = async (address, city, country, email, password, firstName, lastName, phoneNumber, displayName) => {
@@ -186,6 +25,7 @@ const createUser = async (address, city, country, email, password, firstName, la
 
         const code = generateVerificationCode();
         const profileNumber = getUserProfileNumber();
+
 
         // Ajouter les informations de l'utilisateur dans Firestore
         const userRef = firestore.collection('USERS').doc(userRecord.uid);
@@ -285,16 +125,6 @@ const createUser = async (address, city, country, email, password, firstName, la
             verificationCode: code,
         });
 
-        // Enregistrer une notification pour l'admin
-        const notification = {
-            type: 'new_user',
-            title: 'Nouvelle inscription',
-            message: `Un nouvel utilisateur s'est inscrit : ${displayName}. Code de vérification : ${code}`,
-            timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            isRead: false,
-        };
-
-        await firestore.collection('NOTIFICATIONS').add(notification);
 
         // Envoi du code par email
         sendCode(displayName, email, code)
@@ -314,9 +144,116 @@ const createUser = async (address, city, country, email, password, firstName, la
     }
 };
 
-
-const updateUser = async (email, updatedData) => {
+const signinUser = async (email, emailVerified) => {
     try {
+        if (!emailVerified) {
+            throw new Error("L'email de l'utilisateur n'est pas encore vérifié.");
+        }
+
+        // Récupération de l'utilisateur dans Firebase Authentication
+        const userRecord = await auth.getUserByEmail(email);
+        if (!userRecord) {
+            throw new Error("Utilisateur introuvable dans Firebase Authentication.");
+        }
+
+        if (!userRecord.emailVerified) {
+            throw new Error("L'email de l'utilisateur n'est pas encore vérifié dans Firebase.");
+        }
+
+        // Récupération des données utilisateur dans Firestore
+        const userRef = firestore.collection('USERS').doc(userRecord.uid);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            throw new Error("Les données utilisateur sont introuvables dans la base Firestore.");
+        }
+
+        const userData = userDoc.data();
+        const { displayName, loginCount = 0, role } = userData;
+
+        // Si c'est la première connexion, envoie un email de bienvenue
+        if (loginCount === 0) {
+            try {
+                console.log("Appel à sendWelcomeEmail...");
+                await sendWelcomeEmail(displayName, email);
+                console.log("Email de bienvenue envoyé.");
+            } catch (error) {
+                console.error("Erreur lors de l'envoi de l'email de bienvenue :", error);
+            }
+
+            // Mise à jour des données utilisateur
+            await userRef.update({
+                isOnline: true,
+                loginCount: 1,
+                lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        } else {
+            // Mise à jour de la date de dernière connexion
+            await userRef.update({
+                isOnline: true,
+                lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
+
+        console.log("Connexion réussie", userRecord.uid);
+        return { userData, role };
+    } catch (error) {
+        console.error("Erreur dans signinUser :", error.message);
+        throw error; // Propagation de l'erreur au contrôleur
+    }
+};
+
+const logoutUser = async (email) => {
+    try {
+        const userRecord = await auth.getUserByEmail(email);
+        if (!userRecord) {
+            throw new Error("Utilisateur introuvable dans Firebase Authentication.");
+        };
+        const userSnapshot = await firestore.collection('USERS').doc(userRecord.uid).get();
+
+        if (!userSnapshot.exists) {
+            throw new Error("Les données utilisateur sont introuvables dans la base Firestore.");
+        }
+
+        await userSnapshot.ref.update({
+            isOnline: false,
+            lastLogoutAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        await auth.revokeRefreshTokens(userRecord.uid);
+
+        console.log('Déconnexion réussie');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la déconnexion', error);
+    }
+};
+
+const deletionUser = async (userID) => {
+    try {
+        const userSnapshot = await firestore.collection('USERS')
+            .where('userID', '==', userID)
+            .limit(1)
+            .get();
+
+        if (userSnapshot.empty) {
+            console.log('Utilisateur non trouvé');
+            return false;
+        }
+        const userDocID = userSnapshot.docs[0].id;
+        await auth.revokeRefreshTokens(userID);
+        await firestore.collection('USERS').doc(userDocID).delete();
+        await auth.deleteUser(userID);
+        console.log('Utilisateur supprimé avec succès');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'utilisateur:', error);
+        return false;
+    }
+};
+
+const verifyCode = async (email, code) => {
+    try {
+        // Recherche l'utilisateur dans Firestore par email
         const userSnapshot = await firestore.collection('USERS')
             .where('email', '==', email)
             .limit(1)
@@ -327,21 +264,130 @@ const updateUser = async (email, updatedData) => {
             return false;
         }
 
-        const userDocID = userSnapshot.docs[0].id;
+        console.log('Utilisateur trouvé');
 
-        await firestore.collection('USERS').doc(userDocID).update(updatedData);
-        console.log('Données utilisateur mises à jour avec succès');
+        // Récupère le document de l'utilisateur
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data();
+        const { verificationCode, expirationTime } = userData
+
+        console.log('Code stocké dans la base de données:', verificationCode);
+        console.log('Code fourni par l\'utilisateur:', code);
+
+        // Comparer le code fourni avec le code stocké
+        if (verificationCode !== parseInt(code)) {
+            console.error('Code incorrect');
+            throw new Error('Code incorrect');
+        }
+
+        // Check expiration using Timestamp comparison
+        const currentTime = Date.now();
+        const expirationMillis = expirationTime._seconds * 1000;
+
+        if (currentTime > expirationMillis) {
+            throw new Error('Code expiré');
+        }
+
+        // Si tout est correct
+        console.log('Code vérifié avec succès');
+
+        const userRecord = await auth.getUserByEmail(email);
+        await auth.updateUser(userRecord.uid, {
+            emailVerified: true,
+        });
+
+
+        await firestore.collection('USERS').doc(userDoc.id).update({
+            emailVerified: true,
+            verificationCode: null,
+            expirationTime: null,
+        });
+
+        console.log('Utilisateur mis à jour avec succès');
         return true;
     } catch (error) {
-        console.error('Erreur lors de la mise à jour de l\'utilisateur:', error);
+        console.error('Erreur lors de la vérification du code:', error);
         return false;
     }
 };
 
+const updatePassword = async (email, newPassword) => {
+    try {
+        const userRecord = await auth.getUserByEmail(email);
+        await auth.updateUser(userRecord.uid, {
+            password: newPassword,
+        });
+        console.log('Mot de passe mis à jour avec succès');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du mot de passe:', error);
+        return false;
+    };
+};
+
+const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, permissions) => {
+    try {
+        const userRef = firestore
+            .collection('USERS')
+            .where('email', '==', email)
+            .limit(1);
+
+        const userSnapshot = await userRef.get();
+        if (!userSnapshot.empty) {
+            console.log('Utilisateur déjà existant');
+            return false;
+        }
+
+        const profileNumber = getUserProfileNumber();
+
+        const user = await auth.createUser({
+            email: email,
+            emailVerified: true,
+            password: password,
+            displayName: `${firstName} ${lastName}`,
+            phoneNumber: phoneNumber,
+            disabled: false,
+        });
+
+        await firestore.collection('USERS').doc(user.uid).set({
+            userID: user.uid,
+            displayName: `${firstName} ${lastName}`,
+            firstName: firstName,
+            lastName: lastName,
+            email: email,
+            phoneNumber: phoneNumber,
+            isOnline: false,
+            lastActivity: admin.firestore.FieldValue.serverTimestamp(),
+            permissions: permissions,
+            city: null,
+            country: null,
+            address: null,
+            emailVerified: true,
+            isActive: true,
+            isOnline: false,
+            location: null,
+            profilURL: null,
+            role: 'admin',
+            profileNumber: profileNumber,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        console.log('Utilisateur admin créé avec succès');
+
+        await sendAdminEmail(email, password, `${firstName} ${lastName}`);
+
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la création de l\'utilisateur admin:', error);
+        return false;
+    };
+};
 
 module.exports = {
-    createDefaultAdmin,
-    createAdmin,
+    addNewAdmin,
     createUser,
-    updateUser
+    signinUser,
+    logoutUser,
+    deletionUser,
+    updatePassword,
+    verifyCode,
 };

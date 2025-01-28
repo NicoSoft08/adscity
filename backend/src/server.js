@@ -8,21 +8,25 @@ dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 
+// Importation des routes
+const apiRoutes = require('./routes/apiRoutes');
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const storageRoutes = require('./routes/storageRoutes');
+const postRoutes = require('./routes/postRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const promotionRoutes = require('./routes/promotionRoutes');
 
-const authServices = require('./services/authServices');
-const userServices = require('./services/userServices');
-const adServices = require('./services/adServices');
-const storageServices = require('./services/storageServices');
-const paymentServices = require('./services/paymentServices');
-const favorisServices = require('./services/favorisServices');
+
 const updateServices = require('./services/updateServices');
-const notificationServices = require('./services/notificationServices');
 const {
     checkFreeTrialExpiry,
     adStatusChecker
 } = require('./cron');
-const { createDefaultAdmin } = require('./firebase/auth');
-const { createNodemailerTransport } = require('./func');
+const { 
+    // createDefaultAdmin, 
+    createDefaultSuperAdmin 
+} = require('./firebase/admin');
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit
@@ -48,38 +52,20 @@ app.get('', async (req, res) => {
     res.send('AdsCity Server is running')
 });
 
-// Route pour tester l'envoi d'email
-app.get('/api/send-test-email', async (req, res) => {
-    const nodemailerTransporter = createNodemailerTransport();
-    const mailOptions = {
-        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
-        to: 'n.dahpenielnicolas123@gmail.com', // Remplacez par votre adresse de test
-        subject: 'Test Email',
-        text: 'This is a test email sent from your Node.js application.',
-    };
-
-    try {
-        const info = await nodemailerTransporter.sendMail(mailOptions);
-        console.log('Email sent:', info.response);
-        res.status(200).json({ success: true, message: 'Email sent successfully!', info });
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).json({ success: false, message: 'Error sending email', error: error.message });
-    }
-});
-
 
 app.use('/api', updateServices);
-app.use('/api/ads', adServices);
-app.use('/api', storageServices);
-app.use('/api/auth', authServices);
-app.use('/api/users', userServices);
-app.use('/api/payment', paymentServices);
-app.use('/api/favoris', favorisServices);
-app.use('/api/notifications', notificationServices);
+
+app.use('/api/do', apiRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/storage', storageRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/promotions', promotionRoutes);
 
 
 app.listen(PORT, async () => {
     console.log(`Server started at http://localhost:${PORT}`);
-    await createDefaultAdmin(); // Créer un compte administrateur par défaut
+    // await createDefaultAdmin(); // Créer un compte administrateur par défaut
+    await createDefaultSuperAdmin(); // Créer un compte super administrateur par défaut
 });

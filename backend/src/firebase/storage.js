@@ -1,135 +1,202 @@
 const { storage, firestore } = require("../config/firebase-admin");
 
+
+const collectUserProfilePhoto = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log('Utilisateur non trouvé');
+            return null;
+        };
+        const userData = userDoc.data();
+        const { profilURL } = userData;
+       return profilURL;
+    } catch (error) {
+        console.error('Erreur lors de la récupération de la photo de profil :', error);
+        return null;
+    };
+};
+
 const uploadUserProfilePicture = async (file, userID) => {
     try {
-        const userDoc = firestore.collection('USERS').doc(userID);
-        const userSnapshot = await userDoc.get();
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
 
-        if (!userSnapshot.exists) {
-            const response = {
+        // Vérification de l'existence de l'utilisateur
+        if (!userDoc.exists) {
+            return {
                 success: false,
                 message: 'Utilisateur non trouvé',
             };
-            return  response;
         }
 
-        const userData = userSnapshot.data();
+        const userData = userDoc.data();
         const profilChanges = userData.profilChanges || { count: 0, lastUpdated: null };
 
-        const now = new Date();
         const lastUpdateDate = profilChanges.lastUpdated ? new Date(profilChanges.lastUpdated) : null;
         const isSameMonth = lastUpdateDate && now.getMonth() === lastUpdateDate.getMonth() && now.getFullYear() === lastUpdateDate.getFullYear();
 
+        // Vérification de la limite de changements de profil pour le mois en cours
         if (isSameMonth && profilChanges.count >= 3) {
-            const response = {
+            return {
                 success: false,
-                message: 'Vous avez atteint la limite de changement de photo de profile pour ce mois.',
+                message: 'Vous avez atteint la limite de changement de photo de profil pour ce mois.',
             };
-            return response;
-        }
+        };
 
-        const newCount = isSameMonth ? profilChanges.count + 1 : 1; // Incrémenter ou réinitialiser
+        // Formatage de la date et de l'heure
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+        const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
+        const uniqueFolderID = userID;
+        const folderPath = `PHOTOS/PROFILES/${formattedDate}_${formattedTime}/${uniqueFolderID}/`;
 
-        // Téléchargement dans Firebase Storage
-        const bucket = storage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
-        const fileName = `PHOTOS/PROFILES/${userID}/${file.originalname}`;
+        // Définir le chemin et le fichier dans Firebase Storage
+        const storageRef = storage.bucket().file(`${folderPath}${file.originalname}`);
 
-        const fileUpload = bucket.file(fileName);
-
-        await fileUpload.save(file.buffer, {
+        await storageRef.save(file.buffer, {
             metadata: {
                 contentType: file.mimetype,
             },
         });
 
-        await fileUpload.makePublic();
+        const [publicUrl] = await storageRef.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491',
+        });
 
-        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
 
-        await userDoc.update({
+        // Rendre le fichier public et récupérer l'URL publique
+        // const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
+
+        // Mettre à jour les données utilisateur dans Firestore
+        await userRef.update({
             profilURL: publicUrl,
             profilChanges: {
-                count: newCount,
+                count: isSameMonth ? profilChanges.count + 1 : 1,
                 lastUpdated: now.toISOString(),
             },
         });
 
-        const response = {
-            success: true,
-            message: 'Photo de profile mise à jour avec succès',
-            publicUrl: publicUrl,
-        };
-
-        return response;
+        return publicUrl;
     } catch (error) {
-        const response = {
+        console.error('Erreur lors de la mise à jour de la photo de profil :', error);
+        return {
             success: false,
-            message: 'Erreur lors du téléchargement de la photo de profile',
+            message: 'Erreur lors du téléchargement de la photo de profil.',
+            error: error.message,
         };
-        return response;
-    }
+    };
 };
-
 
 const uploadUserBannerPicture = async (file, userID) => {
     try {
-        const userDoc = firestore
-            .collection('USERS')
-            .doc(userID);
-        const userSnapshot = await userDoc.get();
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
 
-        if (!userSnapshot.exists) {
-            throw new Error('Utilisateur non trouvé');
+        // Vérification de l'existence de l'utilisateur
+        if (!userDoc.exists) {
+            return {
+                success: false,
+                message: 'Utilisateur non trouvé',
+            };
         }
 
-        const userData = userSnapshot.data();
+        const userData = userDoc.data();
         const coverChanges = userData.coverChanges || { count: 0, lastUpdated: null };
 
-        const now = new Date();
         const lastUpdateDate = coverChanges.lastUpdated ? new Date(coverChanges.lastUpdated) : null;
         const isSameMonth = lastUpdateDate && now.getMonth() === lastUpdateDate.getMonth() && now.getFullYear() === lastUpdateDate.getFullYear();
 
+        // Vérification de la limite de changements de profil pour le mois en cours
         if (isSameMonth && coverChanges.count >= 3) {
-            throw new Error('Vous avez atteint la limite de changement de photo de couverture pour ce mois.');
-        }
+            return {
+                success: false,
+                message: 'Vous avez atteint la limite de changement de photo de couverture pour ce mois.',
+            };
+        };
 
-        const newCount = isSameMonth ? coverChanges.count + 1 : 1; // Incrémenter ou réinitialiser
+        // Formatage de la date et de l'heure
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+        const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
+        const uniqueFolderID = userID;
+        const folderPath = `PHOTOS/BANNER/${formattedDate}_${formattedTime}/${uniqueFolderID}/`;
 
-        // Téléchargement dans Firebase Storage
-        const bucket = storage.bucket(process.env.FIREBASE_STORAGE_BUCKET);
-        const fileName = `PHOTOS/BANNERS/${userID}/${file.originalname}`;
+        // Définir le chemin et le fichier dans Firebase Storage
+        const storageRef = storage.bucket().file(`${folderPath}${file.originalname}`);
 
-        const fileUpload = bucket.file(fileName);
-
-        await fileUpload.save(file.buffer, {
+        await storageRef.save(file.buffer, {
             metadata: {
                 contentType: file.mimetype,
             },
         });
 
-        await fileUpload.makePublic();
+        const [publicUrl] = await storageRef.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491',
+        });
 
-        const publicUrl = `https://firebasestorage.googleapis.com/v0/b/${bucket.name}/o/${encodeURIComponent(fileName)}?alt=media`;
 
-        await userDoc.update({
+        // Mettre à jour les données utilisateur dans Firestore
+        await userRef.update({
             coverURL: publicUrl,
             coverChanges: {
-                count: newCount,
+                count: isSameMonth ? coverChanges.count + 1 : 1,
                 lastUpdated: now.toISOString(),
             },
         });
 
-        console.log('Téléchargement de la photo de couverture réussi et Firestore mis à jour');
         return publicUrl;
     } catch (error) {
-        console.error('Erreur lors du téléchargement de la photo de couverture:', error);
-        throw error;
+        console.error('Erreur lors de la mise à jour de la photo de couverture :', error);
+        return {
+            success: false,
+            message: 'Erreur lors du téléchargement de la photo de couverture.',
+            error: error.message,
+        };
+    };
+};
+
+const uploadPostImage = async (file, userID) => {
+    try {
+        // Formatage de la date et de l'heure
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+        const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
+        const uniqueFolderID = userID;
+        const folderPath = `PHOTOS/POSTS/${formattedDate}_${formattedTime}/${uniqueFolderID}/`;
+
+        const storageRef = storage.bucket().file(`${folderPath}${file.originalname}`);
+
+        await storageRef.save(file.buffer, {
+            metadata: {
+                contentType: file.mimetype,
+            },
+        });
+
+        const [imageUrl] = await storageRef.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491',
+        });
+
+        return imageUrl;
+    } catch (error) {
+        console.error('Erreur lors du téléchargement de l\'image :', error);
+        return {
+            success: false,
+            message: 'Erreur lors du téléchargement de l\'image.',
+            error: error.message,
+        };
     }
 };
 
 
 
 module.exports = {
+    collectUserProfilePhoto,
+    uploadPostImage,
     uploadUserBannerPicture,
     uploadUserProfilePicture,
 };

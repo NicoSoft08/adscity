@@ -6,6 +6,7 @@ const serviceAccount = require("./serviceAccount");
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),    
     databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`,
+    storageBucket: `${serviceAccount.project_id}.appspot.com`
 });
 
 const auth = admin.auth();

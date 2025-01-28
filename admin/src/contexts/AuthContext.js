@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { fetchDataByUserID, setUserOnlineStatus } from '../services/userServices';
+import { fetchDataByUserID, setUserOnlineStatus } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
 
@@ -15,6 +15,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
     const [currentUser, setCurrentUser] = useState(null);
     const [userData, setUserData] = useState(null);
+    const [userRole, setUserRole] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -28,7 +29,8 @@ export const AuthProvider = ({ children }) => {
                         // Utilisateur connecté
                         setCurrentUser(user);
                         const userData = await fetchDataByUserID(user.uid);
-                        setUserData(userData);
+                        setUserData(userData?.data);
+                        setUserRole(userData?.data.role);
                         await setUserOnlineStatus(user.uid, true); // Met à jour le statut en ligne
                     } catch (error) {
                         console.error("Erreur lors de la récupération des données utilisateur :", error);
@@ -40,6 +42,7 @@ export const AuthProvider = ({ children }) => {
                     }
                     setCurrentUser(null);
                     setUserData(null);
+                    setUserRole(null);
                 }
                 setLoading(false); // Arrêtez le chargement une fois terminé
             });
@@ -70,6 +73,7 @@ export const AuthProvider = ({ children }) => {
     const value = {
         currentUser,
         userData,
+        userRole,
     };
 
     return (

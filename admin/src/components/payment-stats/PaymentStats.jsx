@@ -3,7 +3,7 @@ import {
     fetchCompletedPayments,
     fetchFailedPayments,
     fetchProcessingPayments
-} from '../../services/paymentServices';
+} from '../../routes/paymentRoutes';
 import { paymentStatuses } from '../../data';
 import './PaymentStats.scss';
 
@@ -21,9 +21,9 @@ export default function PaymentStats() {
                 fetchCompletedPayments(),
                 fetchFailedPayments(),
             ]);
-            setPaymentsProcessing(process?.paymentData || []);
-            setPaymentsCompleted(completed?.paymentData || []);
-            setPaymentsFailed(failed?.paymentData || []);
+            setPaymentsProcessing(process?.processingPayments || []);
+            setPaymentsCompleted(completed?.completedPayments || []);
+            setPaymentsFailed(failed?.failedPayments || []);
         }
 
         fetchData();

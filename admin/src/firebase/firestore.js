@@ -61,7 +61,7 @@ const deleteUser = async (userID) => {
 
 // Collect payment info
 const fetchPaymentInfo = async () => {
-    const response = await fetch(`${backendUrl}/api/collect/payment-info`, {
+    const response = await fetch(`${backendUrl}/api/payments/all`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -77,7 +77,7 @@ const fetchPaymentInfo = async () => {
 
 // Update Payment Info Status
 const updatePaymentStatus = async (paymentID, newStatus) => {
-    const response = await fetch(`${backendUrl}/api/update/payment-status/${paymentID}`, {
+    const response = await fetch(`${backendUrl}/api/payments/update-status/${paymentID}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -86,6 +86,7 @@ const updatePaymentStatus = async (paymentID, newStatus) => {
     });
 
     const result = await response.json();
+    console.log(result);
 
     return result;
 };

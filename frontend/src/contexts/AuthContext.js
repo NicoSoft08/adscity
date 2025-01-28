@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { fetchDataByUserID, setUserOnlineStatus } from '../services/userServices';
+import { fetchDataByUserID, setUserOnlineStatus } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
 
@@ -30,8 +30,8 @@ export const AuthProvider = ({ children }) => {
                         // Utilisateur connecté
                         setCurrentUser(user);
                         const userData = await fetchDataByUserID(user.uid);
-                        setUserData(userData);
-                        setUserRole(userData.role);
+                        setUserData(userData?.data);
+                        setUserRole(userData?.data.role);
                         await setUserOnlineStatus(user.uid, true); // Met à jour le statut en ligne
                     } catch (error) {
                         console.error("Erreur lors de la récupération des données utilisateur :", error);

@@ -67,7 +67,7 @@ export default function PublicProfil({ profile }) {
                         <h2 className='name'>{profile.displayName}</h2>
                         <div className="detail">
                             <small className='location'><FontAwesomeIcon icon={faMapMarkerAlt} /> {profile.city}, {profile.country}</small>
-                            <small className='adsCount'><FontAwesomeIcon icon={faFolderOpen} /> {profile.adsCount} annonces</small>
+                            <small className='adsCount'><FontAwesomeIcon icon={faFolderOpen} /> {profile.adsCount > 1 ? `${profile.adsCount + " annonces"}` : `${profile.adsCount + " annonce"}`} </small>
                         </div>
                     </div>
                 </div>

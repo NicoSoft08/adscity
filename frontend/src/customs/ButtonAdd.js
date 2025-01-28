@@ -15,7 +15,7 @@ export default function ButtonAdd() {
         } else if (currentUser && (userData.role !== 'user')) {
             navigate('/access-denied');
         } else {
-            navigate('/auth/create-announcement');
+            navigate('/auth/create-post');
         }
     }
 

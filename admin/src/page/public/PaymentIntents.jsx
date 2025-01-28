@@ -83,8 +83,10 @@ export default function PaymentIntents() {
 
     useEffect(() => {
         const fetchPayments = async () => {
-            const response = await fetchPaymentInfo();
-            setPayments(response.paymentData);
+            const result = await fetchPaymentInfo();
+            if (result.success) {
+                setPayments(result?.paymentData);
+            }
         };
 
         fetchPayments();
@@ -98,7 +100,7 @@ export default function PaymentIntents() {
             payment.id === paymentId ? { ...payment, status: newStatus } : payment
         );
         await updatePaymentStatus(paymentId, newStatus);
-        setPayments(updatedPayments);
+        setPayments(updatedPayments?.paymentData);
     };
 
     return (

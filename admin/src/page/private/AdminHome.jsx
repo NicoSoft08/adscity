@@ -18,13 +18,13 @@ import {
     faUsers 
 } from '@fortawesome/free-solid-svg-icons';
 import PaymentIntents from '../public/PaymentIntents';
-import ManageAds from './ManageAds';
+import ManagePosts from './ManagePosts';
 import Notifications from './Notifications';
 import '../../styles/AdminHome.scss';
 
 
 export default function AdminHome() {
-    const { currentUser, userData } = useContext(AuthContext);
+    const { currentUser, userRole } = useContext(AuthContext);
     const navigate = useNavigate();
     const [activeSection, setActiveSection] = useState('');
     const [isCollapsed, setIsCollapsed] = useState(false);
@@ -32,10 +32,10 @@ export default function AdminHome() {
     useEffect(() => {
         if (!currentUser) {
             navigate('/');
-        } else if (userData && userData.role !== 'admin') {
+        } else if (currentUser && userRole !== 'admin') {
             navigate('/access-denied');
         }
-    }, [navigate, currentUser, userData]);
+    }, [navigate, currentUser, userRole]);
 
 
 
@@ -52,8 +52,8 @@ export default function AdminHome() {
                             {!isCollapsed ? <span>Panel</span> : null}
                         </li>
                         <li
-                            className={`${activeSection === "ads" ? 'active' : ''}`}
-                            onClick={() => setActiveSection('ads')}
+                            className={`${activeSection === "posts" ? 'active' : ''}`}
+                            onClick={() => setActiveSection('posts')}
                         >
                             <FontAwesomeIcon icon={faBullhorn} />
                             {!isCollapsed ? <span>Annonces</span> : null}
@@ -101,7 +101,7 @@ export default function AdminHome() {
 
                 <div className="main-content">
                     {activeSection === "panel" && <DashboardPanel />}
-                    {activeSection === "ads" && <ManageAds />}
+                    {activeSection === "posts" && <ManagePosts />}
                     {activeSection === "users" && <ManageUsers />}
                     {activeSection === "payments" && <PaymentIntents />}
                     {activeSection === "profile" && <UserProfile />}

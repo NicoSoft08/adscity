@@ -17,7 +17,7 @@ export default function Notifications() {
     }, []);
 
     return (
-        <div>
+        <div className='notification-list'>
             <NotificationList
                 notifications={notifications}
                 setNotifications={setNotifications}

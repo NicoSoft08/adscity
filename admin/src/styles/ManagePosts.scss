@@ -1,0 +1,13 @@
+@import './fonts';
+@import './variables';
+
+.ads-section {
+
+    h2 {
+        color: $dark;
+    }
+
+    @media (max-width: 768px) {
+        margin-top: 10rem;
+    }
+}

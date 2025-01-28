@@ -4,7 +4,7 @@ import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../customs/Spinner';
 import Toast from '../../customs/Toast';
-import { signinUser } from '../../services/authServices';
+import { signinUser } from '../../routes/authRoutes';
 import '../../styles/LoginPage.scss';
 
 export default function LoginPage() {
@@ -13,18 +13,8 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '', agree: false });
     const [formData, setFormData] = useState({ email: '', password: '', agree: false });
-    const [toast, setToast] = useState({
-        show: false,
-        message: '',
-        type: '',
-    });
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    const hideToast = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
-    };
 
     const validateForm = () => {
         const formErrors = {}
@@ -84,7 +74,7 @@ export default function LoginPage() {
                 return;
             }
     
-            if (result.user.role !== 'admin') {
+            if (result.role !== 'admin') {
                 setToast({
                     type: 'error',
                     message: 'Vous n\'êtes pas autorisé à accéder à cette page.',
@@ -170,12 +160,7 @@ export default function LoginPage() {
                 >
                     {isLoading ? <Spinner /> : "Se connecter"}
                 </button>
-                <Toast
-                    type={toast.type}
-                    message={toast.message}
-                    show={toast.show}
-                    onClose={hideToast}
-                />
+                <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
             </form>
         </div>
     );

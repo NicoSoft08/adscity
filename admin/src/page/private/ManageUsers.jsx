@@ -1,28 +1,26 @@
 import React, { useContext, useEffect, useState } from 'react'
-import { fetchAllUsers } from '../../services/userServices';
-import { deleteUser } from '../../services/authServices';
+import { fetchAllUsers } from '../../routes/userRoutes';
+import { deleteUser } from '../../routes/authRoutes';
 import UserManagementTable from './UserManagementTable';
-import '../../styles/ManageUsers.scss';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
+import '../../styles/ManageUsers.scss';
 
 
 export default function ManageUsers() {
-    const { currenttUser, userData } = useContext(AuthContext); 
+    const { currentUser, userData } = useContext(AuthContext); 
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    const [filters, setFilters] = useState({
-        createdAt: '',
-        role: '',
-        isActive: ''
-    });
+    const [filters, setFilters] = useState({ createdAt: '', role: '', isActive: '' });
 
     useEffect(() => {
         const fetchUsers = async () => {
-            const allUsers = await fetchAllUsers();
-            setUsers(allUsers);
-            setFilteredUsers(allUsers);
+            const all = await fetchAllUsers();
+            if (all.success) {
+                setUsers(all?.allUsers);
+                setFilteredUsers(all?.allUsers);
+            }
         };
 
         fetchUsers();
@@ -83,7 +81,7 @@ export default function ManageUsers() {
 
     const handleDelete = async (id) => {
         setUsers(users.filter(user => user.id !== id));
-        if (!currenttUser && userData && userData.permissions.includes('MANAGE_USERS')) {
+        if (!currentUser && userData.permissions.includes('SUPER_ADMIN')) {
             await deleteUser(id);
             setToast({ show: true, type: 'success', message: 'Utilisateur supprimé avec succès.' });
             console.log(`User ${id} deleted`);

@@ -1,0 +1,52 @@
+@import './variables';
+@import './fonts';
+
+
+.phone-input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .select-wrapper {
+        position: relative;
+        min-width: 120px;
+
+        .country-select {
+            padding: 8px 8px 8px 40px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-light;
+            outline: none;
+            width: 90%;
+            appearance: none;
+        }
+
+        .selected-flag {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 24px;
+            height: 16px;
+            object-fit: cover;
+        }
+    }
+
+    .phone-input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: 'Ubuntu', sans-serif;
+        outline: none;
+        width: 100%;
+        // flex: 1;
+    }
+
+    .phone-input.error {
+        border: 1px solid $danger;
+        background-color: #ffcccb;
+    }
+}

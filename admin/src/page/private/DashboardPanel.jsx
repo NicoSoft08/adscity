@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from 'react';
-import AdsStatistics from './AdsStatistics';
 import UsersStatistics from './UsersStatistics';
-import PendingAds from './PendingAds';
-import { fetchPendingAds } from '../../services/adServices';
-import AdminAdsChart from './AdminAdsChart';
+import { fetchPendingPosts } from '../../routes/postRoutes';
 import PaymentStats from '../../components/payment-stats/PaymentStats';
+import PostsStatistics from './PostsStatistics';
+import PendingPosts from './PendingPosts';
+import AdminPostsChart from './AdminPostsChart';
 import '../../styles/DashboardPanel.scss';
 
 export default function DashboardPanel() {
-    const [adsPending, setAdsPending] = useState([]);
+    const [postsPending, setPostsPending] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const result = await fetchPendingAds();
-                if (result.success) {
-                    setAdsPending(result.pendingAds);
-                }
-            } catch (error) {
-                console.error('Erreur lors de la récupération des annonces en attente:', error);
+            const result = await fetchPendingPosts();
+            if (result.success) {
+                setPostsPending(result.pendingPosts);
             }
         };
 
@@ -31,14 +27,14 @@ export default function DashboardPanel() {
             <h2>Tableau de bord</h2>
             <div className='panel-body'>
                 <div className='panel-left'>
-                    <AdsStatistics />
+                    <PostsStatistics />
                     <UsersStatistics />
 
                 </div>
-                <AdminAdsChart />
+                <AdminPostsChart />
             </div>
             <PaymentStats />
-            <PendingAds pendingAds={adsPending} />
+            <PendingPosts pendingPosts={postsPending} />
         </div>
     );
 };

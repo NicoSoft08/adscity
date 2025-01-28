@@ -102,6 +102,12 @@ const calculateEndDate = (duration) => {
 };
 
 
+const validatePhoneNumber = (phoneNumber) => {
+    const e164Regex = /^\+?[1-9]\d{1,14}$/;
+    return e164Regex.test(phoneNumber);
+};
+
+
 
 export {
     parseTimestamp,
@@ -110,5 +116,6 @@ export {
     formateDateTimestamp,
     saveFcmToken,
     formatSpecialFeatures,
-    calculateEndDate
+    calculateEndDate,
+    validatePhoneNumber,
 };

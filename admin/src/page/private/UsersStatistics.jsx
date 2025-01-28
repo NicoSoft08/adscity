@@ -5,7 +5,7 @@ import {
     fetchAllUsers, 
     fetchOfflineUsers, 
     fetchOnlineUsers 
-} from '../../services/userServices';
+} from '../../routes/userRoutes';
 import '../../styles/UsersStatistics.scss';
 
 export default function UsersStatistics() {
@@ -13,20 +13,21 @@ export default function UsersStatistics() {
     const [usersOnline, setUsersOnline] = useState([]);
     const [usersOffline, setUsersOffline] = useState([]);
 
+
     useEffect(() => {
         const fetchAllData = async () => {
             try {
                 // Fetch all the users data in parallel
-                const [allUsers, onlineUsers, offlineUsers] = await Promise.all([
+                const [users, online, offline] = await Promise.all([
                     fetchAllUsers(),
                     fetchOnlineUsers(),
                     fetchOfflineUsers(),
                 ]);
 
                 // Set the users data
-                setUsers(allUsers);
-                setUsersOnline(onlineUsers);
-                setUsersOffline(offlineUsers);
+                setUsers(users?.allUsers || []);
+                setUsersOnline(online?.usersOnline || []);
+                setUsersOffline(offline?.usersOffline || []);
             } catch (error) {
                 console.error('Erreur lors de la récupération des utilisateurs:', error);
             }

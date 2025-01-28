@@ -8,14 +8,14 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { AuthContext } from '../../contexts/AuthContext';
 import { IconCover, IconAvatar } from '../../config/images';
-import { uploadProfilePhoto } from '../../services/storageServices';
+import { uploadProfilePhoto } from '../../routes/storageRoutes';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
 import '../../styles/UserProfile.scss';
 
 
 export default function UserProfile() {
-    const { currentUser, userData } = useContext(AuthContext);
+    const { currentUser, userRole, userData } = useContext(AuthContext);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +68,7 @@ export default function UserProfile() {
         const userID = currentUser?.uid;
         setIsLoading(true);
         if (selectedFile) {
-            const result = await uploadProfilePhoto(userID, selectedFile);
+            const result = await uploadProfilePhoto(selectedFile, userID);
             if (result.success) {
                 setToast({
                     show: true,
@@ -97,6 +97,17 @@ export default function UserProfile() {
         setSelectedFile(null);
     };
 
+    // Déterminer l'image de couverture à afficher
+    const coverImage =
+        currentUser && userRole === 'admin'
+            ? userData?.coverURL || IconCover // Si profilURL est null, utiliser l'image par défaut
+            : IconAvatar;
+
+    // Déterminer l'image de profil à afficher
+    const profileImage =
+        currentUser && userRole === 'admin'
+            ? userData?.profilURL || IconAvatar // Si profilURL est null, utiliser l'image par défaut
+            : IconAvatar;
 
     // const handleBannerChange = async (e) => {
     //     const file = e.target.files[0];
@@ -108,7 +119,7 @@ export default function UserProfile() {
         <div className='user-profile'>
             <div className="banner-content">
                 <img
-                    src={userData?.coverURL || IconCover}
+                    src={coverImage}
                     alt="User Banner"
                     className="banner-image"
                 />
@@ -124,7 +135,7 @@ export default function UserProfile() {
             </div>
             <div className="profile-content">
                 <img
-                    src={userData?.profilURL || IconAvatar}
+                    src={profileImage}
                     alt="User Profile"
                     className="profile-image"
                 />

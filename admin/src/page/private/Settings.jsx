@@ -3,23 +3,19 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Modal from '../../customs/Modal';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
-import { updateUserFields } from '../../services/userServices';
+import { updateUserFields } from '../../routes/userRoutes';
 import { useNavigate } from 'react-router-dom';
 import {
     logoutUser,
     sendVerificationCode,
     updateUserPassword,
     verifyCodeAndUpdateEmail
-} from '../../services/authServices';
+} from '../../routes/authRoutes';
 import '../../styles/Settings.scss';
 
 export default function Settings() {
     const { currentUser, userData } = useContext(AuthContext);
-    const [toast, setToast] = useState({
-        show: false,
-        message: '',
-        type: '',
-    });
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -188,13 +184,27 @@ export default function Settings() {
     const handleOpen = () => setOpen(true);
 
     const handleLogout = async () => {
-        try {
-            await logoutUser();
-            navigate('/');
+        setIsLoading(true);
+
+        const response = await logoutUser();
+
+        if (response.success) {
+            setToast({
+                show: true,
+                message: response.message,
+                type: 'success',
+            });
+            setIsLoading(false);
             setOpen(false);
-        } catch (error) {
-            console.error('Error signing out:', error);
-        }
+            navigate('/');
+        } else {
+            setToast({
+                show: true,
+                message: response.message,
+                type: 'error',
+            });
+            setIsLoading(false);
+        };
     };
 
 
@@ -337,7 +347,7 @@ export default function Settings() {
                     onNext={handleLogout}
                     isNext={true}
                     isHide={false}
-                    nextText={"Oui"}
+                    nextText={isLoading ? <Spinner /> : "Oui"}
                     hideText={"Annuler"}
                 >
                     <p>Confirmez-vous vouloir vous déconnecter ?</p>

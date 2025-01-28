@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import Loading from '../../customs/Loading';
-import { checkEmailAvailability, signinUser } from '../../services/authServices';
+import { signinUser } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
 import '../../styles/LoginPage.scss';
 
@@ -14,14 +14,9 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    const [message, setMessage] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        email: email || '',
-        password: '',
-        agree: false,
-    });
+    const [formData, setFormData] = useState({ email: email || '', password: '', agree: false });
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
@@ -29,15 +24,18 @@ export default function LoginPage() {
 
     const validateForm = () => {
         const errors = {};
+        const { agree, email, password} = formData;
 
-        if (formData.agree === false) {
+        if (agree === false) {
             errors.agree = "Vous devez accepter les termes et conditions.";
         } else {
-            if (!formData.email) {
+            if (!email) {
                 errors.email = "Email réquis";
             }
-            if (!formData.password) {
+            if (!password) {
                 errors.password = "Mot de passe réquis";
+            } else if (password.length < 6) {
+                errors.password = "Le mot de passe doit contenir au moins 6 caractères.";
             }
         }
 
@@ -52,47 +50,50 @@ export default function LoginPage() {
         });
     };
 
+    
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
+    
+        // Validation des champs
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
             setErrors(errors);
             setLoading(false);
             return;
         }
-
+    
         try {
-            const { email, password } = formData;
-
-            const isEmailAlreadyUsed = await checkEmailAvailability(email);
-            if (isEmailAlreadyUsed.success) {
-                setToast({
-                    show: true,
-                    type: 'error',
-                    message: 'Cet email est déjà utilisé. Veuillez utiliser un autre email.'
-                });
-                setMessage('Cet email est déjà utilisé. Veuillez utiliser un autre email.');
-                setLoading(false);
-                return;
-            }
-
-            // Envoi des informations au backend avec les identifiants de connexion
-            const verificationResult = await signinUser(email, password);
-
-            if (verificationResult.success) {
-                navigate('/');
-            } else {
+            // Tentative de connexion
+            const result = await signinUser(formData.email, formData.password);
+    
+            if (result.success) {
+                // Connexion réussie
                 setToast({
                     show: true,
                     type: 'success',
-                    message: 'Nouveau périphérique détecté. Veuillez vérifier votre boîte mail.'
+                    message: result.message,
+                });
+    
+                setTimeout(() => {
+                    navigate('/');
+                }, 3000);
+            } else {
+                // Cas où le backend retourne une erreur
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: result.message || "Accès refusé.",
                 });
                 navigate('/access-denied');
             }
         } catch (error) {
-            setMessage('Une erreur est survenue. Veuillez réessayer.');
+            console.error("Erreur lors de la soumission :", error.message);
+            setToast({
+                show: true,
+                type: 'error',
+                message: "Une erreur est survenue. Veuillez réessayer.",
+            });
         } finally {
             setLoading(false);
         }
@@ -153,7 +154,6 @@ export default function LoginPage() {
                     J'accepte les termes et conditions
                 </label>
                 {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
-                {message && (<div className='error-text'>{message}</div>)}
 
                 <button
                     type="submit"

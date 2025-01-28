@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { validateDevice } from "../../services/authServices";
+import { validateDevice } from "../../routes/authRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
 import Loading from "../../customs/Loading";
 import Toast from "../../customs/Toast";
@@ -13,10 +13,6 @@ function VerifyDevice() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        console.log("Debug - deviceID:", deviceID);
-        console.log("Debug - verificationToken:", verificationToken);
-        console.log("Debug - currentUser:", currentUser);
-
         if (!currentUser) {
             setToast({ 
                 show: true, 

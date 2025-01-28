@@ -3,7 +3,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import PaymentForm from '../../common/adscity-pay/payment-form/PaymentForm';
 import PaymentInstructions from '../../common/adscity-pay/payment-instructions/PaymentInstructions';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { paymentProcessing } from '../../services/paymentServices';
+import { paymentProcessing } from '../../routes/paymentRoutes';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';

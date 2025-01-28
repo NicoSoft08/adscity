@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import ButtonAdd from '../../customs/ButtonAdd';
 import Hero from '../../components/hero/Hero';
 import { allCategories } from '../../data/database';
-import { fetchAdsByCategory } from '../../services/adServices';
+import { fetchPostsByCategory } from '../../routes/postRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 
@@ -13,9 +13,9 @@ export default function CategoryNamePage() {
 
     useEffect(() => {
         const getAdsByCategory = async () => {
-            const result = await fetchAdsByCategory(categoryName);
+            const result = await fetchPostsByCategory(categoryName);
             if (result.success) {
-                setAdsCategory(result?.ads);
+                setAdsCategory(result?.postsByCategoryName);
             }
         }
 
@@ -38,7 +38,7 @@ export default function CategoryNamePage() {
             {adsCategory.length > 0 ? (
                 <CardList>
                     {adsCategory.map((item) => (
-                        <CardItem ad={item} />
+                        <CardItem post={item} />
                     ))}
                 </CardList>
             ) : (

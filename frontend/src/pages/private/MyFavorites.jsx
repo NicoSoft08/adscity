@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getUserFavorites } from '../../services/favorisServices';
+import { getUserFavorites } from '../../routes/userRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 
@@ -31,7 +31,7 @@ export default function MyFavorites({ currentUser }) {
                     {favoris.map((item, index) => (
                         <CardItem
                             key={index}
-                            ad={item}
+                            post={item}
                             onToggleFavorite={handleRemoveFromFavorites}
                         />
                     ))}

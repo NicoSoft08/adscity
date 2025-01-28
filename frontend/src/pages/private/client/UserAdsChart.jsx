@@ -2,11 +2,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { AuthContext } from '../../../contexts/AuthContext';
-import { 
-    fetchApprovedAdsByUserID, 
-    fetchPendingAdsByUserID, 
-    fetchRefusedAdsByUserID 
-} from '../../../services/userServices';
+import {
+    fetchApprovedPostsByUserID,
+    fetchPendingPostsByUserID,
+    fetchRefusedPostsByUserID
+} from '../../../routes/userRoutes';
 import '../../../styles/UserAdsChart.scss';
 
 // Activer les composants de Chart.js
@@ -24,15 +24,15 @@ export default function UserAdsChart() {
                 const userID = currentUser?.uid;
                 // Fetch all the ads data in parallel
                 const [pendingAds, approvedAds, refusedAds] = await Promise.all([
-                    fetchPendingAdsByUserID(userID),
-                    fetchApprovedAdsByUserID(userID),
-                    fetchRefusedAdsByUserID(userID),
+                    fetchPendingPostsByUserID(userID),
+                    fetchApprovedPostsByUserID(userID),
+                    fetchRefusedPostsByUserID(userID),
                 ]);
 
                 // Set the ads data
-                setAdsPending(pendingAds?.pendingAds);
-                setAdsApproved(approvedAds?.approvedAds);
-                setAdsRefused(refusedAds?.refusedAds);
+                setAdsPending(pendingAds?.pendingPosts || []);
+                setAdsApproved(approvedAds?.approvedPosts || []);
+                setAdsRefused(refusedAds?.refusedPosts || []);
             } catch (error) {
                 console.error('Erreur lors de la récupération des annonces:', error);
             }
@@ -48,7 +48,7 @@ export default function UserAdsChart() {
         datasets: [
             {
                 label: 'Statut des annonces',
-                data: [adsPending.length, adsApproved.length, adsRefused.length],
+                data: [adsPending?.length, adsApproved?.length, adsRefused?.length],
                 backgroundColor: ['#ffab00', '#4caf50', '#f44336'],
                 borderColor: ['#ffab00', '#4caf50', '#f44336'],
                 borderWidth: 1,

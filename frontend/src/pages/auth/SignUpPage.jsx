@@ -4,7 +4,7 @@ import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Toast from '../../customs/Toast';
 import { Link, useNavigate } from 'react-router-dom';
 import Spinner from '../../customs/Spinner';
-import { createUser } from '../../services/authServices';
+import { createUser } from '../../routes/authRoutes';
 import SignupSuccessModal from '../../customs/SignupSuccessModal';
 // import PhoneInput from '../../components/phone-input/PhoneInput';
 import { countries } from '../../data/countries';

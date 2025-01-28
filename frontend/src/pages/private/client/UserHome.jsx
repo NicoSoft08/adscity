@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useContext, useState } from 'react';
 
 // components
 import DashboardPanel from './DashboardPanel';
@@ -24,20 +23,9 @@ import '../../../styles/UserHome.scss';
 
 
 export default function UserHome() {
-    const { currentUser, userData } = useContext(AuthContext);
-    const navigate = useNavigate();
+    const { currentUser } = useContext(AuthContext);
     const [activeSection, setActiveSection] = useState('');
     const [isCollapsed, setIsCollapsed] = useState(false);
-
-    useEffect(() => {
-        if (!currentUser) {
-            navigate('/');
-        } else if (userData && userData.role !== 'user') {
-            navigate('/access-denied');
-        }
-    }, [navigate, currentUser, userData]);
-
-
 
     return (
         <div className={`dashboard ${isCollapsed ? 'collapsed' : ''}`}>
@@ -52,8 +40,8 @@ export default function UserHome() {
                             {!isCollapsed ? <span>Panel</span> : null}
                         </li>
                         <li
-                            className={`${activeSection === "ads" ? 'active' : ''}`}
-                            onClick={() => setActiveSection('ads')}
+                            className={`${activeSection === "posts" ? 'active' : ''}`}
+                            onClick={() => setActiveSection('posts')}
                         >
                             <FontAwesomeIcon icon={faBullhorn} />
                             {!isCollapsed ? <span>Annonces</span> : null}
@@ -101,7 +89,7 @@ export default function UserHome() {
 
                 <div className="main-content">
                     {activeSection === "panel" && <DashboardPanel />}
-                    {activeSection === "ads" && <MyAds currentUser={currentUser} />}
+                    {activeSection === "posts" && <MyAds currentUser={currentUser} />}
                     {activeSection === "favoris" && <MyFavorites currentUser={currentUser} />}
                     {activeSection === "notifications" && <MyNotifications />}
                     {activeSection === "payments" && <PaymentIntents userID={currentUser?.uid} />}

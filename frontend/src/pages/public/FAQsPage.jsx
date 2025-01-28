@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import '../../styles/FAQsPage.scss';
 import {
     IconCreateAd,
     IconCreateAdButton,
     IconRegister
 } from '../../config/images';
+import '../../styles/FAQsPage.scss';
 
 export default function FAQsPage() {
     const [activeIndex, setActiveIndex] = useState(null);

@@ -1,63 +1,124 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { logEvent } from 'firebase/analytics';
 import PublicProfil from '../../common/public-profil/PublicProfil';
 import { analytics } from '../../firebaseConfig';
-import { 
-    fetchUserActiveAds, 
-    fetchDataByUserID 
-} from '../../services/userServices';
+import {
+    fetchUserActivePosts,
+    fetchDataByUserID,
+    rateUser
+} from '../../routes/userRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
-import ReviewForm from '../../components/review-form/ReviewForm';
-import { AuthContext } from '../../contexts/AuthContext';
+import StarRating from '../../components/star-rating/StarRating';
 import '../../styles/ShowUserPage.scss';
+import { AuthContext } from '../../contexts/AuthContext';
+import Toast from '../../customs/Toast';
+import Spinner from '../../customs/Spinner';
 
 
 export default function ShowUserPage() {
-    const { currentUser } = useContext(AuthContext);
     const { userID } = useParams();
-    const navigate = useNavigate();
-    const [profilData, setProfilData] = useState([]);
-    const [profilAds, setProfilAds] = useState([]);
-
+    const { currentUser } = useContext(AuthContext);
+    const [profileData, setProfileData] = useState([]);
+    const [profilePostsData, setProfilePostsData] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [rating, setRating] = useState(0);
+    const [comment, setComment] = useState('');
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
-        const fetchProfilData = async () => {
-            const userData = await fetchDataByUserID(userID);
-            setProfilData(userData);
-        };
+        const fetchData = async () => {
+            const [userData, userPostsData] = await Promise.all([
+                fetchDataByUserID(userID),
+                fetchUserActivePosts(userID)
+            ]);
+            if (userData.success) {
+                setProfileData(userData?.data);
+            }
+            if (userPostsData.success) {
+                setProfilePostsData(userPostsData?.activePosts);
+            }
+        }
 
-        const fetchProfilAds = async () => {
-            const result = await fetchUserActiveAds(userID);
-            setProfilAds(result?.activeApprovedAds);
-        };
-
+        fetchData();
         logEvent(analytics, 'view_store');
 
-        fetchProfilData();
-        fetchProfilAds();
     }, [userID]);
+
+    const validateRating = () => {
+        if (rating === 0) {
+            setToast({ show: true, message: 'Veuillez attribuer une note à l\'utilisateur.', type: 'error' });
+            return;
+        };
+        if (comment.trim() === '') {
+            setToast({ show: true, message: 'Veuillez ajouter un commentaire.', type: 'error' });
+            return;
+        };
+    }
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            setToast({ show: true, message: 'Vous devez être connecté pour noter un utilisateur.', type: 'error' });
+            return;
+        };
+
+        validateRating();
+
+        setIsLoading(true);
+        const result = await rateUser(userID, rating, comment);
+        if (result.success) {
+            setRating(0);
+            setComment('');
+            setIsLoading(false);
+            setToast({ show: true, message: result.message, type: 'success' });
+        } else {
+            setIsLoading(false);
+            setToast({ show: true, message: result.message, type: 'error' });
+        }
+    };
 
     return (
         <div className='store-page'>
             <div style={{}} />
-            <PublicProfil profile={profilData} />
+            <PublicProfil profile={profileData} />
             <div className="listing">
                 <h3>Publications</h3>
-                <span>{profilData.adsCount} Annonces</span>
+                <span>{profileData.adsCount > 1 ? `${profileData.adsCount + " Annonces"}` : `${profileData.adsCount + " Annonce"}`}</span>
             </div>
             <CardList>
-                {profilAds.map((item, index) => (
-                    <CardItem key={index} ad={item} />
+                {profilePostsData.map((item, index) => (
+                    <CardItem
+                        key={index}
+                        post={item}
+                    />
                 ))}
             </CardList>
 
-            <ReviewForm
-                ratings={profilData.ratings}
-                navigate={navigate}
-                currentUser={currentUser}
-            />
+            <form onSubmit={handleSubmit}>
+                <h3>Laissez un avis :</h3>
+                <StarRating
+                    onRatingChange={(value) => setRating(value)}
+                />
+                <br />
+                <textarea
+                    placeholder="Votre commentaire..."
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                // required
+                />
+                <br />
+                <button type="submit">
+                    {isLoading
+                        ? <Spinner />
+                        : "Soumettre l'avis"
+                    }
+                </button>
+            </form>
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>
     );
 };

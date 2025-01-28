@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import ReactCodeInput from 'react-code-input';
-// import InstallAppModal from '../../utils/popup/InstallAppModal';
-// import { getFCMToken } from '../../firebase/messaging';
-import { checkCode } from '../../services/userServices';
-import '../../styles/SignupSuccess.scss';
+import { checkCode } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
+import '../../styles/SignupSuccess.scss';
 
 
 
@@ -95,7 +93,7 @@ export default function SignupSuccess() {
                 <li><Link to="/faqs">FAQ</Link></li>
             </ul>
             <h2>Contactez-nous</h2>
-            <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter via notre <Link to={"/contact-us"}>page de support</Link> ou à envoyer un email à <a href="mailto:contact@adscity.net">contact@adscity.net</a>.</p>
+            <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter via notre <Link to={"/contact-us"}>page de support</Link> ou à envoyer un email à <a href="mailto:support@adscity.net">support@adscity.net</a>.</p>
             <div className="links">
                 <Link to={'/'}>Retour à l'Accueil</Link>
                 {/* <Link to="#">Consulter notre Blog</Link> */}

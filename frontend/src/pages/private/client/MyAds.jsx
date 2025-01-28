@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { 
-    fetchUserActiveAds, 
-    fetchUserInactiveAds 
-} from '../../../services/userServices';
+    fetchUserActivePosts, 
+    fetchUserInactivePosts 
+} from '../../../routes/userRoutes';
 import '../../../styles/MyAds.scss';
-import CardList from '../../../utils/card/CardList';
 import CardItem from '../../../utils/card/CardItem';
 
 const AdSwitch = ({ activeCount = 10, completedCount = 289, onSwitch }) => {
@@ -46,16 +45,16 @@ export default function MyAds({ currentUser }) {
     useEffect(() => {
         const userID = currentUser?.uid;
         const fetchDisabledAds = async () => {
-            const result = await fetchUserActiveAds(userID);
+            const result = await fetchUserActivePosts(userID);
             if (result.success) {
-                setAdsActive(result?.activeApprovedAds);
+                setAdsActive(result?.activePosts || []);
             }
         };
 
         const fetchActiveAds = async () => {
-            const result = await fetchUserInactiveAds(userID);
+            const result = await fetchUserInactivePosts(userID);
             if (result.success) {
-                setAdsInactive(result?.inactiveApprovedAds);
+                setAdsInactive(result?.inactivePosts || []);
             }
         }
 
@@ -78,19 +77,19 @@ export default function MyAds({ currentUser }) {
             />
             <div className="ads-list">
                 {selectedTab === 'active' && adsActive.length > 0 && (
-                    <CardList>
+                    <div className="card-list">
                         {adsActive.map((item, index) => (
-                            <CardItem key={index} ad={item} />
+                            <CardItem key={index} post={item} />
                         ))}
-                    </CardList>
+                    </div>
                 )}
 
                 {selectedTab === 'completed' && adsInactive.length > 0 && (
-                    <CardList>
+                    <div className="card-list">
                         {adsInactive.map((item, index) => (
                             <CardItem key={index} ad={item} />
                         ))}
-                    </CardList>
+                    </div>
                 )}
 
                 {selectedTab === 'active' && adsActive.length === 0 && (

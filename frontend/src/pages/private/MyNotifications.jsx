@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react';
 import NotificationList from '../../components/notification/Notifications';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchNotifications } from '../../services/notificationServices';
+import { fetchNotifications } from '../../routes/userRoutes';
 
 
 export default function MyNotifications() {
@@ -13,7 +13,7 @@ export default function MyNotifications() {
             const userID = currentUser.uid;
             const result = await fetchNotifications(userID);
             if (result.success) {
-                setNotifications(result?.notifications);
+                setNotifications(result?.data);
             }
         }
 

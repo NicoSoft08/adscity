@@ -1,21 +1,25 @@
-import React, { useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { faCheck, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate } from 'react-router-dom';
-import { contactUs } from '../../services/contactServices';
+import { contactSupportClient } from '../../routes/apiRoutes';
+import { AuthContext } from '../../contexts/AuthContext';
 import '../../styles/ContactPage.scss';
+import Toast from '../../customs/Toast';
 
 export default function ContactPage() {
     const navigate = useNavigate();
+    const { currentUser, userData } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [message, setMessage] = useState('');
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
         object: '',
         message: '',
         agree: false,
@@ -59,8 +63,7 @@ export default function ContactPage() {
         });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         setLoading(true);
 
         const errors = validateForm();
@@ -73,6 +76,17 @@ export default function ContactPage() {
             return;
         }
 
+        if (currentUser) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Veuillez vous connecter pour envoyer un message',
+            });
+
+            setLoading(false);
+            return;
+        };
+
         try {
             const newForm = {
                 firstName: formData.firstName,
@@ -81,7 +95,7 @@ export default function ContactPage() {
                 object: formData.object,
                 message: formData.message,
             };
-            const result = await contactUs(newForm);
+            const result = await contactSupportClient(newForm);
             if (result.success) {
                 setMessage(result.message);
                 setSubmitted(true);
@@ -173,9 +187,9 @@ export default function ContactPage() {
                         <option value="Support Technique">Support Technique</option>
                         <option value="Questions Relatives aux Annonces">Questions Relatives aux Annonces</option>
                         <option value="Problèmes De Paiement">Problèmes De Paiement</option>
-                        <option value="Demandes de Partenariat">Demandes de Partenariat</option>
+                        {/* <option value="Demandes de Partenariat">Demandes de Partenariat</option> */}
                         <option value="Suggestions d'Amélioration">Suggestions d'Amélioration</option>
-                        <option value="Publicité et Sponsoring">Publicité et Sponsoring</option>
+                        {/* <option value="Publicité et Sponsoring">Publicité et Sponsoring</option> */}
                         <option value="Questions Générales">Questions Générales</option>
                     </select>
                     {errors.object && (
@@ -225,6 +239,8 @@ export default function ContactPage() {
                     <div className="error-message">{message}</div>
                 )}
             </form>
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>
     );
 };

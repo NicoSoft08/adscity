@@ -1,11 +1,11 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    fetchAdsByUserID, 
-    fetchApprovedAdsByUserID, 
-    fetchPendingAdsByUserID, 
-    fetchRefusedAdsByUserID 
-} from '../../../services/userServices';
+    fetchPostsByUserID, 
+    fetchApprovedPostsByUserID, 
+    fetchPendingPostsByUserID, 
+    fetchRefusedPostsByUserID 
+} from '../../../routes/userRoutes';
 import {
     faPlusSquare,
     faListAlt,
@@ -58,8 +58,8 @@ const Stats = ({ allAds, pendingAds, approvedAds, refusedAds }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 
 export default function AdsStatistics() {
@@ -76,22 +76,21 @@ export default function AdsStatistics() {
                 const userID = currentUser?.uid;
                 // Fetch all the ads data in parallel
                 const [allAds, pendingAds, approvedAds, refusedAds] = await Promise.all([
-                    fetchAdsByUserID(userID),
-                    fetchPendingAdsByUserID(userID),
-                    fetchApprovedAdsByUserID(userID),
-                    fetchRefusedAdsByUserID(userID),
+                    fetchPostsByUserID(userID),
+                    fetchPendingPostsByUserID(userID),
+                    fetchApprovedPostsByUserID(userID),
+                    fetchRefusedPostsByUserID(userID),
                 ]);
 
-                // Set the ads data
-                setAds(allAds?.userAds);
-                setAdsPending(pendingAds?.pendingAds);
-                setAdsApproved(approvedAds?.approvedAds);
-                setAdsRefused(refusedAds?.refusedAds);
+                // Vérification des données renvoyées
+                setAds(allAds?.postsData || []); 
+                setAdsPending(pendingAds?.pendingPosts || []); 
+                setAdsApproved(approvedAds?.approvedPosts || []); 
+                setAdsRefused(refusedAds?.refusedPosts || []); 
             } catch (error) {
                 console.error('Erreur lors de la récupération des annonces:', error);
             }
         }
-
 
         fetchAllData();
     }, [currentUser]);
@@ -106,10 +105,10 @@ export default function AdsStatistics() {
                 </button>
             </div>
             <Stats
-                allAds={ads.length}
-                pendingAds={adsPending.length}
-                approvedAds={adsApproved.length}
-                refusedAds={adsRefused.length}
+                allAds={ads?.length || 0} 
+                pendingAds={adsPending?.length || 0}
+                approvedAds={adsApproved?.length || 0}
+                refusedAds={adsRefused?.length || 0}
             />
         </div>
     );

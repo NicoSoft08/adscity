@@ -7,8 +7,8 @@ import {
     sendVerificationCode, 
     updateUserPassword, 
     verifyCodeAndUpdateEmail 
-} from '../../../services/authServices';
-import { updateUserFields } from '../../../services/userServices';
+} from '../../../routes/authRoutes';
+import { updateUserFields } from '../../../routes/userRoutes';
 import Spinner from '../../../customs/Spinner';
 import Modal from '../../../customs/Modal';
 import '../../../styles/Settings.scss';
@@ -16,11 +16,7 @@ import '../../../styles/Settings.scss';
 export default function Settings() {
     const { currentUser, userData } = useContext(AuthContext);
     const navigate = useNavigate();
-    const [toast, setToast] = useState({
-        show: false,
-        message: '',
-        type: '',
-    });
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
@@ -92,10 +88,9 @@ export default function Settings() {
 
 
     const handleSecurityInfoUpdate = async () => {
-        const userID = currentUser?.uid;
-        const password = securityInfo.password;
+        const newPassword = securityInfo.password;
 
-        if (!password) {
+        if (!newPassword) {
             setToast({
                 show: true,
                 message: "Veuillez renseigner votre nouveau mot de passe !",
@@ -104,7 +99,7 @@ export default function Settings() {
             return;
         }
 
-        const result = await updateUserPassword(userID, password);
+        const result = await updateUserPassword(userData.email, newPassword);
         if (result.error) {
             setToast({
                 show: true,

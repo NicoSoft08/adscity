@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPhone } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import Toast from '../../customs/Toast';
-import { updateContactClick } from '../../services/userServices';
+import { updateContactClick } from '../../routes/apiRoutes';
 import { IconAvatar } from '../../config/images';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
@@ -59,6 +59,7 @@ const OwnerProfileCard = ({ owner, userID }) => {
                 />
                 {owner?.isOnline ? <div className="online-bage" /> : null}
             </div>
+            <span className='profile-type'> {owner?.profileType} </span>
             <p className='member-since'>Membre depuis: {formatDate(owner.createdAt)}</p>
             <h2 className='name'>{owner.displayName}</h2>
             <p className='review'>{owner.ratings?.total || 0} ⭐ {owner.reviews?.totalReviews || 0} avis</p>
@@ -69,7 +70,7 @@ const OwnerProfileCard = ({ owner, userID }) => {
                 </button>
             </div>
             <div className='action-buttons'>
-                <button className='message' onClick={() => handleProfileClick(`/users/show/${owner.userID}`)}>Voir Profil</button>
+                <button className='message' onClick={() => handleProfileClick(`/users/user/${owner.userID}/profile/show`)}>Voir Profil</button>
             </div>
 
             <Toast

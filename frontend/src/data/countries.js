@@ -17,4 +17,4 @@ export const countries = [
         dialCode: "+7",
         flag: require("../assets/flags/ru.png")
     }
-]
+];

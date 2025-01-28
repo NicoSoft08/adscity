@@ -1,0 +1,23 @@
+@import '../../styles/variables';
+@import '../../styles/fonts';
+
+
+.star-rating {
+    display: flex;
+    gap: 5px;
+    font-size: 2rem;
+    cursor: pointer;
+
+    .star {
+        color: #ddd; /* Couleur des étoiles non sélectionnées */
+        transition: color 0.3s ease;
+    }
+
+    .star.filled {
+        color: #ffc107; /* Couleur des étoiles sélectionnées */
+    }
+
+    .star:hover {
+        color: #ff9800; /* Couleur au survol */
+    }
+}

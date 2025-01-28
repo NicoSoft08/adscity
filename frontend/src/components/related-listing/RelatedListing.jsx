@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRelatedListings } from '../../services/adServices';
+import { fetchRelatedListings } from '../../routes/postRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import './RelatedListing.scss';
 
-export default function RelatedListing({ adID, category }) {
+export default function RelatedListing({ postID, category }) {
     const [relatedAds, setRelatedAds] = useState([]);
 
     useEffect(() => {
         const fetchRelatedAds = async () => {
             try {
-                const result = await fetchRelatedListings(adID, category);
+                const result = await fetchRelatedListings(postID, category);
                 if (result.success) {
                     const relatedAds = Array.isArray(result?.relatedAds) ? result?.relatedAds : [];
                     setRelatedAds(relatedAds);
@@ -21,10 +21,10 @@ export default function RelatedListing({ adID, category }) {
             }
         };
 
-        if (adID) {
+        if (postID) {
             fetchRelatedAds();
         }
-    }, [adID, category]);
+    }, [postID, category]);
 
     return (
         <div className='ads-connexes'>

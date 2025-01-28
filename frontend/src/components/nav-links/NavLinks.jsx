@@ -5,31 +5,23 @@ import { useNavigate } from 'react-router-dom';
 import './NavLinks.scss';
 
 export default function NavLinks() {
-    const { currentUser, userData } = useContext(AuthContext);
+    const { currentUser, userRole, userData } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleNavigate = () => {
-        if (!currentUser) {
+       if (!currentUser) {
             navigate('/auth/signin');
-            return;
-        }
-    
-        switch (userData?.role) {
-            case 'user':
-                navigate('/user/dashboard');
-                break;
-            // case 'admin':
-            //     navigate('/admin/dashboard');
-            //     break;
-            default:
-                navigate('/access-denied');
+        } else if (currentUser && userRole !== 'user') {
+            navigate('/access-denied');
+        } else {
+            navigate('/user/dashboard');
         }
     };
 
     // Déterminer l'image de profil à afficher
     const profileImage = 
-        currentUser && userData?.role === 'user' 
-        ? userData?.profilURL || IconAvatar // Si profilURL est null, utiliser l'image par défaut
+        currentUser && userRole === 'user' 
+        ? userData.profilURL || IconAvatar // Si profilURL est null, utiliser l'image par défaut
         : IconAvatar;
 
     return (

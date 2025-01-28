@@ -1,25 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { faCirclePlus, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { uploadImage } from '../../services/storageServices';
+import { uploadImage } from '../../routes/storageRoutes';
 import Toast from '../../customs/Toast';
+import { getPromotionLimits, isPromotionActive } from '../../routes/promotionRoutes';
 import './ImageUpload.scss';
 
 export default function ImageUpload({ onNext, onBack, onChange, formData, currentUser, userData }) {
     const [selectedImages, setSelectedImages] = useState(formData.images || []);
-    const [toast, setToast] = useState({
-        show: false,
-        message: '',
-        type: '',
-    });
+    const [maxPhotos, setMaxPhotos] = useState(3); // Limite par défaut
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    const hideToast = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
-    };
+    // ⚡ Gérer les promotions et limites utilisateur
+    useEffect(() => {
+        const fetchMaxPhotos = async () => {
+            const promotionActive = await isPromotionActive();
 
+            if (promotionActive) {
+                const promotionLimits = await getPromotionLimits();
+                setMaxPhotos(promotionLimits.maxPhotosPerAd || 3); // Limite de la promotion
+            } else {
+                const userPlanMaxPhotos = getUserPlanMaxPhotos(userData);
+                setMaxPhotos(userPlanMaxPhotos || 3); // Limite du plan utilisateur
+            }
+        };
+
+        fetchMaxPhotos();
+    }, [userData]);
 
     const handleImageChange = async (index, e) => {
         const file = e.target.files[0];
@@ -33,11 +40,7 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
             const result = await uploadImage(file, userID);
 
             if (result.success) {
-                setToast({
-                    show: true,
-                    message: result.message,
-                    type: 'success',
-                });
+                setToast({ show: true, message: result.message, type: 'success' });
 
                 const { imageUrl } = result;
 
@@ -52,30 +55,17 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
                     images: updatedImages, // Utiliser la liste mise à jour des images
                 });
 
-                setToast({
-                    type: 'info',
-                    message: 'Image ajoutée au formulaire !',
-                    show: true,
-                });
+                setToast({ type: 'info', message: 'Image ajoutée au formulaire !', show: true });
             } else {
-                setToast({
-                    show: true,
-                    message: result.message,
-                    type: 'error',
-                });
+                setToast({ show: true, message: result.message, type: 'error' });
             }
         }
     };
 
-
     const validateImages = () => {
         const hasImages = selectedImages.some((img) => img !== null);
         if (!hasImages) {
-            setToast({
-                type: 'error',
-                message: 'Veuillez télécharger au moins une image.',
-                show: true,
-            });
+            setToast({ type: 'error', message: 'Veuillez télécharger au moins une image.', show: true });
             return false;
         }
         return true;
@@ -86,7 +76,6 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
             onNext();
         }
     };
-
 
     const handleRemoveImage = (index) => {
         const newImages = [...selectedImages];
@@ -102,17 +91,17 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
     };
 
     const getUserPlanMaxPhotos = (userData) => {
-        if (!userData || !userData.plans) {
+        if (!userData || !userData?.user.plans) {
             return null; // Retourne null si les données utilisateur ou les plans sont absents
         }
 
         // Recherche d'un plan contenant la propriété 'max_photos'
-        const userPlan = Object.keys(userData.plans).find(plan =>
-            userData.plans[plan]?.max_photos !== undefined
+        const userPlan = Object.keys(userData?.user.plans).find(plan =>
+            userData?.user.plans[plan]?.max_photos !== undefined
         );
 
         // Si un plan valide est trouvé, retourne le nombre maximal de photos
-        return userPlan ? userData.plans[userPlan].max_photos : null;
+        return userPlan ? userData?.user.plans[userPlan].max_photos : null;
     };
 
     return (
@@ -124,9 +113,9 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
                     <label htmlFor="upload-input" className="upload-button">Télécharger des Images</label>
                 </div>
 
-                {/* 5 Rectangles pour les images */}
+                {/* Grid pour les images (limite dynamique selon maxPhotos) */}
                 <div className="image-upload-grid">
-                    {userData && [...Array(getUserPlanMaxPhotos(userData))].map((_, index) => (
+                    {maxPhotos && [...Array(maxPhotos)].map((_, index) => (
                         <div className="image-upload-box" key={index}>
                             {selectedImages[index] ? (
                                 <div className="image-container">
@@ -159,12 +148,7 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
                 </button>
             </div>
 
-            <Toast
-                type={toast.type}
-                message={toast.message}
-                show={toast.show}
-                onClose={hideToast}
-            />
+            <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
-};
+}

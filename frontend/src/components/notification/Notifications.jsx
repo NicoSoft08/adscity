@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { faCheck, faCheckCircle, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCheckCircle, faEnvelope, faEnvelopeOpen } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { formateDate, parseTimestamp } from '../../func';
 import { letterWhiteBgBlue } from '../../config/logos';
 import Menu from '../../customs/Menu';
-import { markNotificationAsRead } from '../../services/notificationServices';
+import { markNotificationAsRead } from '../../routes/userRoutes';
 import Toast from '../../customs/Toast';
 import './Notifications.scss';
 
@@ -19,7 +19,7 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
         {
             label: 'Marquer comme lu',
             icon: faCheck, // Vous pouvez utiliser une icône appropriée comme une coche
-            action: () => handleMarkAsRead(notification.id)
+            action: () => handleMarkAsRead(notification?.id)
         }
     ];
 
@@ -62,7 +62,7 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
                     className="user-avatar"
                 />
                 <div className="username-wrapper">
-                    <h3>AdsCity Modération</h3>
+                    <h3>AdsCity Moderation</h3>
                     <span className="verified-badge" title='Compte vérifié'>
                         <FontAwesomeIcon icon={faCheckCircle} />
                     </span>
@@ -78,30 +78,13 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
                     {formateDate(sentAt)}
                 </span>
             </div>
-            {notification.isRead
-                ? <span className='options'>Lu</span>
-                : <FontAwesomeIcon
-                    className='options'
-                    icon={faEllipsisH}
-                    onClick={(e) => handleMenuClick(e, notification.isRead)}
-                />
-            }
             <FontAwesomeIcon
                 className='options'
-                icon={notification.isRead ? "Lu" : faEllipsisH}
+                icon={notification.isRead ? faEnvelopeOpen : faEnvelope}
                 onClick={(e) => handleMenuClick(e, notification.isRead)}
             />
-            <Menu
-                options={options}
-                isOpen={showMenu}
-                onClose={() => setShowMenu(false)}
-            />
-            <Toast
-                show={toast.show}
-                type={toast.type}
-                message={toast.message}
-                onClose={() => setToast({ ...toast, show: false })}
-            />
+            <Menu options={options} isOpen={showMenu} onClose={() => setShowMenu(false)} />
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
 
     )

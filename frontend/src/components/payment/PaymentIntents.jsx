@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { formateDateTimestamp } from '../../func';
+import { fetchUserPaymentInfo } from '../../routes/paymentRoutes';
 import './PaymentIntents.scss';
-import { fetchUserPaymentInfo } from '../../services/paymentServices';
 
 
 const formatPaymentMethod = (paymentMethod) => {

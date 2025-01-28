@@ -42,7 +42,7 @@ export default function Footer() {
                     <ul>
                         <li><a href="/legal/terms">Conditions de vente</a></li>
                         <li><a href="/legal/privacy">Politique de confidentialité</a></li>
-                        <li><a href="/legal/announcement-rules">Règles de publication</a></li>
+                        <li><a href="/legal/post-rules">Règles de publication</a></li>
                     </ul>
                 </div>
 

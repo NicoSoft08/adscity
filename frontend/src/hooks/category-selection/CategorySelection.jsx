@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { allCategories } from '../../data/database';
 import Toast from '../../customs/Toast';
 import './CategorySelection.scss';
+import { Link } from 'react-router-dom';
 
 export default function CategorySelection({ onNext, onChange, formData }) {
     const [selectedCategory, setSelectedCategory] = useState(formData.category || '');
@@ -19,14 +20,6 @@ export default function CategorySelection({ onNext, onChange, formData }) {
             show: true,
         });
     }, []);
-
-
-    const hideToast = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
-    };
 
 
     const handleCategoryChange = (e) => {
@@ -74,7 +67,7 @@ export default function CategorySelection({ onNext, onChange, formData }) {
                     ))}
                 </select>
             </div>
-            
+
             {selectedCategory && (
                 <div>
                     <select className="input-field" value={selectedSubcategory} onChange={handleSubcategoryChange}>
@@ -91,14 +84,18 @@ export default function CategorySelection({ onNext, onChange, formData }) {
                     </select>
                 </div>
             )}
-            
+
+            <div className="contact-support">
+                <p>Vous ne trouvez pas la catégorie ? <Link to='/contact-us'>Contactez le support</Link></p>
+            </div>
+
             <button onClick={handleNext}>Suivant</button>
 
             <Toast
                 type={toast.type}
                 message={toast.message}
                 show={toast.show}
-                onClose={hideToast}
+                onClose={() => setToast({ ...toast, show: false })}
             />
         </div>
     );

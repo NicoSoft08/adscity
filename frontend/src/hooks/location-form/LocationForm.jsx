@@ -12,13 +12,6 @@ export default function LocationForm({ onNext, onBack, onChange, formData, userD
     });
 
 
-    const hideToast = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
-    };
-
     const validateForm = () => {
         const newErrors = {};
         if (!formData.location?.country) newErrors.country = "Le pays est requis.";
@@ -34,13 +27,13 @@ export default function LocationForm({ onNext, onBack, onChange, formData, userD
 
         if (isChecked) {
             // Check if userData contains location info
-            if (userData?.country && userData?.city && userData?.address) {
+            if (userData?.user.country && userData?.user.city && userData?.user.address) {
                 onChange({
                     ...formData,
                     location: {
-                        country: userData.country,
-                        city: userData.city,
-                        address: userData.address
+                        country: userData?.user.country,
+                        city: userData?.user.city,
+                        address: userData?.user.address
                     }
                 });
 
@@ -157,12 +150,7 @@ export default function LocationForm({ onNext, onBack, onChange, formData, userD
                 </button>
             </div>
 
-            <Toast
-                type={toast.type}
-                message={toast.message}
-                show={toast.show}
-                onClose={hideToast}
-            />
+            <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

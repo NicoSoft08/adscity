@@ -1,22 +1,20 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import './CreateAdButton.scss';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusSquare } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../../contexts/AuthContext';
 
-export default function CreateAdButton() {
-    const { currentUser, userData } = useContext(AuthContext);
+export default function CreateAdButton({ currentUser, userRole }) {
     const navigate = useNavigate();
 
     const handleNavigate = () => {
         if (!currentUser) {
             navigate('/auth/signin');
-        } else if (currentUser && (userData.role !== 'user')) {
+        } else if (currentUser && userRole !== 'user') {
             navigate('/access-denied');
         } else {
-            navigate('/auth/create-announcement');
+            navigate('/auth/create-post');
         }
     }
 

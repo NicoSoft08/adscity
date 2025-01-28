@@ -22,7 +22,7 @@
 
     .search-form {
         display: flex;
-        gap: 12px;
+        gap: 5px;
 
         @media (max-width: 768px) {
             flex-direction: column;
@@ -37,6 +37,7 @@
             font-family: 'Ubuntu', sans-serif;
             font-size: 15px;
             font-weight: $font-light;
+            outline: none;
 
             &:focus {
                 border-color: $two;
@@ -54,7 +55,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 0 24px;
+            padding: 0 20px;
             background: $two;
             color: $white;
             border: none;

@@ -1,0 +1,39 @@
+@import './fonts';
+@import './variables';
+
+
+.create-ad-page {
+    padding: 10px 20px;
+    color: $gray-dark;
+    background-color: $gray-dark;
+
+
+    .container {
+        background-color: $white;
+        padding: 10px 20px;
+        border-radius: 12px;
+        align-items: center;
+
+        .no-plan-message {
+            display: flex;
+            flex-direction: column;
+
+            h2 {
+                color: $black;
+                font-weight: $font-regular;
+            }
+            
+            .subscribe-button {
+                padding: 10px 20px;
+                border-radius: 5px;
+                font-size: 15px;
+                color: $white;
+                background-color: $two;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-light;
+                border: 1px solid #ccc;
+            }
+        }
+
+    }
+}

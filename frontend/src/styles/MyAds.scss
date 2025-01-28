@@ -7,6 +7,7 @@
     border-radius: 12px;
     padding: 0 10px;
     background-color: $white;
+    margin-top: 6rem;
 
 
     @media (max-width: 768px) {
@@ -63,5 +64,11 @@
             color: #000;
             font-weight: $font-regular;
         }
+    }
+
+    .card-list {
+        display: grid;
+        grid-template-columns: repeat(1, 1fr);
+        gap: 20px;
     }
 }

@@ -1,15 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faBan,
-    faCalendarDay,
-    faEllipsisV,
-    faExclamationTriangle,
-    faEye,
-    faEyeSlash,
-    faFlag,
-    faGavel,
-    faShare
+import { 
+    faBan, faCalendarDay, faEllipsisV, faExclamationTriangle,
+    faEye, faEyeSlash, faFlag, faGavel, faShare 
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -17,23 +10,20 @@ import { formatViewCount } from '../../func';
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
-import {
-    reportAd,
-    updateContactClick,
-    updateInteraction
-} from '../../services/userServices';
-import { fetchProfileByUserID } from '../../services/storageServices';
+import { updateContactClick, updateInteraction } from '../../routes/apiRoutes';
+import { reportPost } from '../../routes/postRoutes';
+import { fetchProfileByUserID } from '../../routes/storageRoutes';
 import Menu from '../../customs/Menu';
 import Toast from '../../customs/Toast';
-import { toggleFavorites } from '../../services/favorisServices';
+import { toggleFavorites } from '../../routes/userRoutes';
 import './CardItem.scss';
 
-export default function CardItem({ ad, onToggleFavorite }) {
+export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
     const { id, userID, adDetails, images,
         location, category, subcategory, views,
-        posted_at, expiry_date, isActive,
-    } = ad;
+        expiry_date, isActive, moderated_at
+    } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -42,7 +32,7 @@ export default function CardItem({ ad, onToggleFavorite }) {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (currentUser && userData && userData.adsSaved?.includes(ad.id)) {
+        if (currentUser && userData.adsSaved?.includes(post.id)) {
             setIsFavorite(true);
         }
 
@@ -52,26 +42,26 @@ export default function CardItem({ ad, onToggleFavorite }) {
         };
 
         fetchProfilURL();
-    }, [userID, currentUser, userData, ad]);
+    }, [userID, currentUser, userData, post]);
 
     const reportReasons = [
         {
             id: 1,
             label: 'Contenu inapproprié',
             icon: faBan,
-            action: () => handleReportWithReason(ad.id, 'Contenu inapproprié')
+            action: () => handleReportWithReason(post.id, 'Contenu inapproprié')
         },
         {
             id: 2,
             label: 'Produit illégal',
             icon: faGavel,
-            action: () => handleReportWithReason(ad.id, 'Produit illégal')
+            action: () => handleReportWithReason(post.id, 'Produit illégal')
         },
         {
             id: 3,
             label: 'Annonce frauduleuse',
             icon: faExclamationTriangle,
-            action: () => handleReportWithReason(ad.id, 'Annonce frauduleuse')
+            action: () => handleReportWithReason(post.id, 'Annonce frauduleuse')
         },
     ];
 
@@ -79,21 +69,21 @@ export default function CardItem({ ad, onToggleFavorite }) {
         {
             label: 'Signaler l\'annonce',
             icon: faFlag,
-            action: () => handleReportAd(ad.id)
+            action: () => handleReportAd(post.id)
         },
         {
             label: 'Partager',
             icon: faShare,
-            action: () => handleShareAd(ad.id)
+            action: () => handleShareAd(post.id)
         },
         {
             label: 'Masquer',
             icon: faEyeSlash,
-            action: () => handleHideAd(ad.id)
+            action: () => handleHideAd(post.id)
         },
     ];
 
-    const handleReportWithReason = async (adID, reasonLabel) => {
+    const handleReportWithReason = async (postID, reasonLabel) => {
         if (!currentUser) {
             setToast({
                 show: true,
@@ -105,7 +95,7 @@ export default function CardItem({ ad, onToggleFavorite }) {
 
         const userID = currentUser.id;
 
-        const result = await reportAd(adID, userID, reasonLabel);
+        const result = await reportPost(postID, userID, reasonLabel);
         if (result.success) {
             setToast({
                 show: true,
@@ -123,18 +113,18 @@ export default function CardItem({ ad, onToggleFavorite }) {
     };
 
 
-    const handleReportAd = (adID) => {
+    const handleReportAd = (postID) => {
         setShowReportModal(true);
         setShowMenu(false);
-        console.log(`Signaler l'annonce avec l'ID : ${adID}`);
+        console.log(`Signaler l'annonce avec l'ID : ${postID}`);
     };
 
-    const handleShareAd = (adID) => {
-        console.log(`Partager l'annonce avec l'ID : ${adID}`);
+    const handleShareAd = (postID) => {
+        console.log(`Partager l'annonce avec l'ID : ${postID}`);
     };
 
-    const handleHideAd = (adID) => {
-        console.log(`Masquer l'annonce avec l'ID : ${adID}`);
+    const handleHideAd = (postID) => {
+        console.log(`Masquer l'annonce avec l'ID : ${postID}`);
     };
 
 
@@ -154,15 +144,16 @@ export default function CardItem({ ad, onToggleFavorite }) {
         return formattedDate;
     }
 
-    const handleAdClick = async (url) => {
+    const handlePostClick = async (url) => {
         const userID = currentUser?.uid;
+        const postID = id;
 
         navigate(url);
 
         if (!userID) return null;
 
         try {
-            await updateInteraction(id, userID, category); // Fonction pour mettre à jour clicksOnAds, categoriesViewed, et totalAdsViewed
+            await updateInteraction(postID, userID, category); // Fonction pour mettre à jour clicksOnAds, categoriesViewed, et totalAdsViewed
             // Navigue vers la page de l'annonce
 
         } catch (error) {
@@ -184,8 +175,7 @@ export default function CardItem({ ad, onToggleFavorite }) {
     }
 
 
-    const handleToggleFavorite = async (adID) => {
-        const userID = currentUser.uid;
+    const handleToggleFavorite = async (postID) => {
         if (!currentUser) {
             setToast({
                 show: true,
@@ -196,7 +186,8 @@ export default function CardItem({ ad, onToggleFavorite }) {
         }
 
         try {
-            const result = await toggleFavorites(adID, userID);
+            const userID = currentUser?.uid;
+            const result = await toggleFavorites(postID, userID);
             if (result.success) {
                 setIsFavorite(result.isFavorite);
                 setToast({
@@ -209,7 +200,7 @@ export default function CardItem({ ad, onToggleFavorite }) {
 
                 // Si la prop onToggleFavorite est définie, l'appeler
                 if (onToggleFavorite && !result.isFavorite) {
-                    onToggleFavorite(adID);
+                    onToggleFavorite(postID);
                 }
             } else {
                 setToast({
@@ -235,11 +226,11 @@ export default function CardItem({ ad, onToggleFavorite }) {
         return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
     }
 
-    const postedAtDate = parseTimestamp(posted_at);
+    const moderatedAtDate = parseTimestamp(moderated_at);
     const expiryDate = new Date(expiry_date);
 
 
-    if (postedAtDate > expiryDate) return null;
+    if (moderatedAtDate > expiryDate) return null;
 
     if (!isActive) return null;
 
@@ -247,7 +238,7 @@ export default function CardItem({ ad, onToggleFavorite }) {
         <div className={`card-container ${isActive ? 'active' : 'inactive'}`} key={id}>
             {/* Image de l'annonce */}
             {images && images.length > 0 && (
-                <div onClick={() => handleAdClick(`/ads/${category}/${subcategory}/${id}`)}>
+                <div onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${id}`)}>
                     <img
                         title={`Annonce<<${adDetails.title}>>`}
                         src={images[0]}
@@ -259,21 +250,21 @@ export default function CardItem({ ad, onToggleFavorite }) {
 
             {/* Contenu de l'annonce */}
             <div className="card-content">
-                <h2 className="card-title" title={`${adDetails.title}`}>
-                    {adDetails.title.length > 50
+                <h2 className="card-title" title={`${adDetails?.title}`}>
+                    {adDetails?.title?.length > 50
                         ? `${adDetails.title.substring(0, 50)}...`
                         : adDetails.title
                     }
                 </h2>
                 <p className="card-price">{adDetails.price} RUB</p>
                 <p className="card-city">{location.city}, {location.country}</p>
-                <Link to={`/users/show/${userID}`} onClick={() => handleProfileClick(userID)} className="announcer">
+                <Link to={`/users/user/${userID}/profile/show`} onClick={() => handleProfileClick(userID)} className="announcer">
                     <img src={profilURL || IconAvatar} alt="avatar" className="avatar" />
                 </Link>
                 <div className="card-footer">
                     <span className="card-date">
                         <FontAwesomeIcon icon={faCalendarDay} color={"gray"} />
-                        {formatPostedAt(postedAtDate)}
+                        {formatPostedAt(moderatedAtDate)}
                     </span>
                     <span className="card-viewCount">
                         <FontAwesomeIcon icon={faEye} color={"gray"} />
@@ -296,24 +287,14 @@ export default function CardItem({ ad, onToggleFavorite }) {
                 </button>
                 <button
                     className={`like-button ${isFavorite ? 'active' : ''}`}
-                    // className="like-button"
                     title={isActive ? (isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris') : 'Inactif - indisponible'}
-                    onClick={(e) => { e.stopPropagation(); isActive && handleToggleFavorite(ad.id); }}
+                    onClick={(e) => { e.stopPropagation(); isActive && handleToggleFavorite(post.id); }}
                 >
                     {isFavorite ? '❤️' : '🤍'}
-                    {/* <FontAwesomeIcon icon={faHeart} color={isFavorite ? 'red' : '#343a40'} /> */}
                 </button>
             </div>
-            <Menu
-                options={options}
-                isOpen={showMenu}
-                onClose={() => setShowMenu(false)}
-            />
-            <Menu
-                options={reportReasons}
-                isOpen={showReportModal}
-                onClose={() => setShowReportModal(false)}
-            />
+            <Menu options={options} isOpen={showMenu} onClose={() => setShowMenu(false)} />
+            <Menu options={reportReasons} isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );

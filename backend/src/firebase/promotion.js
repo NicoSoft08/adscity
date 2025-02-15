@@ -5,12 +5,13 @@ const collectPromotionLimits = async () => {
         const promotionsRef = firestore.collection('PROMOTIONS').doc('launchOffer');
         const promotionDoc = await promotionsRef.get();
         
-        if (promotionDoc.exists) {
-            const { features } = promotionDoc.data();
-            return features;
-        };
+        if (!promotionDoc.exists) {
+            console.log('La promotion introuvable');
+            return null;
+        }
 
-        return null;
+        const { features } = promotionDoc.data();
+        return features;
     } catch (error) {
         console.error('Erreur lors de la récupération des limites de promotion:', error);
         return null;

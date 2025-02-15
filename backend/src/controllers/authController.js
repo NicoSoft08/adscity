@@ -1,10 +1,10 @@
-const { createUser, signinUser, logoutUser, deletionUser, verifyCode, updatePassword, addNewAdmin } = require("../firebase/auth");
+const { createUser, signinUser, logoutUser, deletionUser, verifyCode, updatePassword, addNewAdmin, authorizeDevice, desableDevice } = require("../firebase/auth");
 const { getFirebaseErrorMessage } = require("../utils/firebaseErrorHandler");
 
 
 const registerUser = async (req, res) => {
-    const { address, city, country, email, password, firstName, lastName, phoneNumber, displayName} = req.body;
-    
+    const { address, city, country, email, password, firstName, lastName, phoneNumber, displayName } = req.body;
+
     try {
         const newUser = await createUser(address, city, country, email, password, firstName, lastName, phoneNumber, displayName);
         if (!newUser) {
@@ -21,31 +21,30 @@ const registerUser = async (req, res) => {
     } catch (error) {
         const errorMessage = getFirebaseErrorMessage(error);
         console.error('Erreur lors de la création de l\'utilisateur :', error);
-        return res.status(500).json({ 
+        return res.status(500).json({
             success: false,
             error: errorMessage,
             message: 'Une erreur est survenue lors de la création de votre compte. Veuillez réessayer plus tard.'
         });
-        
     }
 };
 
 const loginUser = async (req, res) => {
-    const { email, emailVerified } = req.user;
+    const { userID, deviceInfo } = req.body;
+    console.log('Device Info:', deviceInfo);
 
     try {
-        const isSignedIn = await signinUser(email, emailVerified);
-        if (!isSignedIn) {
+        const signInResult = await signinUser(userID, deviceInfo);
+        if (!signInResult || !signInResult.success) {
             return res.status(400).json({
                 success: false,
-                message: 'L\'utilisateur n\'a pas été trouvé ou n\'a pas encore vérifié son email.'
+                message: signInResult?.message || "Échec de la connexion.",
             });
-        } 
+        }
         res.status(200).json({
-            success: true,
-            message: 'Connexion réussie. Bienvenue !',
-            user: isSignedIn.userData,
-            role: isSignedIn.role
+            success: signInResult.success,
+            message: signInResult.message,
+            status: signInResult.status,
         });
     } catch (error) {
         const errorMessage = getFirebaseErrorMessage(error);
@@ -55,13 +54,12 @@ const loginUser = async (req, res) => {
             error: errorMessage,
             message: 'Erreur technique, réessayez plus tard.'
         });
-        
     }
 };
 
 const signoutUser = async (req, res) => {
     const { email } = req.user;
-    
+
     try {
         const isSignedOut = await logoutUser(email);
         if (!isSignedOut) {
@@ -83,7 +81,7 @@ const signoutUser = async (req, res) => {
             error: errorMessage,
             message: 'Erreur technique, réessayez plus tard.'
         });
-        
+
     }
 };
 
@@ -160,7 +158,7 @@ const changePassword = async (req, res) => {
             success: false,
             error: errorMessage,
             message: 'Erreur technique, réessayez plus tard.'
-        });  
+        });
     };
 };
 
@@ -190,6 +188,60 @@ const createNewAdmin = async (req, res) => {
     };
 };
 
+const validateDevice = async (req, res) => {
+    const { deviceID } = req.params;
+    const { verificationToken } = req.body;
+
+    try {
+        const isDeviceValidated = await authorizeDevice(deviceID, verificationToken);
+        if (!isDeviceValidated) {
+            return res.status(400).json({
+                success: false,
+                message: 'Le dispositif n\'a pas été validé'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Le dispositif a été validé avec succès'
+        });
+    } catch (error) {
+        const errorMessage = getFirebaseErrorMessage(error);
+        console.error('Erreur lors de la validation du dispositif :', error);
+        return res.status(500).json({
+            success: false,
+            error: errorMessage,
+            message: 'Erreur technique, réessayez plus tard.'
+        });
+    };
+};
+
+const refuseDevice = async (req, res) => {
+    const { deviceID } = req.params;
+    const { verificationToken } = req.body;
+
+    try {
+        const isDeviceRefused = await desableDevice(deviceID, verificationToken);
+        if (!isDeviceRefused) {
+            return res.status(400).json({
+                success: false,
+                message: 'Le dispositif n\'a pas été refusé'
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Le dispositif a été refusé avec succès'
+        });
+    } catch (error) {
+        const errorMessage = getFirebaseErrorMessage(error);
+        console.error('Erreur lors de la validation du dispositif :', error);
+        return res.status(500).json({
+            success: false,
+            error: errorMessage,
+            message: 'Erreur technique, réessayezz plus tard.'
+        });
+    }
+};
+
 
 module.exports = {
     changePassword,
@@ -198,5 +250,7 @@ module.exports = {
     loginUser,
     signoutUser,
     deleteUser,
+    refuseDevice,
+    validateDevice,
     verifyOTPCode,
 };

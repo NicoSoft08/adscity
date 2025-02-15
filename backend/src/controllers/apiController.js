@@ -5,7 +5,11 @@ const {
     contactUs, 
     collectLocations, 
     advancedItemSearch, 
-    evaluateUser 
+    evaluateUser, 
+    socialLinksUpdate,
+    incrementView,
+    incrementClick,
+    fetchFilteredPostsQuery
 } = require("../firebase/api");
 
 const searchItems = async (req, res) => {
@@ -178,13 +182,114 @@ const rateUser = async (req, res) => {
     };
 };
 
+const updateUserSocialLinks = async (req, res) => {
+    const { userID } = req.params;
+    const { socialLinks } = req.body;
+
+    try {
+        const isUpdated = await socialLinksUpdate(userID, socialLinks);
+        if (!isUpdated) {
+            return res.status(404).json({
+                success: false,
+                message: 'Echec de la mise à jour'
+            });
+        };
+        res.status(200).json({
+            success: isUpdated.success,
+            message: isUpdated.message
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour des réseaux sociaux: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    };
+};
+
+const incrementViewCount = async (req, res) => {
+    const { postID } = req.params;
+
+    try {
+        const isUpdated = await incrementView(postID);
+        if (!isUpdated) {
+            return res.status(404).json({
+                success: false,
+                message: 'Echec de la mise à jour'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Nombre de vues mis à jour avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du nombre de vues: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    };
+};
+
+const incrementClickCount = async (req, res) => {
+    const { postID } = req.params;
+
+    try {
+        const isUpdated = await incrementClick(postID);
+        if (!isUpdated) {
+            return res.status(404).json({
+                success: false,
+                message: 'Echec de la mise à jour'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Nombre de clicks mis à jour avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du nombre de clicks: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    };
+};
+
+const fetchFilteredPosts = async (req, res) => {
+    const { item, category, minPrice, maxPrice } = req.query;
+
+    try {
+        const filteredPosts = await fetchFilteredPostsQuery(item, category, minPrice, maxPrice);
+        if (!filteredPosts || filteredPosts.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Aucun post trouvé'
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Posts récupérés avec succès',
+            filteredPosts: filteredPosts
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des posts filtrés: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        }); 
+    };
+};
 
 module.exports = {
     advancedSearch,
     contactSupportClient,
+    fetchFilteredPosts,
     getPostsLocations,
+    incrementViewCount,
+    incrementClickCount,
     manageInteraction,
     manageContactClick,
     rateUser,
     searchItems,
+    updateUserSocialLinks,
 };

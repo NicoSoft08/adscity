@@ -1,8 +1,8 @@
-const { collectPromotions, isPromotionActive } = require("../firebase/promotion");
+const { isPromotionActive, collectPromotionLimits } = require("../firebase/promotion");
 
 const getPromotionLimits = async (req, res) => {
     try {
-        const features = await collectPromotions();
+        const features = await collectPromotionLimits();
         if (!features) {
             return res.status(404).json({
                 success: false,

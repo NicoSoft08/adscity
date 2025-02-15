@@ -192,9 +192,35 @@ const uploadPostImage = async (file, userID) => {
     }
 };
 
+const deleteImagesByPostID = async (postID) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.log('Post non trouvé');
+            return false;
+        }
 
+        const postData = postDoc.data();
+        const imageURLs = postData.images || [];
+        const imagePaths = imageURLs.map((imageURL) => {
+            const urlParts = imageURL.split('/');
+            const imageName = urlParts[urlParts.length - 1];
+            return `PHOTOS/POSTS/${imageName}`;
+        }); 
+        await storage.bucket().deleteFiles({
+            prefix: imagePaths.join(','),
+        });
+        console.log('Images supprimées avec succès');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la suppression des images :', error);
+        return false;
+    };
+};
 
 module.exports = {
+    deleteImagesByPostID,
     collectUserProfilePhoto,
     uploadPostImage,
     uploadUserBannerPicture,

@@ -7,6 +7,7 @@ const {
     generateVerificationToken,
     createNodemailerTransport
 } = require('../func');
+const { firestore } = require('../config/firebase-admin');
 
 const PUBLIC_URL = process.env.PUBLIC_URL;
 
@@ -317,22 +318,30 @@ const sendSupportEmail = async (email, displayName, message, object, ticketID) =
 
 
 const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
-    const { browser, os, ipAddress } = deviceInfo;
+    const { browser, os, ip, device } = deviceInfo;
     const verificationToken = generateVerificationToken();
     const verificationLink = `${PUBLIC_URL}/auth/verify-device/${deviceID}/${verificationToken}`;
     const declineLink = `${PUBLIC_URL}/auth/decline-device/${deviceID}/${verificationToken}`;
 
-    // Store verification token in Firestore
-    await admin.firestore()
-        .collection('DEVICE_VERIFY_TOKENS')
-        .doc(deviceID)
-        .set({
-            token: verificationToken,
-            expiresAt: admin.firestore.Timestamp.fromDate(
-                new Date(Date.now() + 3600000)
-            ),
-            used: false
-        });
+    const tokenRef = firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID);
+    const existingTokenDoc = await tokenRef.get();
+
+    if (existingTokenDoc.exists) {
+        const existingData = existingTokenDoc.data();
+        if (!existingData.used && existingData.expiresAt.toDate() > new Date()) {
+            console.log("🔹 Un token valide existe déjà. Pas besoin d'en générer un nouveau.");
+            return;
+        }
+    }
+
+    // ✅ Stocker le nouveau token
+    await tokenRef.set({
+        token: verificationToken,
+        expiresAt: admin.firestore.Timestamp.fromDate(
+            new Date(Date.now() + 86400000) // ⏳ 24 heures d'expiration
+        ),
+        used: false
+    });
 
     const nodemailerTransport = createNodemailerTransport();
 
@@ -356,12 +365,13 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
                         <h3 style="color: #417abc;">Bonjour, ${displayName} !</h3>
                                                 
-                        <p>Une tentative de connexion a été détectée sur votre compte AdsCity depuis un nouvel appareil. Pour des raisons de sécurité, votre compte a été temporairement désactivé. Voici les détails :</p>
+                        <p>Une tentative de connexion a été détectée sur votre compte AdsCity depuis un nouvel appareil. Voici les détails :</p>
                         
                         <ul style="list-style-type: none; padding: 0;">
-                            <li><strong>Navigateur :</strong> ${browser?.name} ${browser?.version}</li>
-                            <li><strong>Système :</strong> ${os?.name} ${os?.version}</li>
-                            <li><strong>Adresse IP :</strong> ${ipAddress}</li>
+                        <li><strong>Périphérique :</strong> ${device}</li>
+                            <li><strong>Navigateur :</strong> ${browser}</li>
+                            <li><strong>Système :</strong> ${os}</li>
+                            <li><strong>Adresse IP :</strong> ${ip}</li>
                             <li><strong>Date:</strong> ${currentDate}</li>
                         </ul>
 

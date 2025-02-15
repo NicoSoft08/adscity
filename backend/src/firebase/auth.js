@@ -1,6 +1,8 @@
 const { auth, firestore, admin } = require('../config/firebase-admin');
-const { sendCode, sendWelcomeEmail, sendAdminEmail } = require('../controllers/emailController');
+const { sendCode, sendAdminEmail, sendNewDeviceAlert } = require('../controllers/emailController');
 const { monthNames, generateVerificationCode, getUserProfileNumber } = require('../func');
+const { trackUserDevice } = require('../services/apiServices');
+
 
 const currentDate = new Date();
 const expirationTime = new Date().setMinutes(currentDate.getMinutes() + 15); // Ajouter 15 minutes
@@ -19,186 +21,182 @@ const createUser = async (address, city, country, email, password, firstName, la
             displayName: `${firstName} ${lastName}`
         });
 
-
-
         console.log('Utilisateur créé avec succès:', userRecord.uid);
 
         const code = generateVerificationCode();
         const profileNumber = getUserProfileNumber();
 
+        // Récupération de la promotion active
+        const promotionsRef = firestore.collection('PROMOTIONS').doc('launchOffer');
+        const promotionDoc = await promotionsRef.get();
+
+        let maxAds = 3;
+        let maxPhotos = 3;
+        let expiryDate = null;
+
+        if (promotionDoc.exists) {
+            const promotion = promotionDoc.data();
+            const now = new Date();
+
+            if (promotion.enabled && promotion.startDate.toDate() <= now && now <= promotion.endDate.toDate()) {
+                console.log("Promotion active, application des limites promotionnelles.");
+                maxAds = promotion.features.maxAdsPerMonth;
+                maxPhotos = promotion.features.maxPhotosPerAd;
+                expiryDate = promotion.endDate;
+            }
+        }
 
         // Ajouter les informations de l'utilisateur dans Firestore
         const userRef = firestore.collection('USERS').doc(userRecord.uid);
-
         await userRef.set({
             address,
-            adHistory: [], // Liste des annonces vues
+            adHistory: [],
             adsClicked: [],
             adsCount: 0,
-            adsPostedThisMonth: 0, // Nombre d'annonces postées
-            adsSaved: [], // Liste des annonces sauvegardées (ID d'annonces)
-            adsViewed: [], // Liste des annonces vues
-
-
-            categoriesViewed: [], // Catégories d'annonces les plus vues
+            adsPostedThisMonth: 0,
+            adsSaved: [],
+            adsViewed: [],
+            categoriesViewed: [],
             city,
             clicksOnAds: 0,
             country,
-            coverChanges: {
-                count: 0,
-                lastUpdated: null,
-            },
+            coverChanges: { count: 0, lastUpdated: null },
             coverURL: null,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
             currentMonth: monthNames[currentDate.getMonth()],
             currentYear: new Date().getFullYear(),
-
             displayName: `${firstName} ${lastName}`,
-
             email,
             emailVerified: false,
             expirationTime: expirationTime,
-
             firstName,
-
             isActive: true,
             isOnline: false,
-
             lastName,
             location: `${country}, ${city}, ${address}`,
-            loginCount: 0, // Nombre de fois que l'utilisateur s'est connecté
-
+            loginCount: 0,
             phoneNumber,
             plans: {
                 individual: {
-                    max_ads: 3,
-                    max_photos: 3,
+                    max_ads: maxAds,
+                    max_photos: maxPhotos,
                     isActive: true,
-                    type: 'individual', // Par défaut: 'individual', professional, company
+                    type: 'individual',
                     subscriptionDate: admin.firestore.FieldValue.serverTimestamp(),
-                    expiryDate: null,
+                    expiryDate: expiryDate,
                 },
             },
-            profilChanges: {
-                count: 0,
-                lastUpdated: null,
-            },
-            profileType: "Particulier", // Par défaut: Particulier, Entrprise, Professionnel
-            profileViewed: 0, // Nombre de fois que le profil a été consulté
-            profileNumber: profileNumber, // Numéro de profil unique
+            profilChanges: { count: 0, lastUpdated: null },
+            profileType: "Particulier",
+            profileViewed: 0,
+            profileNumber: profileNumber,
             profilURL: null,
-
-            // Rating System
             ratings: {
                 average: 0,
                 total: 0,
                 count: 0,
-                distribution: {
-                    1: 0,
-                    2: 0,
-                    3: 0,
-                    4: 0,
-                    5: 0
-                }
+                distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
             },
-            role: 'user', // superadmin, admin, moderator, user
-
-            // Reviews System
+            role: 'user',
             reviews: {
-                received: [],        // Reviews received from others
-                given: [],          // Reviews given to others
+                received: [],
+                given: [],
                 lastReviewDate: null,
                 totalReviews: 0,
-                pendingReviews: [],  // Reviews waiting for response
-                reportedReviews: [], // Reviews that were reported
-                verifiedReviews: 0,  // Number of verified reviews
-                helpfulVotes: 0      // Total helpful votes received
+                pendingReviews: [],
+                reportedReviews: [],
+                verifiedReviews: 0,
+                helpfulVotes: 0,
             },
-
-            searchHistory: [], // Historique des recherches effectuées
-
-            timeSpent: 0, // Durée totale passée dans l'application
+            searchHistory: [],
+            socialLinks: null,
+            timeSpent: 0,
             totalAdsViewed: 0,
-
             userID: userRecord.uid,
-
             verificationCode: code,
         });
 
-
-        // Envoi du code par email
+        // Envoi du code de vérification par email
         sendCode(displayName, email, code)
-            .then(() => {
-                console.log('Code de vérification envoyé avec succès:', code);
-            })
-            .catch(error => {
-                console.error('Erreur:', error.message);
-            });
+            .then(() => console.log('Code de vérification envoyé avec succès:', code))
+            .catch(error => console.error('Erreur:', error.message));
 
-
-        console.log('Utilisateur créé avec succès', userRecord.uid);
+        console.log('Utilisateur enregistré avec succès', userRecord.uid);
 
         return { userRecord, code };
     } catch (error) {
-        console.error('Erreur lors de la création de l\'utilisateur:', error);
+        console.error("Erreur lors de la création de l'utilisateur:", error);
     }
 };
 
-const signinUser = async (email, emailVerified) => {
+
+const signinUser = async (userID, deviceInfo) => {
     try {
-        if (!emailVerified) {
-            throw new Error("L'email de l'utilisateur n'est pas encore vérifié.");
+        if (!userID || !deviceInfo) {
+            throw new Error("Données incomplètes.");
         }
 
-        // Récupération de l'utilisateur dans Firebase Authentication
-        const userRecord = await auth.getUserByEmail(email);
-        if (!userRecord) {
-            throw new Error("Utilisateur introuvable dans Firebase Authentication.");
-        }
-
-        if (!userRecord.emailVerified) {
-            throw new Error("L'email de l'utilisateur n'est pas encore vérifié dans Firebase.");
-        }
-
-        // Récupération des données utilisateur dans Firestore
-        const userRef = firestore.collection('USERS').doc(userRecord.uid);
+        const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
+
         if (!userDoc.exists) {
-            throw new Error("Les données utilisateur sont introuvables dans la base Firestore.");
+            throw new Error("Utilisateur introuvable.");
         }
 
         const userData = userDoc.data();
-        const { displayName, loginCount = 0, role } = userData;
+        const { displayName, email, loginCount = 0 } = userData;
 
-        // Si c'est la première connexion, envoie un email de bienvenue
         if (loginCount === 0) {
-            try {
-                console.log("Appel à sendWelcomeEmail...");
-                await sendWelcomeEmail(displayName, email);
-                console.log("Email de bienvenue envoyé.");
-            } catch (error) {
-                console.error("Erreur lors de l'envoi de l'email de bienvenue :", error);
-            }
+            // Première connexion : enregistrement de l'appareil comme vérifié
+            const userDevicesRef = userRef.collection('DEVICES');
+            await userDevicesRef.add({
+                ...deviceInfo,
+                verified: true,
+                createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            });
 
-            // Mise à jour des données utilisateur
+            // Mettre à jour le loginCount et statut de connexion
             await userRef.update({
-                isOnline: true,
                 loginCount: 1,
-                lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-        } else {
-            // Mise à jour de la date de dernière connexion
-            await userRef.update({
                 isOnline: true,
                 lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
             });
+
+            console.log("Première connexion validée :", userID);
+            return {
+                success: true,
+                message: "Connexion réussie (première connexion).",
+            };
         }
 
-        console.log("Connexion réussie", userRecord.uid);
-        return { userData, role };
+        // 🔹 Vérification de l'appareil pour les connexions suivantes
+        const { requiresVerification, deviceID } = await trackUserDevice(userID, deviceInfo, email, displayName);
+
+        if (requiresVerification) {
+            // 📩 Envoi de l'alerte email pour validation de l'appareil
+            await sendNewDeviceAlert(email, displayName, deviceInfo, deviceID);
+            return {
+                success: false,
+                status: "pending_verification",
+                message: "Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.",
+            };
+        }
+
+        // 🔹 Mise à jour des informations utilisateur après connexion réussie
+        await userRef.update({
+            isOnline: true,
+            lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
+            loginCount: admin.firestore.FieldValue.increment(1),
+        });
+
+        console.log("Connexion réussie :", userID);
+        return {
+            success: true,
+            message: "Connexion réussie.",
+        };
     } catch (error) {
         console.error("Erreur dans signinUser :", error.message);
-        throw error; // Propagation de l'erreur au contrôleur
+        return { success: false, message: error.message };
     }
 };
 
@@ -382,9 +380,92 @@ const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, pe
     };
 };
 
+const authorizeDevice = async (deviceID, verificationToken) => {
+    try {
+        const tokenDoc = await firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
+        if (!tokenDoc.exists) {
+            return {
+                success: false,
+                message: 'Token invalide',
+            };
+        }
+
+        const tokenData = tokenDoc.data();
+        if (tokenData.token !== verificationToken) {
+            return {
+                success: false,
+                message: 'Token invalide',
+            };
+        }
+
+        if (tokenData.expiresAt < new Date()) {
+            return {
+                success: false,
+                message: 'Token expiré',
+            };
+        }
+
+        await firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID).delete();
+
+        await firestore.collection('USERS').doc(userID).collection('DEVICES').doc(deviceID).update({
+            verified: true,
+        });
+
+        console.log('Périphérique autorisé avec succès');
+
+        return {
+            success: true,
+            message: 'Périphérique autorisé avec succès',
+        };
+    } catch (error) {
+        console.error('Erreur lors de l\'autorisation du périphérique:', error);
+        return false;
+    }
+};
+
+const desableDevice = async (deviceID, verificationToken) => {
+    try {
+        const tokenDoc = await firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
+        if (!tokenDoc.exists) {
+            return {
+                success: false,
+                message: 'Token invalide',
+            };
+        };
+
+        const tokenData = tokenDoc.data();
+        if (tokenData.token !== verificationToken) {
+            return {
+                success: false,
+                message: 'Token invalide',
+            };
+        };
+
+        if (tokenData.expiresAt < new Date()) {
+            return {
+                success: false,
+                message: 'Token expiré',
+            };
+        };
+
+        await firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID).delete();
+        await firestore.collection('USERS').doc(userID).collection('DEVICES').doc(deviceID).delete();
+
+        console.log('Périphérique désactivé avec succès');
+        return {
+            success: true,
+            message: 'Périphérique désactivé avec succès',
+        };
+    } catch (error) {
+
+    }
+};
+
 module.exports = {
     addNewAdmin,
+    authorizeDevice,
     createUser,
+    desableDevice,
     signinUser,
     logoutUser,
     deletionUser,

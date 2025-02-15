@@ -21,7 +21,6 @@ const getUsers = async () => {
     }
 };
 
-
 const getUser = async (userID) => {
     try {
         const userRecord = auth.getUser(userID);
@@ -41,50 +40,27 @@ const getUser = async (userID) => {
     }
 };
 
-
-const collectUsersOnline = async () => {
+const collectAllUsersWithStatus = async () => {
     try {
-        const usersRef = firestore.collection('USERS').where('isOnline', '==', true);
-        const querySnapshot = await usersRef.get();
-        
-        if (querySnapshot.empty) {
-            console.log('Aucun utilisateur en ligne trouvé.');
-            return [];
-        };
+        const usersSnapshot = await firestore.collection('USERS').get();
+        const allUsers = [];
+        const onlineUsers = [];
+        const offlineUsers = [];
 
-        const usersOnline = querySnapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data() 
-        }));
-        return usersOnline
+        usersSnapshot.forEach(doc => {
+            const user = { id: doc.id, ...doc.data() };
+            allUsers.push(user);
+
+            if (user.isOnline) onlineUsers.push(user);
+            else offlineUsers.push(user);
+        });
+
+        return { allUsers, onlineUsers, offlineUsers };
     } catch (error) {
-        console.error('Erreur lors de la récupération des utilisateurs en ligne:', error);
+        console.error('Erreur lors de la récupération des utilisateurs:', error);
         throw error;
     }
 };
-
-
-const collectUsersOffline = async () => {
-    try {
-        const usersRef = firestore.collection('USERS').where('isOnline', '==', true);
-        const querySnapshot = await usersRef.get();
-
-        if (querySnapshot.empty) {
-            console.log('Aucun utilisateur hors ligne trouvé.');
-            return [];
-        };
-
-        const usersOffline = querySnapshot.docs.map(doc => ({ 
-            id: doc.id, 
-            ...doc.data() 
-        }));
-        return usersOffline
-    } catch (error) {
-        console.error('Erreur lors de la récupération des utilisateurs déconnectés:', error);
-        throw error;
-    }
-};
-
 
 const collectUserPermissions = async (userID) => {
     try {
@@ -105,7 +81,6 @@ const collectUserPermissions = async (userID) => {
     }
 };
 
-
 const setUserOnlineStatus = async (userID, isOnline) => {
     try {
         await firestore
@@ -122,7 +97,6 @@ const setUserOnlineStatus = async (userID, isOnline) => {
     }
 };
 
-
 const updateUserFields = async (userID, updatedFields) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
@@ -138,7 +112,6 @@ const updateUserFields = async (userID, updatedFields) => {
         return false;
     }
 };
-
 
 const updateUserInteraction = async (userID, adID) => {
     try {
@@ -245,7 +218,7 @@ const collectUserNotifications = async (userID) => {
             return false;
         };
 
-        const notificationRef = userRef.collection('NOTIFICATIONS');
+        const notificationRef = userRef.collection('NOTIFICATIONS').orderBy('timestamp', 'desc');
         const snapshot = await notificationRef.get();
         const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         return notifications;
@@ -253,6 +226,25 @@ const collectUserNotifications = async (userID) => {
         console.error("Erreur lors de la récupération des notifications de l'utilisateur", error);
         return false;
     };
+};
+
+const collectUserUnreadNotifications = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        };
+
+        const notificationRef = userRef.collection('NOTIFICATIONS').where('isRead', '==', false);
+        const snapshot = await notificationRef.get();
+        const unreadNotifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return unreadNotifications;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des notifications non lues de l'utilisateur", error);
+        return false;
+    }
 };
 
 const markNotificationAsRead = async (userID, notificationID) => {
@@ -280,18 +272,63 @@ const markNotificationAsRead = async (userID, notificationID) => {
     };
 };
 
+const storeDeviceToken = async (deviceToken, userID) => {
+    try {
+        console.log("✅ Début de la fonction storeDeviceToken");
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé dans Firestore.");
+            return false;
+        }
+
+        await userRef.update({ deviceToken: deviceToken });
+        console.log("✅ Token de l'utilisateur mis à jour avec succès !");
+        return true;
+    } catch (error) {
+        console.error("❌ Erreur lors de la mise à jour du token :", error);
+        return false;
+    };
+};
+
+
+const collectInterlocutorProfile = async (userID) => {
+    try {
+        // 📌 Déterminer l'interlocuteur (l'autre utilisateur dans la conversation)
+        const interlocutorID = chat.senderID === userID ? chat.receiverID : chat.senderID;
+
+        // 🔍 Récupérer les infos du profil depuis Firestore
+        const userDoc = await firestore.collection('USERS').doc(interlocutorID).get();
+        if (!userDoc.exists) {
+            console.error(`❌ Profil de l'interlocuteur introuvable pour l'ID : ${interlocutorID}`);
+            return null;
+        }
+
+        // 📦 Retourner les données du profil de l'interlocuteur
+        const userData = userDoc.data();
+        return userData
+    } catch (error) {
+        console.error("❌ Erreur lors de la récupération du profil de l'interlocuteur :", error);
+        return null;
+    }
+};
+
+
 
 module.exports = {
     addRemoveFavorites,
+    collectInterlocutorProfile,
     collectUserFavorites,
     getUser,
     getUsers,
+    collectAllUsersWithStatus,
     collectUserNotifications,
-    collectUsersOffline,
-    collectUsersOnline,
+    collectUserUnreadNotifications,
     collectUserPermissions,
     markNotificationAsRead,
     setUserOnlineStatus,
+    storeDeviceToken,
     updateUserFields,
     updateUserInteraction,
 };

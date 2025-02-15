@@ -1,4 +1,4 @@
-const { uploadPostImage, uploadUserProfilePicture, uploadUserBannerPicture, collectUserProfilePhoto } = require('../firebase/storage');
+const { uploadPostImage, uploadUserProfilePicture, uploadUserBannerPicture, collectUserProfilePhoto, deleteImagesByPostID } = require('../firebase/storage');
 
 const getUserProfilePicture = async (req, res) => {
     const { userID } = req.params;
@@ -103,9 +103,32 @@ const uploadBannerURL = async (req, res) => {
     };
 };
 
+const deletePostImages = async (req, res) => {
+    const { postID } = req.params;
 
+    try {
+        const deleteResult = await deleteImagesByPostID(postID);
+        if (!deleteResult) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la suppression des images du post'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Images du post supprimées avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la suppression des images du post :', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+    }
+};
 
 module.exports = {
+    deletePostImages,
     getUserProfilePicture,
     uploadImage,
     uploadBannerURL,

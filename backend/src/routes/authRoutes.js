@@ -8,7 +8,9 @@ const {
     deleteUser, 
     verifyOTPCode,
     changePassword,
-    createNewAdmin
+    createNewAdmin,
+    validateDevice,
+    refuseDevice
 } = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
@@ -20,6 +22,8 @@ router.post('/login-user', verifyToken, loginUser);
 router.post('/logout-user', verifyToken, signoutUser);
 router.post('/delete-user', deleteUser);
 router.post('/verify-code', verifyOTPCode);
+router.post('/verify-device/:deviceID', verifyToken, validateDevice);
+router.post('/decline-device/:deviceID', verifyToken, refuseDevice);
 router.post('/update-password', changePassword);
 router.post('/new-admin/add', createNewAdmin);
 

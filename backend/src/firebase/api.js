@@ -29,30 +29,13 @@ const searchQuery = async (query) => {
 
 const updateInteraction = async (postID, userID, category) => {
     try {
-        const postRef = firestore.collection('POSTS').doc(postID);
         const userRef = firestore.collection('USERS').doc(userID);
-
-        const postDoc = await postRef.get();
         const userDoc = await userRef.get();
-
-        const postData = postDoc.data();
-        const userData = userDoc.data();
-
-        const hasAlreadyViewed = postData.interactedUsers?.includes(userID);
-
-        if (!hasAlreadyViewed) {
-            // Ajouter l'utilisateur à la liste des utilisateurs ayant vu l'annonce
-            const uniqueInteractedUsers = new Set([
-                ...(postData.interactedUsers || []),
-                userID
-            ]);
-
-            await postRef.update({
-                clicks: admin.firestore.FieldValue.increment(1),
-                views: admin.firestore.FieldValue.increment(1),
-                interactedUsers: Array.from(uniqueInteractedUsers)
-            });
+        if (!userDoc.exists) {
+            console.log('L\'utilisateur n\'existe pas');
+            return false;
         }
+        const userData = userDoc.data();
 
         const uniqueViewedIDs = new Set([
             ...(userData.adsViewed || []),
@@ -221,14 +204,117 @@ const evaluateUser = async (userID, rating, comment) => {
     }
 };
 
+const socialLinksUpdate = async (userID, socialLinks) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
 
+        if (!userDoc.exists) {
+            return {
+                success: false,
+                message: 'Utilisateur non trouvé',
+            };
+        };
+
+        const userData = userDoc.data();
+        const { profileType } = userData;
+
+        // Vérifier que seul un compte Professional ou Business peut mettre à jour
+        if (profileType !== "Professionnel" && profileType !== "Entreprise") {
+            return {
+                success: false,
+                message: "Votre type de compte ne permet pas de modifier les réseaux sociaux.",
+            };
+        }
+
+        // Mise à jour des socialLinks
+        await userRef.update({ socialLinks });
+
+        return {
+            success: true,
+            message: "Mise à jour réussie !",
+        };
+    } catch (error) {
+        console.error('Erreur de la mise à jour', error);
+        return false;
+    }
+};
+
+const incrementView = async (postID) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.log('Le post n\'existe pas');
+            return false;
+        }
+
+        const postData = postDoc.data();
+        const views = postData.views || 0;
+        await postRef.update({ views: views + 1 });
+        console.log('Nombre de vues mis à jour avec succès');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du nombre de vues:', error);
+        return false;
+    }
+};
+
+const incrementClick = async (postID) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.log('Le post n\'existe pas');
+            return false;
+        }
+
+        const postData = postDoc.data();
+        const clicks = postData.clicks || 0;
+        await postRef.update({ clicks: clicks + 1 });
+        console.log('Nombre de clicks mis à jour avec succès');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du nombre de clicks:', error);
+        return false;
+    }
+};
+
+const fetchFilteredPostsQuery = async (item, category, minPrice, maxPrice) => {
+    try {
+        let postRef = firestore.collection('POSTS');
+        if (item) postRef = postRef.where('searchableTerms', 'array-contains-any', item)
+        if (category) postRef = postRef.where('category', '==', category);
+        if (minPrice) postRef = postRef.where("adDetails.price", ">=", parseInt(minPrice));
+        if (maxPrice) postRef = postRef.where("adDetails.price", "<=", parseInt(maxPrice));
+
+        const querySnapshot = await postRef.get();
+        if (querySnapshot.empty) {
+            console.log('Aucun post trouvé');
+            return [];
+        }
+        const posts = [];
+        querySnapshot.forEach(doc => {
+            posts.push({ id: doc.id, ...doc.data() });
+        })
+
+        return  posts;
+    } catch (error) {
+        console.error('Erreur lors de la recherche avancée:', error);
+        return [];
+    }
+};
 
 module.exports = {
     advancedItemSearch,
     collectLocations,
     contactUs,
     evaluateUser,
+    fetchFilteredPostsQuery,
+    incrementClick,
+    incrementView,
     searchQuery,
     updateInteraction,
     updateContactClick,
+    socialLinksUpdate,
 };

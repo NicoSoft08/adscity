@@ -1,6 +1,33 @@
 const { PLAN_CONFIGS } = require("../config/constant");
 const { firestore, admin } = require("../config/firebase-admin");
 
+const collectAllPaymentsWithStatus = async () => {
+    try {
+        const paymentsSnapshot = await firestore.collection('PAYMENTS').get();
+        const allPayments = [];
+        const processingPayments = [];
+        const completedPayments = [];
+        const expiredPayments = [];
+
+        paymentsSnapshot.forEach(doc => {
+            const payments = { id: doc.id, ...doc.data() };
+            allPayments.push(payments);
+
+            if (payments.status === 'processing') {
+                processingPayments.push(payments);
+            } else if (payments.status === 'completed') {
+                completedPayments.push(payments);
+            } else if (payments.status === 'expired') {
+                expiredPayments.push(payments);
+            }
+        });
+
+        return { allPayments, processingPayments, completedPayments, expiredPayments };
+    } catch (error) {
+        console.error('Erreur lors de la récupération des paiements avec statut :', error);
+        throw error;
+    }
+};
 
 const collectPaymentProcess = async (userID, paymentData) => {
     try {
@@ -10,6 +37,10 @@ const collectPaymentProcess = async (userID, paymentData) => {
             console.log('Utilisateur non trouvé');
             return false;
         };
+
+        const expiryDate = admin.firestore.Timestamp.fromDate(
+            new Date(Date.now() + (15 * 60 * 1000)) // 15 minutes en millisecondes
+        );
         const { displayName, email, profileNumber } = userDoc.data();
         const paymentCollection = firestore.collection('PAYMENTS');
         await paymentCollection.add({
@@ -18,8 +49,10 @@ const collectPaymentProcess = async (userID, paymentData) => {
             email,
             profileNumber,
             userID,
-            status: 'processing', // Options: 'processing', 'completed', 'failed'
+            status: "processing", // "processing", "paid", "failed", "expired"
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            expireAt: expiryDate,
+            paymentIntentId: paymentCollection.id,
         });
         return true;
     } catch (error) {
@@ -109,7 +142,7 @@ const collectProcessingPayments = async () => {
         const paymentQuery = paymentRef.where('status', '==', 'processing');
         const paymentDoc = await paymentQuery.get();
         if (paymentDoc.empty) {
-            return false;
+            return [];
         };
         const processingPayments = paymentDoc.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         return processingPayments;
@@ -153,6 +186,7 @@ const collectFailedPayments = async () => {
 
 
 module.exports = {
+    collectAllPaymentsWithStatus,
     collectCompletedPayments,
     collectFailedPayments,
     collectPaymentByUserID,

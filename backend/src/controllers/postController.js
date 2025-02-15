@@ -19,7 +19,8 @@ const {
     collectPostBySlug,
     updatePostByID,
     deletePostByID,
-    suspendPostByID
+    suspendPostByID,
+    markPostSold
 } = require("../firebase/post");
 
 const createPost = async (req, res) => {
@@ -536,6 +537,31 @@ const suspendPost = async (req, res) => {
     };
 };
 
+const markPostAsSold = async (req, res) => {
+    const { postID } = req.params;
+    const { userID } = req.body;
+
+    try {
+        const isMarkedAsSold = await markPostSold(postID, userID);
+        if (!isMarkedAsSold) {
+            return res.status(404).json({
+                success: false,
+                message: 'Erreur lors de la mise à jour',
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Annonce marquée comme vendue',
+        });
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'annonce:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+    };
+};
+
 
 module.exports = {
     approvePost,
@@ -555,6 +581,7 @@ module.exports = {
     getRefusedPostsByUserID,
     getRefusedPosts,
     getRelatedPosts,
+    markPostAsSold,
     refusePost,
     reportPostByID,
     suspendPost,

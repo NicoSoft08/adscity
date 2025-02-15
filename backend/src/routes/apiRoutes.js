@@ -8,7 +8,11 @@ const {
     contactSupportClient, 
     getPostsLocations, 
     advancedSearch, 
-    rateUser
+    rateUser,
+    updateUserSocialLinks,
+    incrementViewCount,
+    incrementClickCount,
+    fetchFilteredPosts
 } = require('../controllers/apiController');
 
 const router = express.Router();
@@ -20,5 +24,9 @@ router.post('/contact/support-client', contactSupportClient);
 router.get('/collect/locations', getPostsLocations);
 router.get('/search/advanced', advancedSearch);
 router.post('/rate/:userID', rateUser);
+router.post('/update/:userID/social-links', updateUserSocialLinks);
+router.post('/increment/view/:postID', incrementViewCount);
+router.post('/increment/click/:postID', incrementClickCount);
+router.get('/search/filtered', fetchFilteredPosts)
 
 module.exports = router;

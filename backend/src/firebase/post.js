@@ -73,6 +73,7 @@ const makePost = async (postData, userID) => {
             posted_at: admin.firestore.FieldValue.serverTimestamp(),
             updated_at: null,
             isActive: false,
+            isSold: false,
             status: 'pending',
             refusal_reason: null,
             conversion_rate: 0,
@@ -158,7 +159,7 @@ const reportPostID = async (postID, userID, reason) => {
 const validatePost = async (postID) => {
     try {
         const expiryDate = new Date();
-        expiryDate.setDate(expiryDate.getDate() + 7);
+        expiryDate.setDate(expiryDate.getDate() + 30);
 
         await firestore.collection('POSTS').doc(postID).update({
             status: 'approved',
@@ -650,6 +651,33 @@ const suspendPostByID = async (postID, reason) => {
     };
 };
 
+const markPostSold = async (postID, userID) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.error('Annonce non trouvée.');
+            return false;
+        };
+
+        const postData = postDoc.data();
+        if (postData.userID !== userID) {
+            console.error('Vous n\'êtes pas autorisé à mettre à jour cette annonce.');
+            return false;
+        };
+
+        await postRef.update({
+            isSold: true,
+            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        return true;
+    } catch (error) {
+        console.log('Erreur lors de la mise à jor de l\'annonce:', error);
+        return false;
+    }
+};
+
 module.exports = {
     collectActivePostsByUserID,
     collectApprovedPosts,
@@ -667,6 +695,7 @@ module.exports = {
     collectRelatedPosts,
     deletePostByID,
     makePost,
+    markPostSold,
     rejectPost,
     validatePost,
     reportPostID,

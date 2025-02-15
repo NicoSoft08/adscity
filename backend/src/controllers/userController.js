@@ -3,16 +3,36 @@ const {
     getUsers,
     getUser,
     setUserOnlineStatus,
-    collectUsersOnline,
-    collectUsersOffline,
     collectUserPermissions,
     updateUserFields,
     addRemoveFavorites,
     collectUserFavorites,
     collectUserNotifications,
-    markNotificationAsRead
+    markNotificationAsRead,
+    storeDeviceToken,
+    collectAllUsersWithStatus,
+    collectInterlocutorProfile,
+    collectUserUnreadNotifications
 } = require("../firebase/user");
 
+const getAllUsersWithStatus = async (req, res) => {
+    try {
+        const { allUsers, onlineUsers, offlineUsers } = await collectAllUsersWithStatus();
+        res.status(200).json({
+            success: true,
+            message: "Utilisateurs récupérés avec succès",
+            allUsers: allUsers,
+            onlineUsers: onlineUsers,
+            offlineUsers: offlineUsers
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des utilisateurs avec status:", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
 
 const getUsersData = async (req, res) => {
     try {
@@ -101,54 +121,6 @@ const setUserOnline = async (req, res) => {
     }
 };
 
-const getUsersOnline = (req, res) => {
-    try {
-        const usersOnline = collectUsersOnline();
-        if (!usersOnline) {
-            return res.status(404).json({
-                success: false,
-                message: "Aucun utilisateur en ligne trouvé"
-            });
-        };
-        res.status(200).json({
-            success: true,
-            message: "Utilisateurs en ligne récupérés avec succès",
-            usersOnline: usersOnline
-        });
-    } catch (error) {
-        console.error("Erreur lors de la récupération des utilisateurs en ligne :", error);
-        res.status(500).json({
-            success: false,
-            message: "Erreur lors de la récupération des utilisateurs en ligne"
-        });
-
-    }
-};
-
-const getUsersOffline = (req, res) => {
-    try {
-        const usersOffline = collectUsersOffline();
-        if (!usersOffline) {
-            return res.status(404).json({
-                success: false,
-                message: "Aucun utilisateur hors ligne trouvé"
-            });
-        };
-        res.status(200).json({
-            success: true,
-            message: "Utilisateurs hors ligne récupérés avec succès",
-            usersOffline: usersOffline
-        });
-    } catch (error) {
-        console.error("Erreur lors de la récupération des utilisateurs hors ligne :", error);
-        res.status(500).json({
-            success: false,
-            message: "Erreur lors de la récupération des utilisateurs hors ligne"
-        });
-
-    }
-};
-
 const sendUserNotification = async (userID, title, message) => {
     try {
         // Récupère le token FCM de l'utilisateur
@@ -185,7 +157,7 @@ const sendUserNotification = async (userID, title, message) => {
     }
 };
 
-const updateInteractionByUserID = async (userID, postID) => {};
+const updateInteractionByUserID = async (userID, postID) => { };
 
 const getUserPermissions = async (req, res) => {
     const { userID } = req.params;
@@ -320,6 +292,31 @@ const getUserNotifications = async (req, res) => {
     };
 };
 
+const getUserUnreadNotifications = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const data = await collectUserUnreadNotifications(userID);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification non lue trouvée pour cet utilisateur"
+            }); 
+        }
+        res.status(200).json({
+            success: true,
+            message: "Notifications non lues récupérées avec succès",
+            data: data
+        });
+    } catch (error) {
+        consolee.error("Erreur lors de la récupération des notifications non lues de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
+
 const readUserNotification = async (req, res) => {
     const { userID, notificationID } = req.params;
 
@@ -344,19 +341,72 @@ const readUserNotification = async (req, res) => {
     };
 };
 
+const updateDeviceToken = async (req, res) => { 
+    const user = req.user;
+    const { userID } = user;
+    const  { deviceToken } = req.body;
+    console.log(deviceToken);
+    try {
+        const isTokenStored = await storeDeviceToken(deviceToken, userID);
+        if (!isTokenStored) {
+            return res.status(404).json({
+                success: false,
+                message: "Erreur lors de la mise à jour du token d'un utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Token d'un utilisateur mis à jour avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour du token d'un utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    };
+};
+
+const fetchInterlocutorProfile = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const profile = await collectInterlocutorProfile(userID);
+        if (!profile) {
+            return res.status(404).json({
+                success: false,
+                message: "Erreur lors de la récupération du profil de l'interlocuteur"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Profil de l'interlocuteur récupéré avec succès",
+            profile: profile
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération du profil de l\'interlocuteur:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        }); 
+    };
+};
+
 
 module.exports = {
-    getUsersOnline,
-    getUsersOffline,
+    fetchInterlocutorProfile,
+    getAllUsersWithStatus,
     getUsersData,
     getUserData,
     getUserFavorites,
     getUserNotifications,
+    getUserUnreadNotifications,
     getUserPermissions,
     modifyUserFields,
     readUserNotification,
     setUserOnline,
     sendUserNotification,
     toggleFavorites,
-    updateInteractionByUserID
+    updateInteractionByUserID,
+    updateDeviceToken
 };

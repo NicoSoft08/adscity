@@ -21,7 +21,8 @@ const {
     reportPostByID,
     updatePost,
     deletePost,
-    suspendPost
+    suspendPost,
+    markPostAsSold
 } = require('../controllers/postController');
 // const { collectPostBySlug } = require('../firebase/post');
 
@@ -48,6 +49,7 @@ router.post('/related-category', getRelatedPosts);
 router.put('/:postID/update', updatePost);
 router.delete('/:postID/delete', deletePost);
 router.post('/:postID/suspend', suspendPost);
+router.post('/:postID/mark/sold', markPostAsSold);
 
 
 module.exports = router;

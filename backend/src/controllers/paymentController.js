@@ -1,6 +1,6 @@
-const { collectPaymentProcess, collectPaymentByUserID, collectPayments, upgradePaymentStatus, collectProcessingPayments, collectCompletedPayments, collectFailedPayments } = require("../firebase/payment");
+const { collectPaymentProcess, collectPaymentByUserID, collectPayments, upgradePaymentStatus, collectProcessingPayments, collectCompletedPayments, collectFailedPayments, collectAllPaymentsWithStatus } = require("../firebase/payment");
 
-const getPaymentProcess = async (req, res) => {
+const createPaymentIntent = async (req, res) => {
     const { userID, paymentData } = req.body;
 
     try {
@@ -70,6 +70,22 @@ const getPayments = async (req, res) => {
             message: 'Erreur technique, réessayer plus tard'
         });
     };
+};
+
+const getPaymentStatus = async (req, res) => {
+    try {
+        const { allPayments, processingPayments, completedPayments, expiredPayments } = await collectAllPaymentsWithStatus();
+        res.status(200).json({
+            success: true,
+            message: 'Statuts des paiements récupérés avec succès',
+            allPayments: allPayments,
+            processingPayments: processingPayments,
+            completedPayments: completedPayments,
+            expiredPayments: expiredPayments
+        });
+    } catch (error) {
+        
+    }
 };
 
 const updatePaymentStatus = async (req, res) => {
@@ -169,8 +185,9 @@ const getFailedPayments = async (req, res) => {
 
 
 module.exports = {
+    getPaymentStatus,
     getPaymentByUserID,
-    getPaymentProcess,
+    createPaymentIntent,
     getPayments,
     getCompletedPayments,
     getFailedPayments,

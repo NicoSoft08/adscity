@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import './PaymentForm.scss';
 import Spinner from '../../../customs/Spinner';
+import './PaymentForm.scss';
 
 const PaymentForm = ({ onSubmit, amount, subscription, userData, provider, setProvider, paymentMethod, setPaymentMethod }) => {
     const { firstName, lastName, email, phoneNumber } = userData;
@@ -75,7 +75,7 @@ const PaymentForm = ({ onSubmit, amount, subscription, userData, provider, setPr
         <div className="adscity-pay">
             <div className="pay-modal">
                 <form onSubmit={handleSubmit}>
-                    <h3>Choisissez votre mode de paiement</h3>
+                    <h3>Choisissez un mode de paiement</h3>
                     <div className='payment-method'>
                         <label>
                             <input
@@ -212,13 +212,8 @@ const PaymentForm = ({ onSubmit, amount, subscription, userData, provider, setPr
                         </label>
                     </div>
 
-                    <button
-                        type="submit"
-                        className="submit-btn">
-                        {loading
-                            ? <Spinner />
-                            : "Soumettre"
-                        }
+                    <button type="submit" className="submit-btn">
+                        {loading ? <Spinner /> : "Continuer"}
                     </button>
                 </form>
             </div>

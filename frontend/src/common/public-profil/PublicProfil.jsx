@@ -1,15 +1,13 @@
 import React, { useContext, useState } from 'react';
-// import { faFacebookF, faLinkedin, faTwitter, faYoutube } from '@fortawesome/free-brands-svg-icons';
 import { faFolderOpen, faMapMarkerAlt, faPhone } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { IconAvatar, IconCover } from '../../config/images';
+import { facebook, IconAvatar, IconCover, instagram, whatsapp } from '../../config/images';
 import { AuthContext } from '../../contexts/AuthContext';
-import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import Toast from '../../customs/Toast';
 import './PublicProfil.scss';
 
 export default function PublicProfil({ profile }) {
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser, userData } = useContext(AuthContext);
     const [showPhone, setShowPhone] = useState(false);
     const [message, setMessage] = useState('');
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -34,18 +32,18 @@ export default function PublicProfil({ profile }) {
         setShowPhone(true);
     };
 
-    const handleOpenChat = () => {
-        if (!currentUser) {
-            setToast({
-                show: true,
-                type: 'error',
-                message: "Oups !!! Il semble que vous n'êtes pas connecté."
-            });
-            return false;
-        }
+    // const handleOpenChat = () => {
+    //     if (!currentUser) {
+    //         setToast({
+    //             show: true,
+    //             type: 'error',
+    //             message: "Oups !!! Il semble que vous n'êtes pas connecté."
+    //         });
+    //         return false;
+    //     }
 
-        window.location.href = `https://wa.me/${profile.phoneNumber}`;
-    };
+    //     window.location.href = `https://wa.me/${profile.phoneNumber}`;
+    // };
 
     const profilURL = profile
         && profile?.profilURL === null ? IconAvatar // Si profilURL est null, utiliser l'image par défaut
@@ -53,40 +51,43 @@ export default function PublicProfil({ profile }) {
 
 
     return (
-        <div 
-            className="public-profile-container" 
-            style={{ 
-                backgroundImage: `url(${profile.coverURL || IconCover})` 
+        <div
+            className="public-profile-container"
+            style={{
+                backgroundImage: `url(${profile.coverURL || IconCover})`
             }}
-            >
+        >
             {/* Background Image */}
             <div className="profile-header">
                 <div className="profile-info">
                     <img className='avatar' src={profilURL} alt="Profile" />
                     <div className="info">
                         <h2 className='name'>{profile.displayName}</h2>
+                        {/* <FontAwesomeIcon icon={faCheckCircle} size='1x' color='skyblue' /> */}
                         <div className="detail">
                             <small className='location'><FontAwesomeIcon icon={faMapMarkerAlt} /> {profile.city}, {profile.country}</small>
                             <small className='adsCount'><FontAwesomeIcon icon={faFolderOpen} /> {profile.adsCount > 1 ? `${profile.adsCount + " annonces"}` : `${profile.adsCount + " annonce"}`} </small>
                         </div>
+
+                        {/* Social Media Links */}
+                        {/* PERSONNALISATION POUR LES COMPTES  ENTREPRISES ET PROFESSIONNELS */}
+                        {currentUser && (userData.profileType === 'Professionnel' || userData.profileType === 'Entreprise' ) && (
+                            <div className="social-media-links">
+                                <a href={"/"} target="_blank" rel="noreferrer">
+                                    <img src={facebook} alt="faceook" />
+                                </a>
+                                <a href={"/"} target="_blank" rel="noreferrer">
+                                    <img src={instagram} alt="instagram" />
+                                </a>
+                                <a href={"/"} target="_blank" rel="noreferrer">
+                                    <img src={whatsapp} alt="whatsapp" />
+                                </a>
+                            </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Social Media Links */}
-                {/* <div className="social-media-links">
-                    <a href={"/"} target="_blank" rel="noreferrer">
-                        <FontAwesomeIcon icon={faFacebookF} />
-                    </a>
-                    <a href={"/"} target="_blank" rel="noreferrer">
-                        <FontAwesomeIcon icon={faTwitter} />
-                    </a>
-                    <a href={"/"} target="_blank" rel="noreferrer">
-                        <FontAwesomeIcon icon={faLinkedin} />
-                    </a>
-                    <a href={"/"} target="_blank" rel="noreferrer">
-                        <FontAwesomeIcon icon={faYoutube} />
-                    </a>
-                </div> */}
+
             </div>
 
             <div className='seperator' />
@@ -104,14 +105,14 @@ export default function PublicProfil({ profile }) {
                         </div>
                     </div>
 
-                    <div className="phone-info">
+                    {/* <div className="phone-info">
                         <div className="show-phone">
                             <FontAwesomeIcon icon={faWhatsapp} />
                         </div>
                         <div className='show-phone-btn' onClick={handleOpenChat}>
                             <small>Ecrire sur WhatsApp</small>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Message Form */}

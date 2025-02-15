@@ -74,6 +74,12 @@
 
             a {
                 color: $white;
+                text-decoration: none;
+
+                img {
+                    width: 25px;
+                    height: 25px;
+                }
             }
         }
     }

@@ -20,4 +20,11 @@ export const mode_et_beaute = require('../imgs/all-categories/mode-et-beaute/pro
 export const services = require('../imgs/all-categories/les-services/services.png');
 
 
+// SOCIAL ICONS IMAGES
+export const facebook = require('../assets/social-media/facebook.png');
+export const instagram = require('../assets/social-media/instagram.png');
+export const whatsapp = require('../assets/social-media/whatsapp.png');
+export const globe = require('../assets/social-media/globe.png');
+
+
 

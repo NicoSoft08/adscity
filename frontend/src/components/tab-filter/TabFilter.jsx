@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import './TabFilter.scss';
 import Toast from '../../customs/Toast';
+import './TabFilter.scss';
 
 function TabFilter({ adsApproved, setAdsApproved, onFilterClick, currentUser, userData, setToast, toast }) {
     const [activeTab, setActiveTab] = useState('recently-posted');
@@ -12,7 +12,7 @@ function TabFilter({ adsApproved, setAdsApproved, onFilterClick, currentUser, us
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Veuillez vous connecter pour utiliser la fonction "Autour de moi".'
+                message: 'Veuillez vous connecter pour voir l\'onglet "Autour de moi".'
             });
             return;
         }
@@ -32,10 +32,18 @@ function TabFilter({ adsApproved, setAdsApproved, onFilterClick, currentUser, us
                     post?.location.city?.toLowerCase() === userData.city.toLowerCase() ||
                     post?.location.country?.toLowerCase() === userData.country.toLowerCase()
             ); // Filtrer par proximité
+            if (filteredAds.length === 0) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Aucune annonce trouvée dans votre région.'
+                });
+                return;
+            }
             setAdsApproved(filteredAds);
             setToast({
                 show: true,
-                type: 'success',
+                type: 'info',
                 message: 'Annonces filtrées par proximité.'
             });
         }

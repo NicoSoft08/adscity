@@ -1,83 +1,167 @@
 @import '../../styles/fonts';
 @import '../../styles/variables';
 
-.plan-card:hover {
-    transform: scale(1.05);
-}
+// .plan-card:hover {
+//     transform: scale(1.05);
+// }
 
 
-.plan-card {
-    cursor: pointer;
-    border: 2px solid transparent;
-    background-color: #f9f9f9;
-    padding: 10px;
+// .plan-card {
+//     cursor: pointer;
+//     border: 2px solid transparent;
+//     background-color: #f9f9f9;
+//     padding: 10px;
+//     border-radius: 10px;
+//     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+
+//     .plan-name {
+//         font-size: 15px;
+//         font-weight: $font-light;
+//         margin-bottom: 10px;
+//     }
+
+
+//     .plan-header {
+//         padding: 10px;
+//         margin-top: 15px;
+//         background-color: $secondary-color;
+//         color: $white;
+
+//         .price {
+//             font-weight: $font-regular;
+//             font-size: 24px;
+//         }
+
+//         .duration {
+//             font-weight: $font-light;
+//             font-size: 15px;
+//         }
+//     }
+
+//     .plan-details {
+//         padding: 10px;
+
+//         .max-ads,
+//         .max-photos {
+//             padding-bottom: 10px;
+//             border-bottom: 1px solid $dark;
+//             font-weight: $font-light;
+//             font-size: 15px;
+//         }
+//     }
+
+
+//     .see-more {
+//         font-weight: $font-light;
+//         font-family: 'Ubuntu', sans-serif;
+//         font-size: 14px;
+//         background-color: $two;
+//         color: $white;
+//         padding: 8px 15px;
+//         border: none;
+//         border-radius: 5px;
+//         cursor: pointer;
+//         transition: background-color 0.3s ease;
+//     }
+
+//     .see-more:hover {
+//         background-color: $three;
+//     }
+
+//     .not-supported {
+//         color: #842029;
+//         font-style: italic;
+//         font-size: 0.9rem;
+//         background-color: #f8d7da;
+//         border: 1px solid #f5c2c7;
+//     }
+// }
+
+// .plan-card.selected {
+//     border: 2px solid $two;
+// }
+
+
+.plan-item {
+    border: 2px solid #ddd;
+    padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+    text-align: center;
+    cursor: pointer;
+    position: relative;
 
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
 
-    .plan-name {
-        font-size: 15px;
-        font-weight: $font-light;
+    &.selected {
+        border-color: $two;
+        background-color: #e6f0ff;
+    }
+
+    &.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background: #f0f0f0;
+        border-style: dashed;
+
+        &:hover {
+            transform: none;
+            box-shadow: none;
+        }
+    }
+
+    h3 {
+        font-size: 22px;
         margin-bottom: 10px;
+        color: #333;
+        font-weight: $font-regular;
     }
 
-
-    .plan-header {
-        padding: 10px;
-        margin-top: 15px;
-        background-color: $secondary-color;
-        color: $white;
-
-        .price {
-            font-weight: $font-regular;
-            font-size: 24px;
-        }
-
-        .duration {
-            font-weight: $font-light;
-            font-size: 15px;
-        }
+    .price {
+        font-size: 18px;
+        color: $two;
+        font-weight: bold;
+        margin-bottom: 15px;
     }
 
-    .plan-details {
-        padding: 10px;
+    .plan-features {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 15px;
 
-        .max-ads,
-        .max-photos {
-            padding-bottom: 10px;
-            border-bottom: 1px solid $dark;
-            font-weight: $font-light;
-            font-size: 15px;
+        li {
+            margin: 5px 0;
+            font-size: 14px;
+            color: #555;
         }
     }
 
-
-    .see-more {
-        font-weight: $font-light;
-        font-family: 'Ubuntu', sans-serif;
-        font-size: 14px;
+    .select-btn {
+        font-family: 'Ubuntu',sans-serif;
         background-color: $two;
-        color: $white;
-        padding: 8px 15px;
+        color: white;
         border: none;
+        padding: 10px 20px;
         border-radius: 5px;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        transition: background-color 0.3s;
+
+        &:hover {
+            background-color: $three;
+        }
     }
 
-    .see-more:hover {
-        background-color: $three;
+    .coming-soon {
+        background: #ffcc00;
+        color: #333;
+        padding: 8px;
+        border-radius: 5px;
+        font-weight: bold;
+        margin-top: 10px;
     }
-
-    .not-supported {
-        color: #842029;
-        font-style: italic;
-        font-size: 0.9rem;
-        background-color: #f8d7da;
-        border: 1px solid #f5c2c7;
-    }
-}
-
-.plan-card.selected {
-    border: 2px solid $two;
 }

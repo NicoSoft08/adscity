@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
+import { allCategories } from '../../data/database';
 import './FiltersAndSort.scss';
 
 function FiltersAndSort({ onFilterChange, onSortChange }) {
     const [filters, setFilters] = useState({
+        item: '',
+        category: '',
         minPrice: '',
         maxPrice: '',
-        startDate: '',
-        endDate: '',
     });
 
     const [sortOption, setSortOption] = useState('relevance'); // Par défaut: pertinence
@@ -15,11 +16,6 @@ function FiltersAndSort({ onFilterChange, onSortChange }) {
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters((prevFilters) => ({ ...prevFilters, [name]: value }));
-    };
-
-    // Applique les filtres
-    const applyFilters = () => {
-        onFilterChange(filters);
     };
 
     // Gère les changements de tri
@@ -34,6 +30,28 @@ function FiltersAndSort({ onFilterChange, onSortChange }) {
             {/* Filtres */}
             <div className="filters">
                 <h4>Filtres</h4>
+                <div className="filter-item">
+                    <label htmlFor="item">Quoi ?</label>
+                    <input
+                        type="text"
+                        id="item"
+                        name="item"
+                        value={filters.item}
+                        onChange={handleFilterChange}
+                        placeholder="Ex : Smartphone"
+                    />
+                </div>
+                <div className="filter-item">
+                    <label htmlFor="category">Catégorie :</label>
+                    <select name="category" id="category" onChange={handleFilterChange}>
+                        <option value="">-- Sélectionner une catégorie --</option>
+                        {allCategories.map((category) => (
+                            <option key={category.key} value={category.categoryName}>
+                                {category.categoryTitles.fr}
+                            </option>
+                        ))}
+                    </select>
+                </div>
                 <div className="filter-item">
                     <label htmlFor="minPrice">Prix Min :</label>
                     <input
@@ -56,41 +74,34 @@ function FiltersAndSort({ onFilterChange, onSortChange }) {
                         placeholder="Ex : 1000"
                     />
                 </div>
-                <div className="filter-item">
-                    <label htmlFor="startDate">Date Début :</label>
-                    <input
-                        type="date"
-                        id="startDate"
-                        name="startDate"
-                        value={filters.startDate}
-                        onChange={handleFilterChange}
-                    />
-                </div>
-                <div className="filter-item">
-                    <label htmlFor="endDate">Date Fin :</label>
-                    <input
-                        type="date"
-                        id="endDate"
-                        name="endDate"
-                        value={filters.endDate}
-                        onChange={handleFilterChange}
-                    />
-                </div>
-                <button className="apply-filters-button" onClick={applyFilters}>
+                <button className="apply-filters-button" onClick={() => onFilterChange(filters)}>
                     Appliquer les Filtres
                 </button>
             </div>
 
             {/* Tri */}
             <div className="sort">
-                <h4>Tri</h4>
-                <select value={sortOption} onChange={handleSortChange}>
-                    <option value="relevance">Pertinence</option>
-                    <option value="price_asc">Prix : Croissant</option>
-                    <option value="price_desc">Prix : Décroissant</option>
-                    <option value="date_newest">Date : Plus Récent</option>
-                    <option value="date_oldest">Date : Plus Ancien</option>
-                </select>
+                <h4>Trier par:</h4>
+                <div className='sort-container'>
+                    <div>
+                        <select value={sortOption} onChange={handleSortChange}>
+                            <option value="expensive">Plus Cher</option>
+                            <option value="cheaper">Moins Cher</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select value={sortOption} onChange={handleSortChange}>
+                            <option value="recent">Récent</option>
+                            <option value="older">Ancien</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select value={sortOption} onChange={handleSortChange}>
+                            <option value="much_views">Plus de vues</option>
+                            <option value="best_rated">Meilleures notes</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
     );

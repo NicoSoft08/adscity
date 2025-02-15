@@ -21,6 +21,7 @@ export default function Footer() {
                     <h3>À propos</h3>
                     <ul>
                         <li><a href="/about">Qui sommes-nous</a></li>
+                        {/* <li><a href="/pub">Publicité</a></li> */}
                         <li><a href="/business">Pour les entreprises</a></li>
                         <li><a href="/pricing">Tarifs</a></li>
                     </ul>
@@ -40,8 +41,8 @@ export default function Footer() {
                 <div className="footer-section">
                     <h3>Légal</h3>
                     <ul>
-                        <li><a href="/legal/terms">Conditions de vente</a></li>
-                        <li><a href="/legal/privacy">Politique de confidentialité</a></li>
+                        <li><a href="/legal/terms">Conditions d'utilisation</a></li>
+                        <li><a href="/legal/privacy-policy">Règles de confidentialité</a></li>
                         <li><a href="/legal/post-rules">Règles de publication</a></li>
                     </ul>
                 </div>

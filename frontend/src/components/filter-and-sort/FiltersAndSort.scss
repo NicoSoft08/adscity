@@ -2,8 +2,6 @@
 @import '../../styles/fonts';
 
 .filters-and-sort {
-    display: flex;
-    justify-content: space-between;
     gap: 2rem;
     margin-bottom: 2rem;
 
@@ -14,9 +12,20 @@
         border-radius: 5px;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
+        
         h4 {
             margin-bottom: 1rem;
             font-size: 1.2rem;
+        }
+       
+        .sort-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+
+            select {
+                outline: none;
+            }
         }
 
         .filter-item {

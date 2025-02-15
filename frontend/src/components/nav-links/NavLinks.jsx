@@ -14,7 +14,7 @@ export default function NavLinks() {
         } else if (currentUser && userRole !== 'user') {
             navigate('/access-denied');
         } else {
-            navigate('/user/dashboard');
+            navigate('/user/dashboard/panel');
         }
     };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import DateRangePicker from '../../components/date-range/DateRangePicker';
-import { fetchPaymentInfo, updatePaymentStatus } from '../../firebase/firestore';
+import { fetchPaymentStatus, updatePaymentStatus } from '../../routes/paymentRoutes';
 import { formateDateTimestamp } from '../../func';
 import Spinner from '../../customs/Spinner';
 import Pagination from '../../components/pagination/Pagination';
@@ -51,7 +51,7 @@ const PaymentActions = ({ payment, onStatusChange }) => {
             </button>
             <button
                 className={`action-btn danger ${actionState.reject.done ? 'completed' : ''}`}
-                onClick={() => handleAction('reject', 'failed')}
+                onClick={() => handleAction('reject', 'expired')}
                 disabled={actionState.reject.loading || actionState.reject.done}
             >
                 {actionState.reject.loading ? <Spinner /> :
@@ -64,6 +64,7 @@ const PaymentActions = ({ payment, onStatusChange }) => {
 
 export default function PaymentIntents() {
     const [currentPage, setCurrentPage] = useState(1);
+    const [paymentsProcessing, setPaymentsProcessing] = useState([]);
     const [payments, setPayments] = useState([]);
     const [paymentsPerPage] = useState(10);
 
@@ -78,15 +79,20 @@ export default function PaymentIntents() {
     const paymentStatuses = {
         'completed': { color: '#34D399', label: 'Réussi' },
         'processing': { color: '#FBBF24', label: 'En cours' },
-        'failed': { color: '#EF4444', label: 'Échoués' }
+        'expired': { color: '#EF4444', label: 'Échoué' }
     };
 
     useEffect(() => {
         const fetchPayments = async () => {
-            const result = await fetchPaymentInfo();
-            if (result.success) {
-                setPayments(result?.paymentData);
+            const data = await fetchPaymentStatus();
+            if (data.success) {
+                setPaymentsProcessing(data.processingPayments);
+                setPayments(data.allPayments);
             }
+            // const result = await fetchPaymentInfo();
+            // if (result.success) {
+            //     setPayments(result?.paymentData);
+            // }
         };
 
         fetchPayments();
@@ -112,7 +118,7 @@ export default function PaymentIntents() {
                     <option value="all">Tous les statuts</option>
                     <option value="processing">En Cours</option>
                     <option value="completed">Réussis</option>
-                    <option value="failed">Échoués</option>
+                    <option value="expired">Échoués</option>
                 </select>
 
             </div>

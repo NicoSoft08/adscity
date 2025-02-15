@@ -2,12 +2,161 @@
 @import './variables';
 
 .ads-section {
+    border-radius: 12px;
+    padding: 0 10px;
+    background-color: $white;
+    margin-top: 6rem;
 
-    h2 {
-        color: $dark;
-    }
 
     @media (max-width: 768px) {
-        margin-top: 10rem;
+        margin-top: 9rem;
+    }
+
+
+    h2 {
+        padding: 10px 0;
+        font-weight: $font-regular;
+        color: $gray-dark;
+    }
+
+    .card-list {
+        overflow-x: auto;
+        scrollbar-width: thin;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+            background-color: $white;
+            border-radius: 12px;
+
+            th,
+            td {
+                padding: 12px;
+                text-align: left;
+                border: 1px solid #ddd;
+                white-space: nowrap;
+                font-size: 14px;
+                font-weight: $font-light;
+
+                .img {
+                    border-radius: 50%;
+                }
+
+                .see-more {
+                    background-color: $two;
+                    color: white;
+                    padding: 6px 12px;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: $font-light;
+                    font-family: 'Ubuntu', sans-serif;
+
+                    &:hover {
+                        background-color: $three;
+                    }
+                }
+            }
+        }
+    }
+
+    .ad-details-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .modal-button {
+            background-color: transparent;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-light;
+
+            &.approve-button {
+                background-color: $two;
+            }
+
+            &.reject-button {
+                background-color: #f44336;
+            }
+        }
+    }
+
+    .modal-menu {
+        .menu-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+
+            &:hover {
+                background: #f5f5f5;
+            }
+
+            svg {
+                font-size: 14px;
+                color: #666;
+            }
+
+            span {
+                color: #333;
+                font-weight: $font-light;
+                // font-size: 13px;
+            }
+        }
+        .menu-item[disabled] {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+    }
+
+    .action-menu {
+        display: flex;
+        flex-direction: column;
+
+        label {
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        textarea {
+            font-family: 'Ubuntu', sans-serif;
+            // font-size: 14px;
+            font-weight: $font-light;
+            padding: 10px;
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+
+            button {
+                padding: 8px 10px;
+                font-family: 'Ubuntu',sans-serif;
+                font-size: 15px;
+                border-radius: 5px;
+                border: 1px transparent;
+                color: $white;
+                font-weight: $font-light;
+                cursor: pointer;
+            }
+
+            .confirm-btn {
+                background-color: $two;
+            }
+
+            .cancel-btn {
+                background-color: $danger;
+            }
+        }
     }
 }

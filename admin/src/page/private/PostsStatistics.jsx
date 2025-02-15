@@ -64,8 +64,8 @@ const Stats = ({ allPosts, pendingPosts, approvedPosts, refusedPosts }) => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
 
 export default function PostsStatistics() {

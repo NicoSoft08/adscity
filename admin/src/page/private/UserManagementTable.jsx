@@ -70,13 +70,7 @@ export default function UserManagementTable({ users, onToggleActive, onDelete })
                                 <td>{user.email}</td>
                                 <td>{user.profileNumber}</td>
                                 <td>{user.phoneNumber}</td>
-                                <td>
-                                    <button
-                                        className={`status ${user.isActive ? 'active' : 'inactive'}`}
-                                    >
-                                        {user.isActive ? 'Actif' : 'Inactif'}
-                                    </button>
-                                </td>
+                                <td>{user.isOnline ? '🟢 En ligne' : '🔴 Hors ligne'}</td>
                                 <td>
                                     <button
                                         className={`status-btn ${user.isActive ? 'active' : 'inactive'}`}

@@ -3,7 +3,6 @@ import { onApprovePost, onRefusePost } from '../../routes/postRoutes';
 import { formateDateTimestamp } from '../../func';
 import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
-import Pagination from '../../components/pagination/Pagination';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -19,18 +18,9 @@ export default function PendingPosts({ pendingPosts }) {
     const [message, setMessage] = useState({ type: '', text: '' });
     const [refusalReason, setRefusalReason] = useState('');
     const [selectedPostID, setSelectedPostID] = useState(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pendingPostPerPage] = useState(10);
 
     // const defaultReason = "En vertu des Règles De Publication qui régissent le fonctionnement d'AdsCity et au regard des photos sélectionnées pour votre annonce, il est à noter que les photos ne sont pas en adéquation avec le titre de l'annonce.";
 
-    // Get current users
-    const indexOfLastUser = currentPage * pendingPostPerPage;
-    const indexOfFirstUser = indexOfLastUser - pendingPostPerPage;
-    const currentPendingPosts = pendingPosts.slice(indexOfFirstUser, indexOfLastUser);
-
-    // Change page
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleDetailClick = (postID) => {
         setSelectedPostID(postID);
@@ -52,7 +42,7 @@ export default function PendingPosts({ pendingPosts }) {
         if (currentUser && userData.permissions.includes('SUPER_ADMIN')) {
             setIsloading(true);
             const result = await onApprovePost(postID);
-    
+
             if (result.success) {
                 setToast({
                     show: true,
@@ -110,10 +100,10 @@ export default function PendingPosts({ pendingPosts }) {
                         <th>#</th>
                         <th>Photo</th>
                         <th>Titre</th>
-                        <th>Description</th>
+                        {/* <th>Description</th>
                         <th>Catégorie</th>
                         <th>Ville</th>
-                        <th>Région</th>
+                        <th>Région</th> */}
                         <th>Date de Publication</th>
                         <th>Prix</th>
                         <th>Actions</th>
@@ -121,20 +111,20 @@ export default function PendingPosts({ pendingPosts }) {
                 </thead>
                 <tbody>
                     {
-                        currentPendingPosts.length > 0 ? (
-                            currentPendingPosts.map((ad, index) => (
+                        pendingPosts.length > 0 ? (
+                            pendingPosts.map((ad, index) => (
                                 <tr key={ad.id}>
                                     <td>{index + 1}</td>
                                     <td>
                                         <img src={ad.images[0]} alt='' width={50} height={50} />
                                     </td>
                                     <td>{ad.adDetails.title}</td>
-                                    <td>{ad.adDetails.description}</td>
+                                    {/* <td>{ad.adDetails.description}</td>
                                     <td>{ad.category}</td>
                                     <td>{ad.location.city}</td>
-                                    <td>{ad.location.country}</td>
+                                    <td>{ad.location.country}</td> */}
                                     <td>{formateDateTimestamp(ad.posted_at._seconds)}</td>
-                                    <td>{ad.adDetails.price} {ad.adDetails.currency} </td>
+                                    <td>{ad.adDetails.price} RUB </td>
                                     <td>
                                         <button
                                             className='see-more'
@@ -220,7 +210,7 @@ export default function PendingPosts({ pendingPosts }) {
                     isHide={false}
                 >
                     <div className='ad-details'>
-                        {currentPendingPosts
+                        {pendingPosts
                             .filter((ad) => ad.id === selectedPostID)
                             .map(pendingAd => (
                                 <>
@@ -251,13 +241,6 @@ export default function PendingPosts({ pendingPosts }) {
                     </div>
                 </Modal>
             )}
-
-            <Pagination
-                currentPage={currentPage}
-                elements={pendingPosts}
-                elementsPerPage={pendingPostPerPage}
-                paginate={paginate}
-            />
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>

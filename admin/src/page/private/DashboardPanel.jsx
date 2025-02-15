@@ -6,9 +6,12 @@ import PostsStatistics from './PostsStatistics';
 import PendingPosts from './PendingPosts';
 import AdminPostsChart from './AdminPostsChart';
 import '../../styles/DashboardPanel.scss';
+import Pagination from '../../components/pagination/Pagination';
 
 export default function DashboardPanel() {
     const [postsPending, setPostsPending] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pendingPostPerPage] = useState(10);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -21,6 +24,14 @@ export default function DashboardPanel() {
         fetchData();
     }, []);
 
+    // Get current users
+    const indexOfLastUser = currentPage * pendingPostPerPage;
+    const indexOfFirstUser = indexOfLastUser - pendingPostPerPage;
+    const currentPendingPosts = postsPending.slice(indexOfFirstUser, indexOfLastUser);
+
+    // Change page
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
 
     return (
         <div className='panel'>
@@ -29,12 +40,17 @@ export default function DashboardPanel() {
                 <div className='panel-left'>
                     <PostsStatistics />
                     <UsersStatistics />
-
                 </div>
                 <AdminPostsChart />
             </div>
             <PaymentStats />
             <PendingPosts pendingPosts={postsPending} />
+            <Pagination
+                currentPage={currentPage}
+                elements={currentPendingPosts}
+                elementsPerPage={pendingPostPerPage}
+                paginate={paginate}
+            />
         </div>
     );
 };

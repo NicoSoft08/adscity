@@ -1,20 +1,28 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import Spinner from '../../customs/Spinner';
 import Toast from '../../customs/Toast';
 import { signinUser } from '../../routes/authRoutes';
+import { AuthContext } from '../../contexts/AuthContext';
 import '../../styles/LoginPage.scss';
 
 export default function LoginPage() {
     const navigate = useNavigate();
+    const { currentUser, userRole } = useContext(AuthContext);
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '', agree: false });
     const [formData, setFormData] = useState({ email: '', password: '', agree: false });
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
+    useEffect(() => {
+        if (currentUser && (userRole === 'admin')) {
+            setToast({ show: true, message: 'Vous êtes déjà connecté', type: 'success' });
+            navigate('/admin/dashboard/panel');
+        }
+    }, [currentUser, userRole, navigate]);
 
     const validateForm = () => {
         const formErrors = {}

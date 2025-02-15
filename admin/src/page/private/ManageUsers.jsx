@@ -4,14 +4,17 @@ import { deleteUser } from '../../routes/authRoutes';
 import UserManagementTable from './UserManagementTable';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import '../../styles/ManageUsers.scss';
 
 
 export default function ManageUsers() {
-    const { currentUser, userData } = useContext(AuthContext); 
+    const { currentUser, userData } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const [openFilter, setOpenFilter] = useState(false);
     const [filters, setFilters] = useState({ createdAt: '', role: '', isActive: '' });
 
     useEffect(() => {
@@ -93,46 +96,53 @@ export default function ManageUsers() {
 
     return (
         <div className='manage-user'>
-            <h2>Gestion des Utilisateurs</h2>
+            <div className="head">
+                <h2>Gestion des Utilisateurs</h2>
+                <div className="filters-container" onClick={() => setOpenFilter(!openFilter)}>
+                    <FontAwesomeIcon icon={faFilter} />
+                </div>
+            </div>
 
             {/* Filtres */}
-            <div className='filters'>
-                <label>
-                    Création:
-                    <input
-                        type="date"
-                        name="createdAt"
-                        value={filters.createdAt}
-                        onChange={handleFilterChange}
-                    />
-                </label>
+            {openFilter && (
+                <div className='filters'>
+                    <label>
+                        Création:
+                        <input
+                            type="date"
+                            name="createdAt"
+                            value={filters.createdAt}
+                            onChange={handleFilterChange}
+                        />
+                    </label>
 
-                <label>
-                    Role:
-                    <select
-                        name="role"
-                        value={filters.role}
-                        onChange={handleFilterChange}>
-                        <option value="">Tous</option>
-                        <option value="admin">Admin</option>
-                        <option value="user">User</option>
-                    </select>
-                </label>
+                    <label>
+                        Role:
+                        <select
+                            name="role"
+                            value={filters.role}
+                            onChange={handleFilterChange}>
+                            <option value="">Tous</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                        </select>
+                    </label>
 
-                <label>
-                    Statut:
-                    <select
-                        name="isActive"
-                        value={filters.isActive}
-                        onChange={handleFilterChange}>
-                        <option value="">Tous</option>
-                        <option value="true">Actif</option>
-                        <option value="false">Inactif</option>
-                    </select>
-                </label>
+                    <label>
+                        Statut:
+                        <select
+                            name="isActive"
+                            value={filters.isActive}
+                            onChange={handleFilterChange}>
+                            <option value="">Tous</option>
+                            <option value="true">Actif</option>
+                            <option value="false">Inactif</option>
+                        </select>
+                    </label>
 
-                <button onClick={applyFilters}>Appliquer</button>
-            </div>
+                    <button onClick={applyFilters}>Appliquer</button>
+                </div>
+            )}
 
             <UserManagementTable
                 users={filteredUsers}

@@ -2,38 +2,29 @@ import React, { useEffect, useState } from 'react';
 import { faUsers } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-    fetchAllUsers, 
-    fetchOfflineUsers, 
-    fetchOnlineUsers 
+    fetchAllUsersWithStatus, 
 } from '../../routes/userRoutes';
 import '../../styles/UsersStatistics.scss';
 
 export default function UsersStatistics() {
     const [users, setUsers] = useState([]);
-    const [usersOnline, setUsersOnline] = useState([]);
-    const [usersOffline, setUsersOffline] = useState([]);
+    const [online, setOnline] = useState([]);
+    const [offline, setOffline] = useState([]);
 
 
     useEffect(() => {
-        const fetchAllData = async () => {
+        const fetchData = async () => {
             try {
-                // Fetch all the users data in parallel
-                const [users, online, offline] = await Promise.all([
-                    fetchAllUsers(),
-                    fetchOnlineUsers(),
-                    fetchOfflineUsers(),
-                ]);
-
-                // Set the users data
-                setUsers(users?.allUsers || []);
-                setUsersOnline(online?.usersOnline || []);
-                setUsersOffline(offline?.usersOffline || []);
-            } catch (error) {
-                console.error('Erreur lors de la récupération des utilisateurs:', error);
+                const data = await fetchAllUsersWithStatus();
+                setUsers(data.allUsers);
+                setOnline(data.onlineUsers);
+                setOffline(data.offlineUsers);
+            } catch (err) {
+                console.error('Erreur technique:', err);
             }
-        }
-
-        fetchAllData();
+        };
+    
+        fetchData();
     }, []);
 
     return (
@@ -61,7 +52,7 @@ export default function UsersStatistics() {
                         <h3 className='title'>Online</h3>
                     </div>
                     <div className="detail">
-                        <p>{usersOnline.length}</p>
+                        <p>{online.length}</p>
                         <sub>{"pers."}</sub>
                     </div>
                 </div>
@@ -74,7 +65,7 @@ export default function UsersStatistics() {
                         <h3 className='title'>Offline</h3>
                     </div>
                     <div className="detail">
-                        <p>{usersOffline.length}</p>
+                        <p>{offline.length}</p>
                         <sub>{"pers."}</sub>
                     </div>
                 </div>

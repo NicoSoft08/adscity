@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Toast from '../../customs/Toast';
@@ -8,6 +8,7 @@ import { createUser } from '../../routes/authRoutes';
 import SignupSuccessModal from '../../customs/SignupSuccessModal';
 // import PhoneInput from '../../components/phone-input/PhoneInput';
 import { countries } from '../../data/countries';
+import citiesData from '../../data/ru.json'
 import '../../styles/SignUpPage.scss';
 import '../../components/phone-input/PhoneInput.scss';
 
@@ -22,17 +23,17 @@ export default function SignUpPage() {
     const [isSignupSuccess, setIsSignupSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+    const [cities, setCities] = useState([]);
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        phoneNumber: '',
-        country: '',
-        city: '',
-        address: '',
-        password: '',
-        agree: false,
+        firstName: '', lastName: '',
+        email: '', phoneNumber: '',
+        country: selectedCountry.name, city: '', address: '',
+        password: '', agree: false,
     });
+
+    useEffect(() => {
+        setCities(citiesData);
+    }, []);
 
     const nextStep = () => setStep(step + 1);
     const prevStep = () => setStep(step - 1);
@@ -40,6 +41,7 @@ export default function SignUpPage() {
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
     };
+
 
     const validateForm = () => {
         const errors = {};
@@ -120,18 +122,10 @@ export default function SignUpPage() {
 
         try {
             setLoading(true);
-            const {
-                address, city, country,
-                email, password, firstName,
-                lastName,
-            } = formData;
+            const { address, city, country, email, password, firstName, lastName } = formData;
 
             const displayName = `${firstName} ${lastName}`;
-            const result = await createUser(
-                address, city, country, email,
-                password, firstName, lastName,
-                fullPhoneNumber, displayName
-            );
+            const result = await createUser(address, city, country, email, password, firstName, lastName, fullPhoneNumber, displayName);
 
             const userData = { email, displayName };
 
@@ -156,19 +150,11 @@ export default function SignUpPage() {
             } else {
                 setMessage(result.message);
                 setLoading(false);
-                setToast({
-                    show: true,
-                    type: 'error',
-                    message: result.message
-                });
+                setToast({ show: true, type: 'error', message: result.message });
             }
         } catch (error) {
             console.error('Inscription échouée: ', error);
-            setToast({
-                show: true,
-                type: 'error',
-                message: 'Une erreur est survenue. Veuillez réessayer.'
-            });
+            setToast({ show: true, type: 'error', message: 'Une erreur est survenue. Veuillez réessayer.' });
         }
     }
 
@@ -182,7 +168,7 @@ export default function SignUpPage() {
                             className={`input-field ${errors.firstName ? 'error' : ''}`}
                             type="text"
                             name='firstName'
-                            placeholder='Entrez vos prénoms'
+                            placeholder='Prénoms'
                             value={formData.firstName}
                             onChange={handleChange}
                         />
@@ -191,7 +177,7 @@ export default function SignUpPage() {
                             className={`input-field ${errors.lastName ? 'error' : ''}`}
                             type="text"
                             name='lastName'
-                            placeholder='Entrez votre nom de famille'
+                            placeholder='Nom de famille'
                             value={formData.lastName}
                             onChange={handleChange}
                         />
@@ -206,7 +192,7 @@ export default function SignUpPage() {
                             className={`input-field ${errors.email ? 'error' : ''}`}
                             type='email'
                             name='email'
-                            placeholder='Entrez votre email'
+                            placeholder='Email'
                             value={formData.email}
                             onChange={handleChange}
                         />
@@ -233,9 +219,10 @@ export default function SignUpPage() {
                                 />
                             </div>
                             <input
+                                title='Téléphone (sans préfix)'
                                 type='tel'
                                 name='phoneNumber'
-                                placeholder='Entrez votre numéro de téléphone'
+                                placeholder='Téléphone (sans préfix)'
                                 value={formData.phoneNumber}
                                 onChange={handleChange}
                                 className={`input-field ${errors.phoneNumber ? 'error' : ''}`}
@@ -252,25 +239,34 @@ export default function SignUpPage() {
                             className={`input-field ${errors.country ? 'error' : ''}`}
                             type="text"
                             name="country"
-                            placeholder="Entrez votre pays"
+                            placeholder="Pays"
                             value={formData.country}
+                            readOnly
                             onChange={handleChange}
                         />
                         {errors.country && <div className="error-text">{errors.country}</div>}
-                        <input
+
+                        <select
+                            id="city-select"
+                            name='city'
                             className={`input-field ${errors.city ? 'error' : ''}`}
-                            type="text"
-                            name="city"
-                            placeholder="Entrez votre ville"
                             value={formData.city}
                             onChange={handleChange}
-                        />
+                        >
+                            <option value="">Ville</option>
+                            {cities.map((city, index) => (
+                                <option key={index} value={city.city}>
+                                    {city.city}
+                                </option>
+                            ))}
+                        </select>
                         {errors.city && <div className="error-text">{errors.city}</div>}
+
                         <input
                             className={`input-field ${errors.address ? 'error' : ''}`}
                             type="text"
                             name="address"
-                            placeholder="Entrez votre adresse"
+                            placeholder="Adresse"
                             value={formData.address}
                             onChange={handleChange}
                         />
@@ -286,7 +282,7 @@ export default function SignUpPage() {
                             type={showPassword ? 'text' : 'password'}
                             id="password"
                             name='password'
-                            placeholder='Entrez votre mot de passe'
+                            placeholder='Mot de passe'
                             value={formData.password}
                             onChange={handleChange}
                         />
@@ -307,7 +303,7 @@ export default function SignUpPage() {
 
     return (
         <div className='signup-page'>
-            <div className="form">
+            <div className="signup-form">
                 <div className="progress-bar">
                     {[1, 2, 3, 4].map((num) => (
                         <div
@@ -347,6 +343,14 @@ export default function SignUpPage() {
                 </div>
 
                 <p>Avez-vous déjà un compte utilisateur ? <Link to={'/auth/signin'}>Se connecter</Link></p>
+
+                <div className="terms-container">
+                    <p>
+                        <Link to="/legal/privacy-policy" target="_blank">Confidentialité</Link>{" - "}
+                        <Link to="/legal/terms" target="_blank">Conditions d'utilisation</Link>
+                        {/* <Link to="/data-processing" target="_blank">Politique de traitement des données</Link>. */}
+                    </p>
+                </div>
             </div>
 
             {

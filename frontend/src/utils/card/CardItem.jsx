@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
+import {
     faBan, faCalendarDay, faEllipsisV, faExclamationTriangle,
-    faEye, faEyeSlash, faFlag, faGavel, faShare 
+    faEye, faEyeSlash, faFlag, faGavel, faShare
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -10,7 +10,12 @@ import { formatViewCount } from '../../func';
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
-import { updateContactClick, updateInteraction } from '../../routes/apiRoutes';
+import { 
+    incrementClickCount, 
+    incrementViewCount, 
+    updateContactClick, 
+    updateInteraction 
+} from '../../routes/apiRoutes';
 import { reportPost } from '../../routes/postRoutes';
 import { fetchProfileByUserID } from '../../routes/storageRoutes';
 import Menu from '../../customs/Menu';
@@ -20,28 +25,36 @@ import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
-    const { id, userID, adDetails, images,
-        location, category, subcategory, views,
-        expiry_date, isActive, moderated_at
-    } = post;
+    const { id, userID, adDetails, images, location, category, subcategory, views, isActive, moderated_at, isSold } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    const [profilURL, setProfilURL] = useState();
+    const [profilURL, setProfilURL] = useState(null);
     const navigate = useNavigate();
 
     useEffect(() => {
         if (currentUser && userData.adsSaved?.includes(post.id)) {
             setIsFavorite(true);
         }
-
+    
         const fetchProfilURL = async () => {
-            const response = await fetchProfileByUserID(userID);
-            setProfilURL(response.profilURL);
+            try {
+                const response = await fetchProfileByUserID(userID);
+                if (response && response.profilURL) {
+                    setProfilURL(response.profilURL);
+                } else {
+                    setProfilURL(null); // Assurer que la valeur est bien gérée
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération du profil :", error);
+                setProfilURL(null);
+            }
         };
-
-        fetchProfilURL();
+    
+        if (userID) {
+            fetchProfilURL();
+        }
     }, [userID, currentUser, userData, post]);
 
     const reportReasons = [
@@ -112,7 +125,6 @@ export default function CardItem({ post, onToggleFavorite }) {
         setShowReportModal(false);
     };
 
-
     const handleReportAd = (postID) => {
         setShowReportModal(true);
         setShowMenu(false);
@@ -132,7 +144,7 @@ export default function CardItem({ post, onToggleFavorite }) {
         const date = new Date(posted_at);
 
         if (isToday(date)) {
-            return `Aujourd'hui ${format(date, 'HH:mm', { locale: fr })}`;
+            return `Auj. ${format(date, 'HH:mm', { locale: fr })}`;
         }
 
         if (isYesterday(date)) {
@@ -153,8 +165,9 @@ export default function CardItem({ post, onToggleFavorite }) {
         if (!userID) return null;
 
         try {
-            await updateInteraction(postID, userID, category); // Fonction pour mettre à jour clicksOnAds, categoriesViewed, et totalAdsViewed
-            // Navigue vers la page de l'annonce
+            await updateInteraction(postID, userID, category); // Fonction pour mettre à jour adsViewed, categoriesViewed, et totalAdsViewed
+            await incrementViewCount(postID);
+            await incrementClickCount(postID);
 
         } catch (error) {
             throw error;
@@ -227,15 +240,16 @@ export default function CardItem({ post, onToggleFavorite }) {
     }
 
     const moderatedAtDate = parseTimestamp(moderated_at);
-    const expiryDate = new Date(expiry_date);
 
+    // Déterminer l'image de profil à afficher
+    const profileImage = profilURL ?? IconAvatar;
 
-    if (moderatedAtDate > expiryDate) return null;
 
     if (!isActive) return null;
 
     return (
         <div className={`card-container ${isActive ? 'active' : 'inactive'}`} key={id}>
+            {isSold && <span className="sold-badge">VENDU</span>}
             {/* Image de l'annonce */}
             {images && images.length > 0 && (
                 <div onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${id}`)}>
@@ -259,7 +273,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                 <p className="card-price">{adDetails.price} RUB</p>
                 <p className="card-city">{location.city}, {location.country}</p>
                 <Link to={`/users/user/${userID}/profile/show`} onClick={() => handleProfileClick(userID)} className="announcer">
-                    <img src={profilURL || IconAvatar} alt="avatar" className="avatar" />
+                    <img src={profileImage} alt="avatar" className="avatar" />
                 </Link>
                 <div className="card-footer">
                     <span className="card-date">
@@ -293,6 +307,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                     {isFavorite ? '❤️' : '🤍'}
                 </button>
             </div>
+
             <Menu options={options} isOpen={showMenu} onClose={() => setShowMenu(false)} />
             <Menu options={reportReasons} isOpen={showReportModal} onClose={() => setShowReportModal(false)} />
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />

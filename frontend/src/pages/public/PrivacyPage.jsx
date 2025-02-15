@@ -24,7 +24,7 @@ export default function PrivacyPage() {
                     <p><strong>Affilié</strong> désigne une entité qui contrôle, est contrôlée par ou est sous contrôle commun avec une partie, où "contrôle" signifie la propriété de 50% ou plus des actions, des participations ou d'autres titres habilités à voter pour l'élection des administrateurs ou d'une autre autorité de gestion.</p>
                 </li>
                 <li>
-                    <p><strong>Société</strong> (dénommée "la Société", "Nous", "Notre" ou "Nos" dans le présent Contrat) fait référence à Ads City.</p>
+                    <p><strong>Société</strong> (dénommée "la Société", "Nous", "Notre" ou "Nos" dans le présent Contrat) fait référence à AdsCity.</p>
                 </li>
                 <li>
                     <p><strong>Les cookies</strong> sont de petits fichiers qui sont placés sur Votre ordinateur, appareil mobile ou tout autre appareil par un site Web, contenant les détails de Votre historique de navigation sur ce site parmi ses nombreuses utilisations.</p>

@@ -14,7 +14,7 @@ export default function MyNotifications() {
             const result = await fetchNotifications(userID);
             if (result.success) {
                 setNotifications(result?.data);
-            }
+             }
         }
 
         getNotifications();

@@ -5,6 +5,7 @@ import { getStorage } from 'firebase/storage';
 import { getAnalytics } from 'firebase/analytics';
 import { getMessaging } from 'firebase/messaging';
 
+// Initialize Firebase
 const firebaseConfig = {
     apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
     authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -20,7 +21,6 @@ const storage = getStorage(app);
 const firestore = getFirestore(app);
 const analytics = getAnalytics(app);
 const messaging = getMessaging(app);
-
 
 export { analytics, auth, firestore, messaging, storage };
 

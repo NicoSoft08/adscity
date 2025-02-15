@@ -5,81 +5,85 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import Modal from '../../customs/Modal';
+import ComparisonTable from '../../utils/ComparisonTable';
 import PlanItem from '../../components/plan-item/PlanItem';
+import { allCategories } from '../../data/database';
 import '../../styles/PlansPage.scss';
 
 export default function PlansPage() {
     const { currentUser } = useContext(AuthContext);
     const [selectedPlan, setSelectedPlan] = useState(null);
-    const [isOpen, setIsOpen] = useState(false);
-    const [showSelectCategory, setShowSelectCategory] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const [compareModal, setCompareModal] = useState(false);
+    const [showCategoryModal, setShowCategoryModal] = useState(false);
+    const [selectedCategory, setSelectedCategory] = useState(null);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSelect = (id) => {
         const plan = plans.find((p) => p.id === id);
+        setSelectedPlan(plan);
 
-        if (plan) setSelectedPlan(plan);
+        if (plan?.name === 'Professionnel') {
+            setShowCategoryModal(true);
+        }
     };
 
-    const handleHide = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
+    const handleCategoryClick = (category) => {
+        setSelectedCategory(category);
     };
 
+    const handleConfirmCategory = () => {
+        if (!selectedCategory) {
+            setToast({
+                type: 'error',
+                show: true,
+                message: "Veuillez sélectionner une catégorie."
+            });
+            return;
+        }
+        setShowCategoryModal(false);
+    };
 
-
-
-    const CTAButton = ({ className, selectedPlan, isLoading, currentUser, setToast, navigate }) => {
-        if (!selectedPlan) return null;
-
-        const isParticulierPlan = selectedPlan?.name.toLowerCase() === "professionnel";
-        console.log(isParticulierPlan);
-
-        const handleClick = () => {
-            // Redirection pour un plan payant
-            if (!currentUser) {
-                // Afficher un message si l'utilisateur n'est pas connecté
-                setToast({
-                    type: 'error',
-                    show: true,
-                    message: "Connectez-vous pour continuer !!"
-                });
-                return;
-            }
-
-            if (isParticulierPlan) {
-                setShowSelectCategory(true);
-                setToast({
-                    type: 'error',
-                    show: true,
-                    message: "Ce plan est réservé aux professionnels !"
-                });
-            }
-            setIsLoading(true);
-            setTimeout(() => {
-                navigate(`/proceed-to-checkout`, {
-                    state: {
-                        planInfo: {
-                            plan: selectedPlan.name,
-                            price: selectedPlan.price
-                        }
-                    }
-                });
-                setIsLoading(false);
-            }, 1000);
+    const handleProceed = () => {
+        if (!selectedPlan) {
+            setToast({
+                type: 'error',
+                show: true,
+                message: "Veuillez sélectionner un plan."
+            });
+            return;
         }
 
+        if (!currentUser) {
+            setToast({
+                type: 'error',
+                show: true,
+                message: "Veuillez vous connecter pour continuer."
+            });
+            return;
+        }
+
+        setIsLoading(true);
+        setTimeout(() => {
+            navigate('/proceed-to-checkout', {
+                state: {
+                    planInfo: {
+                        plan: selectedPlan.name,
+                        price: selectedPlan.price,
+                        category: selectedCategory,
+                    }
+                }
+            });
+            setIsLoading(false);
+        }, 1000);
+    }
+
+    const CTAButton = ({ plan }) => {
         return (
-            <button
-                className={className}
-                onClick={handleClick}
-                disabled={isLoading}
-            >
-                {isLoading ? <Spinner /> : `Passer au plan ${selectedPlan.name}`}
+            <button className="proceed-btn" onClick={handleProceed} disabled={isLoading}>
+                {isLoading ? <Spinner /> : `Passer au plan ${plan.name}`}
             </button>
         );
     }
@@ -96,43 +100,40 @@ export default function PlansPage() {
                         plan={plan}
                         onSelect={handleSelect}
                         selectedPlan={selectedPlan?.id}
-                        setSelectedPlan={setSelectedPlan}
-                        onClick={() => setIsOpen(true)}
+                        onClick={() => setIsModalOpen(true)}
                     />
                 ))}
             </div>
+
+            <div className="compare-plans" onClick={() => setCompareModal(true)}>
+                🔍 Comparer les Plans
+            </div>
+
             <div className="action-section">
                 {selectedPlan && (
                     <div className="resume">
                         <h2>Prix tarifaire</h2>
                         <div className="forfait">
                             <span>Forfait</span>
-                            <span>{selectedPlan.price === 0 ? "Gratuit" : `${selectedPlan.price} RUB`}</span>
+                            <span>{selectedPlan?.price === 0 ? "Gratuit" : `${selectedPlan?.price} RUB`}</span>
                         </div>
                         <p>{`<<${selectedPlan?.name.toUpperCase()}>>`}</p>
                         <div className="forfait">
                             <span><strong>Total</strong></span>
-                            <span><strong>{selectedPlan.price === 0 ? "Gratuit" : `${selectedPlan.price} RUB`}</strong></span>
+                            <span><strong>{selectedPlan?.price === 0 ? "Gratuit" : `${selectedPlan?.price} RUB`}</strong></span>
                         </div>
                         <div className="call-to-action">
-                            <CTAButton
-                                className='proceed-btn'
-                                selectedPlan={selectedPlan}
-                                isLoading={isLoading}
-                                currentUser={currentUser}
-                                setToast={setToast}
-                                navigate={navigate}
-                            />
+                            <CTAButton plan={selectedPlan} />
                         </div>
                     </div>
                 )}
             </div>
 
-            {selectedPlan && isOpen && (
+            {isModalOpen && (
                 <Modal
-                    onShow={isOpen}
-                    title={`Forfait ${selectedPlan?.name.toUpperCase()}`}
-                    onHide={() => setIsOpen(false)}
+                    onShow={isModalOpen}
+                    title={`Forfait ${selectedPlan?.name}`}
+                    onHide={() => setIsModalOpen(false)}
                 >
                     <div className="plan-details-modal">
                         <table>
@@ -203,22 +204,34 @@ export default function PlansPage() {
                 </Modal>
             )}
 
-            {showSelectCategory && (
+            {showCategoryModal && (
                 <Modal
-                    onShow={showSelectCategory}
+                    onShow={showCategoryModal}
                     title={`Sélectionner une catégorie`}
-                    onHide={() => setShowSelectCategory(false)}
+                    onHide={() => setShowCategoryModal(false)}
                 >
-
+                    <div className="category-selector">
+                        {allCategories.map((category) => (
+                            <div
+                                key={category.key}
+                                className={`category-item ${selectedCategory === category.categoryName ? 'selected' : ''}`}
+                                onClick={() => handleCategoryClick(category.categoryName)}
+                            >
+                                {category.categoryTitles.fr}
+                            </div>
+                        ))}
+                        <button className="confirm-btn" onClick={handleConfirmCategory}>
+                            Confirmer la sélection
+                        </button>
+                    </div>
                 </Modal>
             )}
 
-            <Toast
-                show={toast.show}
-                type={toast.type}
-                message={toast.message}
-                onClose={handleHide}
-            />
+            {compareModal && (
+                <ComparisonTable plans={plans} onClose={() => setCompareModal(false)} />
+            )}
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

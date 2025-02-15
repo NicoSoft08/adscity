@@ -6,27 +6,51 @@ export default function TeamPage() {
     const teamMembers = [
         {
             name: "Nicolas N'DAH",
-            role: 'CEO & Founder',
+            role: 'Chief Executive & Tech Officer',
             photo: IconAvatar,
             description: 'Visionnaire et leader de l’équipe, Nicolas supervise toutes les opérations stratégiques.',
         },
         {
-            name: 'Bob Smith',
-            role: 'CTO',
-            photo: IconAvatar,
-            description: 'Expert en technologie, Bob est responsable de l’innovation et des solutions techniques.',
-        },
-        {
             name: 'Aristide GALLOH',
-            role: 'Marketing Manager',
+            role: 'Human & Financial Resources Officer',
             photo: IconAvatar,
-            description: 'Aristide est à la tête des campagnes marketing et de la communication de l’équipe.',
+            description: 'Responsable des ressources financières & humaines et de la gestion des talents.',
         },
         {
-            name: 'David Brown',
-            role: 'Lead Developer',
+            name: 'Larissa DOUKOUM',
+            role: 'Chief Financial Vice Officer',
             photo: IconAvatar,
-            description: 'David gère le développement des produits et les équipes techniques.',
+            description: 'Vice Responsable de la comptabilité, des finances et de la gestion budgétaire.',
+        },
+        {
+            name: "Paul N'GUESSAN",
+            role: 'Chief Product Officer',
+            photo: IconAvatar,
+            description: 'Responsable de l\'expérience utilisateur (UX/UI) et du design graphique.',
+        },
+        {
+            name: 'Ismael MOUSSA',
+            role: 'Chief Revenue Officer',
+            photo: IconAvatar,
+            description: 'Responsable du développement commercial et de la croissance des revenus.',
+        },
+        {
+            name: 'Charlotte NANGA',
+            role: 'Head Marketing Officer',
+            photo: IconAvatar,
+            description: 'Responsable des stratégies marketing et de la communication.',
+        },
+        {
+            name: "Guy SORO",
+            role: 'Chief Marketing Vice Officer',
+            photo: IconAvatar,
+            description: 'Adjoint au Responsable des stratégies marketing et de la communication.',
+        },
+        {
+            name: "Marie Danielle Epse DOSSO",
+            role: 'Chief Community Officer',
+            photo: IconAvatar,
+            description: 'Responsable de la gestion des communautés et des réseaux sociaux.',
         },
     ];
     return (

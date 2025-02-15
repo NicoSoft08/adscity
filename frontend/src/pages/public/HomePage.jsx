@@ -32,7 +32,6 @@ export default function HomePage() {
     }, []);
 
 
-
     return (
         <div className='home-page'>
             <TabFilter
@@ -66,7 +65,7 @@ export default function HomePage() {
                 type={toast.type}
                 message={toast.message}
                 onClose={() => setToast({ ...toast, show: false })}
-            />
+            />  
         </div >
     );
 };

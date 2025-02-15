@@ -13,6 +13,20 @@
     cursor: pointer;
     z-index: 1;
 
+    .sold-badge {
+        position: absolute;
+        top: 25%;
+        left: 25%;
+        background-color: red;
+        color: white;
+        padding: 5px 10px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 5px;
+    }
+
 
     .card-image {
         width: 100%;
@@ -181,6 +195,19 @@
                 }
             }
 
+        }
+    }
+
+    .actions {
+        display: flex;
+        justify-content: space-around;
+
+        button {
+            font-family: 'Ubuntu',sans-serif;
+            font-size: 13px;
+            font-weight: $font-light;
+            border: none;
+            cursor: pointer;
         }
     }
 

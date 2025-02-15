@@ -1,11 +1,10 @@
 import React, { useContext, useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { logEvent } from 'firebase/analytics';
 import { AuthContext } from '../../contexts/AuthContext';
 import PaymentForm from '../../common/adscity-pay/payment-form/PaymentForm';
-import PaymentInstructions from '../../common/adscity-pay/payment-instructions/PaymentInstructions';
-import { useLocation, useNavigate } from 'react-router-dom';
 import { paymentProcessing } from '../../routes/paymentRoutes';
 import Toast from '../../customs/Toast';
-import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import '../../styles/CheckoutProceed.scss';
 
@@ -13,11 +12,10 @@ export default function CheckoutProceed() {
     const location = useLocation();
     const navigate = useNavigate();
     const { currentUser, userData } = useContext(AuthContext);
-    const [rules, setRules] = useState(false);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [provider, setProvider] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('');
-    let planInfo = location.state.planInfo;
+    const { planInfo } = location.state || {};
 
     useEffect(() => {
         if (!currentUser) {
@@ -38,7 +36,7 @@ export default function CheckoutProceed() {
         try {
             await paymentProcessing(userID, paymentData);
             logEvent(analytics, 'add_payment_info');
-            setRules(true);
+            navigate('/payment', { state: { planInfo, provider, paymentMethod } });
         } catch (error) {
             console.error("Erreur de l'enregistrment du paiement", error);
         }
@@ -58,22 +56,8 @@ export default function CheckoutProceed() {
                     userData={userData}
                     onSubmit={handleOnsubmit}
                 />
-
-                {rules && (
-                    <PaymentInstructions
-                        paymentInfo={userData}
-                        amount={planInfo?.price}
-                        paymentMethod={paymentMethod}
-                        provider={provider}
-                    />
-                )}
             </div>
-            <Toast
-                show={toast.show}
-                type={toast.type}
-                message={toast.message}
-                onClose={() => setToast({ show: false, ...toast })}
-            />
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>
     );
 };

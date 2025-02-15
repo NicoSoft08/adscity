@@ -1,0 +1,442 @@
+import React, { useContext, useState } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
+import Toast from '../../customs/Toast';
+import { useNavigate } from 'react-router-dom';
+import {
+    logoutUser,
+    sendVerificationCode,
+    updateUserPassword,
+    verifyCodeAndUpdateEmail
+} from '../../routes/authRoutes';
+import { updateUserFields } from '../../routes/userRoutes';
+import Spinner from '../../customs/Spinner';
+import Modal from '../../customs/Modal';
+import { facebook, instagram, whatsapp } from '../../config/images';
+import { updateSocialLinks } from '../../routes/apiRoutes';
+import '../../styles/Settings.scss';
+
+export default function Settings() {
+    const { currentUser, userData } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    const [open, setOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [socialInfo, setSocialInfo] = useState({
+        facebook: "",
+        whatsapp: "",
+        instagram: "",
+    });
+    const [personalInfo, setPersonalInfo] = useState({
+        firstName: userData?.firstName || "",
+        lastName: userData?.lastName || "",
+        phoneNumber: userData?.phoneNumber || "",
+        country: userData?.country || "",
+        city: userData?.city || "",
+        address: userData?.address || "",
+    });
+    const [securityInfo, setSecurityInfo] = useState({
+        email: userData?.email || "",
+        newEmail: "",
+        verificationCode: "",
+        password: "",
+    });
+    const [step, setStep] = useState("form"); // "form" | "verification"
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setPersonalInfo({ ...personalInfo, [name]: value });
+    };
+
+    const handleSocialInputChange = (e) => {
+        const { name, value } = e.target;
+        setSocialInfo(prevState => ({
+            ...prevState,
+            [name]: value
+        }));
+    };
+
+    const handlePersonalInfoUpdate = async () => {
+        const userID = currentUser?.uid;
+        setIsLoading(true);
+
+        // Détecter les champs modifiés
+        const updatedFields = {};
+        for (const key in personalInfo) {
+            if (personalInfo[key] !== userData[key]) {
+                updatedFields[key] = personalInfo[key];
+            }
+        }
+
+        if (Object.keys(updatedFields).length === 0) {
+            setToast({
+                show: true,
+                message: "Aucun champ n'a été modifié.",
+                type: 'error',
+            });
+            return;
+        }
+
+        const result = await updateUserFields(userID, updatedFields);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+            setPersonalInfo({
+                firstName: userData?.firstName || "",
+                lastName: userData?.lastName || "",
+                phoneNumber: userData?.phoneNumber || "",
+                country: userData?.country || "",
+                city: userData?.city || "",
+                address: userData?.address || "",
+            });
+        }
+    }
+
+
+    const handleSecurityInfoUpdate = async () => {
+        const newPassword = securityInfo.password;
+
+        if (!newPassword) {
+            setToast({
+                show: true,
+                message: "Veuillez renseigner votre nouveau mot de passe !",
+                type: 'error',
+            });
+            return;
+        }
+
+        const result = await updateUserPassword(userData.email, newPassword);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+        }
+    }
+
+
+    const handleSendVerificationCode = async () => {
+        const userID = currentUser?.uid;
+        const newEmail = securityInfo.newEmail;
+
+        if (!newEmail) {
+            setToast({
+                show: true,
+                message: "Veuillez renseigner votre nouvel email !",
+                type: 'error',
+            });
+            return;
+        }
+
+        if (newEmail === userData?.email) {
+            setToast({
+                show: true,
+                message: "L'email actuel et le nouvel email sont identiques !",
+                type: 'error',
+            });
+            setTimeout(() => { setSecurityInfo({ newEmail: '' }) }, 2000);
+            return;
+        }
+
+        setIsLoading(true);
+
+        const result = await sendVerificationCode(userID, newEmail);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+            setStep("verification");
+        }
+    }
+
+    const handleVerifyCodeAndUpdateEmail = async () => {
+        const userID = currentUser?.uid;
+        const email = securityInfo.email;
+        const verificationCode = securityInfo.verificationCode;
+
+        const result = await verifyCodeAndUpdateEmail(userID, email, verificationCode);
+        if (result.error) {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'error',
+            });
+        } else {
+            setToast({
+                show: true,
+                message: result.message,
+                type: 'success',
+            });
+            setStep("form");
+        }
+    }
+
+    const handleOpen = () => setOpen(true);
+
+    const handleLogout = async () => {
+        setIsLoading(true);
+        try {
+            await logoutUser();
+            navigate('/');
+            setOpen(false);
+            setIsLoading(false);
+            setToast({ show: true, message: 'Déconnexion réussie !', type: 'success' });
+        } catch (error) {
+            setToast({ show: true, message: 'Erreur lors de la déconnexion.', type: 'error' });
+            setIsLoading(false)
+        }
+    };
+
+    const handleAccountDeletion = async () => {
+        setShowModal(true); // Ouvre le Modal
+    }
+
+    const closeModal = () => {
+        setShowModal(false); // Ferme le Modal
+    };
+
+    const handleSocialInfoUpdate = async () => {
+        // Vérifier si au moins un champ est rempli
+        const hasAtLeastOneValue = Object.values(socialInfo).some(value => value.trim() !== "");
+
+        if (!hasAtLeastOneValue) {
+            setToast({
+                type: 'error',
+                show: true,
+                message: "Veuillez entrer au moins un réseau social avant d'enregistrer.",
+            });
+            return;
+        }
+
+        const result = await updateSocialLinks(currentUser?.uid, socialInfo);
+
+        if (result.success) {
+            setToast({
+                type: 'info',
+                show: true,
+                message: result.message,
+            });
+        } else {
+            setToast({
+                type: 'error',
+                show: true,
+                message: result.message,
+            });
+        };
+    };
+
+    return (
+        <div className='user-settings'>
+            <h2>Paramètres</h2>
+
+            <section className="personal-info">
+                <h2>Informations personnelles</h2>
+                <form onSubmit={(e) => e.preventDefault()}>
+                    <input
+                        type="text"
+                        name='firstName'
+                        value={personalInfo.firstName}
+                        onChange={handleInputChange}
+                        placeholder="Prénom"
+                    />
+                    <input
+                        type="text"
+                        name='lastName'
+                        value={personalInfo.lastName}
+                        onChange={handleInputChange}
+                        placeholder="Nom"
+                    />
+                    <input
+                        type="tel"
+                        name='phoneNumber'
+                        value={personalInfo.phoneNumber}
+                        onChange={handleInputChange}
+                        placeholder="Téléphone"
+                    />
+                    <input
+                        type="text"
+                        name='country'
+                        value={personalInfo.country}
+                        onChange={handleInputChange}
+                        placeholder="Pays"
+                    />
+                    <input
+                        type="text"
+                        name='city'
+                        value={personalInfo.city}
+                        onChange={handleInputChange}
+                        placeholder="Ville"
+                    />
+                    <input
+                        type="text"
+                        name='address'
+                        value={personalInfo.address}
+                        onChange={handleInputChange}
+                        placeholder="Adresse"
+                    />
+                    <button onClick={handlePersonalInfoUpdate}>Enregistrer</button>
+                </form>
+            </section>
+
+            {/* PERSONNALISATION POUR LES COMPTES  ENTREPRISES ET PROFESSIONNELS */}
+            {currentUser && (userData.profileType === 'Professionnel' || userData.profileType === 'Entreprise') && (
+                <section className="social-network">
+                    <h2>Réseaux sociaux</h2>
+                    <form onSubmit={(e) => e.preventDefault()}>
+                        <div className='social-network-form'>
+                            <img src={facebook} alt="faceook" />
+                            <input
+                                name='facebook'
+                                value={socialInfo.facebook}
+                                onChange={handleSocialInputChange}
+                                placeholder="Facebook"
+                            />
+                        </div>
+                        <div className='social-network-form'>
+                            <img src={instagram} alt="instagram" />
+                            <input
+                                name='instagram'
+                                value={socialInfo.instagram}
+                                onChange={handleSocialInputChange}
+                                placeholder="Instagram"
+                            />
+                        </div>
+                        <div className='social-network-form'>
+                            <img src={whatsapp} alt="whatsapp" />
+                            <input
+                                name='whatsapp'
+                                value={socialInfo.whatsapp}
+                                onChange={handleSocialInputChange}
+                                placeholder="Whatsapp"
+                            />
+                        </div>
+
+                        <button onClick={handleSocialInfoUpdate}>Enregistrer</button>
+                    </form>
+                </section>
+            )}
+
+            <section className="security-info">
+                <h2>Sécurité</h2>
+                {step === "form" && (
+                    <form onSubmit={(e) => e.preventDefault()}>
+                        <input
+                            type="email"
+                            value={securityInfo.newEmail}
+                            onChange={(e) =>
+                                setSecurityInfo({ ...securityInfo, newEmail: e.target.value })
+                            }
+                            placeholder="Nouvel email"
+                        />
+                        <button onClick={handleSendVerificationCode}>
+                            {isLoading ? <Spinner /> : "Envoyer un code"}
+                        </button>
+                    </form>
+                )}
+
+                {step === "verification" && (
+                    <form onSubmit={(e) => e.preventDefault()}>
+                        <input
+                            type="text"
+                            value={securityInfo.verificationCode}
+                            onChange={(e) =>
+                                setSecurityInfo({ ...securityInfo, verificationCode: e.target.value })
+                            }
+                            placeholder="Code de vérification"
+                        />
+                        <button onClick={handleVerifyCodeAndUpdateEmail}>
+                            {isLoading ? <Spinner /> : "Vérifier et Mettre à jour"}
+                        </button>
+                    </form>
+                )}
+
+                <form onSubmit={(e) => e.preventDefault()}>
+                    <input
+                        type="password"
+                        value={securityInfo.password}
+                        onChange={(e) =>
+                            setSecurityInfo({
+                                ...securityInfo,
+                                password: e.target.value
+                            })
+                        }
+                        placeholder="Nouveau mot de passe"
+                    />
+                    <button onClick={handleSecurityInfoUpdate}>
+                        {isLoading ? <Spinner /> : "Enregistrer"}
+                    </button>
+                </form>
+            </section>
+
+            <section className="help-zone">
+                <h2>Assistance</h2>
+                <button onClick={() => navigate('/contact-us')} className='help-button'>Support Client</button>
+                <button onClick={() => navigate('/help-center/faq')} className='help-button'>FAQs</button>
+            </section>
+
+            <section className="danger-zone">
+                <h2>Zone Danger</h2>
+                <button className="logout" onClick={handleOpen}>Déconnexion</button>
+                <button onClick={handleAccountDeletion} className="delete-button">
+                    Supprimer le compte
+                </button>
+            </section>
+
+            {open &&
+                <Modal
+                    title={"Déconnexion"}
+                    onShow={() => setOpen(true)}
+                    onHide={() => setOpen(false)}
+                    onNext={handleLogout}
+                    isNext={true}
+                    isHide={false}
+                    nextText={isLoading ? <Spinner /> : "Oui"}
+                    hideText={"Annuler"}
+                >
+                    <p>Confirmez-vous vouloir vous déconnecter ?</p>
+                </Modal>
+            }
+
+            {showModal && (
+                <Modal
+                    title={"Supprimer mon compte"}
+                    onShow={() => setShowModal(true)}
+                    onHide={closeModal}
+                    isNext={false}
+
+                >
+                    <p>
+                        Pour des raisons de sécurité, veuillez contacter notre support client
+                        à <strong>support@adscity.net</strong> pour effectuer cette action.
+                    </p>
+                </Modal>
+            )}
+
+            <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
+        </div>
+    );
+};

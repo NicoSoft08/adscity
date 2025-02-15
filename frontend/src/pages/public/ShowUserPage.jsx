@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { logEvent } from 'firebase/analytics';
 import PublicProfil from '../../common/public-profil/PublicProfil';
@@ -11,14 +11,15 @@ import {
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import StarRating from '../../components/star-rating/StarRating';
-import '../../styles/ShowUserPage.scss';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
+import '../../styles/ShowUserPage.scss';
 
 
 export default function ShowUserPage() {
     const { userID } = useParams();
+    const textAreaRef = useRef(null);
     const { currentUser } = useContext(AuthContext);
     const [profileData, setProfileData] = useState([]);
     const [profilePostsData, setProfilePostsData] = useState([]);
@@ -26,6 +27,12 @@ export default function ShowUserPage() {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+
+    useEffect(() => {
+        const textArea = textAreaRef.current;
+        textArea.style.height = 'auto';  // Réinitialiser la hauteur
+        textArea.style.height = `${textArea.scrollHeight}px`; // Ajuster à la taille du contenu
+    }, [comment]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -104,6 +111,7 @@ export default function ShowUserPage() {
                 />
                 <br />
                 <textarea
+                    ref={textAreaRef}
                     placeholder="Votre commentaire..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}

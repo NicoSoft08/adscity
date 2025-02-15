@@ -13,6 +13,7 @@ export default function LoginPage() {
     const { email } = useParams();
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
+    const [isLoginSuspecious, setIsLoginSuspicious] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ export default function LoginPage() {
 
     const validateForm = () => {
         const errors = {};
-        const { agree, email, password} = formData;
+        const { agree, email, password } = formData;
 
         if (agree === false) {
             errors.agree = "Vous devez accepter les termes et conditions.";
@@ -50,11 +51,10 @@ export default function LoginPage() {
         });
     };
 
-    
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-    
+
         // Validation des champs
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
@@ -62,28 +62,33 @@ export default function LoginPage() {
             setLoading(false);
             return;
         }
-    
+
         try {
             // Tentative de connexion
-            const result = await signinUser(formData.email, formData.password);
-    
-            if (result.success) {
-                // Connexion réussie
+            const { email, password } = formData;
+
+            const result = await signinUser(email, password);
+
+            if (result.success === false && result.message === "Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.") {
+                setIsLoginSuspicious(true);
+                return; // 🔹 Stoppe le processus, l'utilisateur doit d'abord vérifier son email
+            }
+
+            const { signInResult } = result;
+
+            if (signInResult.success) {
                 setToast({
                     show: true,
                     type: 'success',
-                    message: result.message,
+                    message: signInResult.message,
                 });
-    
-                setTimeout(() => {
-                    navigate('/');
-                }, 3000);
+
+                navigate('/user/dashboard/panel');
             } else {
-                // Cas où le backend retourne une erreur
                 setToast({
                     show: true,
                     type: 'error',
-                    message: result.message || "Accès refusé.",
+                    message: signInResult.message || "Accès refusé.",
                 });
                 navigate('/access-denied');
             }
@@ -107,6 +112,11 @@ export default function LoginPage() {
 
     return (
         <div className='login-page'>
+            {isLoginSuspecious && (
+                <div className="suspicious-login-message">
+                    <p>Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.</p>
+                </div>
+            )}
             <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Connexion</h2>
                 <div>
@@ -116,6 +126,7 @@ export default function LoginPage() {
                         type="email"
                         name='email'
                         id="email"
+                        placeholder='Email'
                         value={formData.email}
                         onChange={handleChange}
                     />
@@ -123,12 +134,13 @@ export default function LoginPage() {
                 </div>
 
                 <div className='password-toggle'>
-                    <label htmlFor="password">Mot de passe</label>
+                    <label htmlFor="password">Sécurité</label>
                     <input
                         className={`input-field ${errors.password ? 'error' : ''}`}
                         type={showPassword ? 'text' : 'password'}
                         id="password"
                         name='password'
+                        placeholder='Mot de passe'
                         value={formData.password}
                         onChange={handleChange}
                     />
@@ -162,6 +174,14 @@ export default function LoginPage() {
                     {loading ? <Spinner /> : "Se connecter"}
                 </button>
                 <p>Aucun compte utilisateur ? <Link to={'/auth/create-user'}>S'inscrire</Link></p>
+
+                <div className="terms-container">
+                    <p>
+                        <Link to="/legal/privacy-policy" target="_blank">Confidentialité</Link>{" - "}
+                        <Link to="/legal/terms" target="_blank">Conditions d'utilisation</Link>
+                        {/* <Link to="/data-processing" target="_blank">Politique de traitement des données</Link>. */}
+                    </p>
+                </div>
             </form>
             <Toast message={toast.message} type={toast.type} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
         </div>

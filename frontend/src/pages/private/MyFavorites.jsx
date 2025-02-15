@@ -2,11 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { getUserFavorites } from '../../routes/userRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
+import { useNavigate } from 'react-router-dom';
 
 export default function MyFavorites({ currentUser }) {
+    const navigate = useNavigate();
     const [favoris, setFavoris] = useState([]);
 
     useEffect(() => {
+        if (!currentUser) {
+            console.error("❌ Utilisateur non connecté.");
+            navigate('/auth/signin');
+        }
         const fetchFavoris = async () => {
             const userID = currentUser?.uid;
             const result = await getUserFavorites(userID);
@@ -16,7 +22,7 @@ export default function MyFavorites({ currentUser }) {
         }
 
         fetchFavoris();
-    }, [currentUser]);
+    }, [currentUser, navigate]);
 
     const handleRemoveFromFavorites = (adID) => {
         // Mettre à jour l'état pour retirer l'annonce supprimée

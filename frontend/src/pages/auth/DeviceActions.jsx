@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { validateDevice } from "../../routes/authRoutes";
 import { AuthContext } from "../../contexts/AuthContext";
 import Loading from "../../customs/Loading";
@@ -11,6 +11,7 @@ function VerifyDevice() {
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!currentUser) {
@@ -36,7 +37,9 @@ function VerifyDevice() {
 
             try {
                 const result = await validateDevice(deviceID, verificationToken);
-                console.log('Résultat de la vérification de l’appareil :', result);
+                if (result.success) {
+                    navigate('/user/dashboard/panel');
+                }
             } catch (error) {
                 console.error('Erreur lors de la vérification de l’appareil :', error);
                 setError(error.message);
@@ -46,7 +49,7 @@ function VerifyDevice() {
         };
 
         verifyDevice();
-    }, [deviceID, verificationToken, currentUser]);
+    }, [deviceID, verificationToken, currentUser, navigate]);
 
 
     if (loading) return <Loading />

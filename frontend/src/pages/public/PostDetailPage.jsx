@@ -9,6 +9,9 @@ import { FaEye, FaRegCalendarAlt } from "react-icons/fa";
 import { formatPostedAt, formatViewCount, parseTimestamp } from '../../func';
 import RelatedListing from '../../components/related-listing/RelatedListing';
 import { AuthContext } from '../../contexts/AuthContext';
+// import MessageToAnnouncer from '../../components/contact-announcer/MessageToAnnouncer';
+// import { sendMessage } from '../../routes/chatRoutes';
+import Toast from '../../customs/Toast';
 import 'swiper/css';
 import '../../styles/PostDetailPage.scss';
 
@@ -17,6 +20,7 @@ export default function PostDetailPage() {
     const { currentUser } = useContext(AuthContext);
     const [post, setPost] = useState(null);
     const [profilData, setProfilData] = useState({});
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
         const fetchAdsData = async () => {
@@ -29,8 +33,8 @@ export default function PostDetailPage() {
 
     }, [postID]);
 
-    const { adDetails = {}, location = {}, images = [], posted_at, views, category, subcategory } = post || {};
-    const { title = '', price = 0, priceType = '', currency = '' } = adDetails || {};
+    const { adDetails = {}, location = {}, images = [], posted_at, views, category, subcategory, isSold } = post || {};
+    const { title = '', price = 0, priceType = '' } = adDetails || {};
     const { address = '', city = '', country = '' } = location || {};
 
     useEffect(() => {
@@ -63,6 +67,15 @@ export default function PostDetailPage() {
         return features;
     };
 
+    // const handleSendMessage = async ({ senderID, receiverID, text }) => {
+    //     const result = await sendMessage(senderID, receiverID, text);
+    //     if (result.success) {
+    //         setToast({ show: true, type: 'info', message: result.message });
+    //     } else {
+    //         setToast({ show: true, type: 'error', message: result.message });
+    //     }
+    // };
+
     return (
         <div className="ad-details">
             <div className="image-gallery">
@@ -92,9 +105,11 @@ export default function PostDetailPage() {
                 <div className='seperator' />
                 <div className='price'>
                     <span>{priceType}</span>
-                    <p>{price} {currency}</p>
+                    <p>{price} RUB</p>
                 </div>
             </div>
+
+            {isSold && <span className="sold-badge">VENDU</span>}
 
             <div className="content">
                 <div className='detail-section'>
@@ -148,6 +163,9 @@ export default function PostDetailPage() {
                         </ul>
                     </section>
                 </div>
+
+                {/* <MessageToAnnouncer currentUser={currentUser} announcerID={post?.userID} onSendMessage={handleSendMessage} /> */}
+
                 <div className='owner'>
                     <OwnerProfileCard
                         owner={profilData}
@@ -155,6 +173,8 @@ export default function PostDetailPage() {
                     />
                 </div>
             </div>
+            
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
 
             <RelatedListing adID={postID} category={category} />
         </div>

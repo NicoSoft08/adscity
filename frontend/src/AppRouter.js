@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 
@@ -6,7 +6,6 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import HelpLayout from './layouts/HelpLayout';
 import HomeLayout from './layouts/HomeLayout';
-import UserLayout from './layouts/UserLayout';
 
 
 // pages
@@ -23,13 +22,13 @@ import LoginPage from './pages/auth/LoginPage';
 import NotFoundPage from './pages/public/NotFoundPage';
 import PlansPage from './pages/public/PlansPage';
 import PrivacyPage from './pages/public/PrivacyPage';
-import RulesPage from './pages/private/client/RulesPage';
+import RulesPage from './pages/private/RulesPage';
 import SearchResultPage from './pages/public/SearchResultPage';
 import ShowUserPage from './pages/public/ShowUserPage';
 import SignupPage from './pages/auth/SignUpPage';
 import SignupSuccess from './pages/auth/SignupSuccess';
 import TeamPage from './pages/public/TeamPage';
-import UserHome from './pages/private/client/UserHome';
+import UserHome from './pages/private/UserHome';
 import CheckoutProceed from './pages/private/CheckoutProceed';
 import SecurityAdvices from './pages/public/SecurityAdvices';
 import { DeclineDevice, VerifyDevice } from './pages/auth/DeviceActions';
@@ -39,8 +38,20 @@ import FeedbackForm from './pages/private/FeedbackForm';
 import PostDetailPage from './pages/public/PostDetailPage';
 import CreatePostPage from './pages/public/CreatePostPage';
 import FiltersPage from './pages/public/FiltersPage';
+import PubCreationForm from './hooks/host-publicity/PubCreationForm';
+import PaymentPage from './pages/private/PaymentPage';
+import MyNotifications from './pages/private/MyNotifications';
+import PaymentIntents from './components/payment/PaymentIntents';
+import UserProfile from './pages/private/UserProfile';
+import DashboardPanel from './pages/private/DashboardPanel';
+import { AuthContext } from './contexts/AuthContext';
+import MyFavorites from './pages/private/MyFavorites';
+import Settings from './pages/private/Settings';
+// import Messages from './pages/private/Messages';
+import MyPosts from './pages/private/MyPosts';
 
 export default function AppRouter() {
+    const { currentUser } = useContext(AuthContext);
 
     return (
         <Router>
@@ -51,17 +62,20 @@ export default function AppRouter() {
                     <Route path='/category/:categoryName' element={<CategoryNamePage />} />
                     <Route path='/auth/create-post' element={<CreatePostPage />} />
 
+                    <Route path='/payment' element={<PaymentPage />} />
+
                     <Route path='/contact-us' element={<ContactPage />} />
 
                     <Route path='/pricing' element={<PlansPage />} />
                     <Route path='/search-results' element={<SearchResultPage />} />
                     <Route path="/filters" element={<FiltersPage />} />
 
-                    <Route path='/legal/privacy' element={<PrivacyPage />} />
+                    <Route path='/legal/privacy-policy' element={<PrivacyPage />} />
                     <Route path='/legal/terms' element={<ConditionPage />} />
                     <Route path='/legal/post-rules' element={<RulesPage />} />
 
                     <Route path='/business' element={<Business />} />
+                    <Route path='/pub' element={<PubCreationForm />} />
                     <Route path='/about' element={<TeamPage />} />
                     <Route path="/posts/:category/:subcategory/:postID" element={<PostDetailPage />} />
                     <Route path='/users/user/:userID/profile/show' element={<ShowUserPage />} />
@@ -87,8 +101,15 @@ export default function AppRouter() {
                     <Route path="/auth/decline-device/:deviceID/:verificationToken" element={<DeclineDevice />} />
                 </Route>
 
-                <Route path='/user/dashboard' element={<UserLayout />}>
-                    <Route index element={<UserHome />} />
+                <Route path='/user/dashboard' element={<UserHome />}>
+                    <Route path="panel" element={<DashboardPanel />} />
+                    <Route path="favoris" element={<MyFavorites currentUser={currentUser} />} />
+                    <Route path="posts" element={<MyPosts currentUser={currentUser} />} />
+                    <Route path="payments" element={<PaymentIntents userID={currentUser?.uid} />} />
+                    {/* <Route path="messages" element={<Messages currentUser={currentUser} />} /> */}
+                    <Route path="notifications" element={<MyNotifications />} />
+                    <Route path="profile" element={<UserProfile />} />
+                    <Route path="settings" element={<Settings />} />
                 </Route>
 
                 <Route path='/access-denied' element={<AccessDenied />} />

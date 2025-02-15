@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import Loading from '../../customs/Loading';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/CreatePostPage.scss';
 import CreatePostFlow from '../../hooks/create-ad-flow/CreatePostFlow';
+import '../../styles/CreatePostPage.scss';
 
 export default function CreatePostPage() {
     const { userData } = useContext(AuthContext);

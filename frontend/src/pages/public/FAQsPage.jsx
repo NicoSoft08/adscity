@@ -26,7 +26,7 @@ export default function FAQsPage() {
                 </div>
                 <div className={`faq-item ${activeIndex === 1 ? 'active' : ''}`} onClick={() => handleToggle(1)}>
                     <h3>Comment modifier mes informations personnelles ?</h3>
-                    <p>Pour modifier vos informations personnelles, allez dans votre espace personnel, puis cliquez sur "Modifier mon profil".</p>
+                    <p>Pour modifier vos informations personnelles, allez dans votre espace personnel, puis dans les paramètres de votre compte.</p>
                 </div>
                 <div className={`faq-item ${activeIndex === 2 ? 'active' : ''}`} onClick={() => handleToggle(2)}>
                     <h3>J'ai oublié mon mot de passe, que faire ?</h3>
@@ -66,7 +66,7 @@ export default function FAQsPage() {
                 <h2>Paiements</h2>
                 <div className={`faq-item ${activeIndex === 9 ? 'active' : ''}`} onClick={() => handleToggle(9)}>
                     <h3>Quels sont les modes de paiement acceptés ?</h3>
-                    <p>Nous acceptons les paiements par Virement Bancaire (SberBank, Tinkoff, VTB Bank, Alpha Bank), par Mobile Money (Orange Money, MTN Money, Moov Money) et Wallets (Wave, FlashSend).</p>
+                    <p>Nous acceptons les paiements par Transfert Bancaire (SberBank, Tinkoff, VTB Bank, Alpha Bank).</p>
                 </div>
                 <div className={`faq-item ${activeIndex === 10 ? 'active' : ''}`} onClick={() => handleToggle(10)}>
                     <h3>Comment obtenir un remboursement ?</h3>

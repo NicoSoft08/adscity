@@ -1,6 +1,6 @@
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-
+import { collectDeviceInfo } from "../services/apiServices";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -34,31 +34,33 @@ const signinUser = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        const userID = user.uid;
 
         if (!user.emailVerified) {
             throw new Error('Veuillez vérifier votre email avant de continuer.');
-        };
+        }
 
+        // 🔹 Récupérer le jeton Firebase
         const idToken = await user.getIdToken();
-        
+
+        // 🔹 Récupérer les informations sur le périphérique
+        const deviceInfo = await collectDeviceInfo();
+
+        // 🔹 Envoyer les données au backend
         const response = await fetch(`${backendUrl}/api/auth/login-user`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ userID, deviceInfo }),
         });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la connexion de l\'utilisateur');
-        };
 
         const result = await response.json();
         return result;
     } catch (error) {
         console.error('Erreur lors de la connexion de l\'utilisateur :', error);
-        throw error;
-    };
+    }
 };
 
 const logoutUser = async () => {
@@ -110,7 +112,7 @@ const verifyCodeAndUpdateEmail = async (userID, verificationCode, newEmail) => {
     });
 
     const result = await response.json();
-    console.log(result);
+    // console.log(result);
     return result;
 }
 
@@ -131,6 +133,7 @@ const passwordReset = async (email) => {
         console.log('Mot de passe réinitialisé sur le serveur');
     } catch (error) {
         console.error('Réinitialisation échouée: ', error);
+        throw error;
     }
 };
 
@@ -144,7 +147,7 @@ const updateUserPassword = async (email, newPassword) => {
     });
 
     const result = await response.json();
-    console.log(result);
+    // console.log(result);
     return result;
 };
 
@@ -165,6 +168,7 @@ const checkCode = async (email, code) => {
             return { error: errorData.message || 'Erreur lors de la vérification du code' };
         }
 
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -184,12 +188,10 @@ const deleteUser = async (userID) => {
             body: JSON.stringify({ userID }),
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la suppression de l\'utilisateur');
-        }
 
-        const data = await response.json();
-        console.log(data.message); // "Utilisateur supprimé avec succès."
+        const result = await response.json();
+        // console.log(data.message); 
+        return result;
     } catch (error) {
         console.error('Erreur:', error);
     }
@@ -203,12 +205,13 @@ const validateDevice = async (deviceID, verificationToken) => {
 
     const idToken = await user.getIdToken();
 
-    const response = await fetch(`${backendUrl}/api/auth/verify-device/${deviceID}/${verificationToken}`, {
+    const response = await fetch(`${backendUrl}/api/auth/verify-device/${deviceID}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
         },
+        body: JSON.stringify({ verificationToken }),
     });
 
     if (!response.ok) {
@@ -216,8 +219,6 @@ const validateDevice = async (deviceID, verificationToken) => {
     }
 
     const result = await response.json();
-    console.log(result);
-
     return result;
 };
 
@@ -234,7 +235,7 @@ const refuseDevice = async (deviceID, verificationToken) => {
     });
 
     const result = await response.json();
-    console.log(result);
+    // console.log(result);
     return result;
 };
 

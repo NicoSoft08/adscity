@@ -1,4 +1,3 @@
-
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const fetchDataByUserID = async (userID) => {
@@ -227,6 +226,18 @@ const fetchNotifications = async (userID) => {
     return result;
 };
 
+const fetchUnreadNotifications = async (userID) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/unread`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const result = await response.json();
+    return result;
+};
+
 const markNotificationAsRead = async (userID, notificationID) => {
     const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/${notificationID}/read`, {
         method: 'POST',
@@ -257,10 +268,48 @@ const rateUser = async (userID, rating, comment) => {
     };
 };
 
+const updateUserWithDeviceToken = async (deviceToken, idToken) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/update-device-token`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ deviceToken }),
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du jeton de l\'utilisateur :', error);
+        throw error;
+    };
+};
+
+const fetchInterlocutorProfile = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/${userID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        // console.log(result);
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la récupération du profil de l\'interlocuteur:', error);
+        throw error;
+    }
+};
+
 export {
     fetchDataByUserID,
     fetchNotifications,
+    fetchUnreadNotifications,
     fetchPostsByUserID,
+    fetchInterlocutorProfile,
     fetchApprovedPostsByUserID,
     fetchPendingPostsByUserID,
     fetchRefusedPostsByUserID,
@@ -273,4 +322,5 @@ export {
     setUserOnlineStatus,
     toggleFavorites,
     updateUserFields,
+    updateUserWithDeviceToken,
 };

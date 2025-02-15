@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { currency, typeOfPrice, unitOfMeasureOptions } from '../../data/database';
+import { typeOfPrice, unitOfMeasureOptions } from '../../data/database';
 import InputField from '../input-field/InputField';
 import Toast from '../../customs/Toast';
 
@@ -19,7 +19,6 @@ export default function LocalProducts({ formData, onBack, onChange, onNext }) {
         { label: 'Origine du produit', name: 'origin', type: 'text', message: 'L\'origine du produit est requise.', required: true, placeholder: 'Ex. : Abidjan, Côte d\'Ivoire' },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true, placeholder: 'Décrivez votre produit en détail (méthode de culture, fraîcheur, avantages, etc.)' },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-       { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
         { label: 'Prix par unité', name: 'price', type: 'number', message: 'Le prix par unité est requis.', required: true, placeholder: 'Ex. : 1500 (sans symbole)' },
     ];
 

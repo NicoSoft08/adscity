@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import Modal from '../../customs/Modal';
 import './AdReview.scss';
+import Spinner from '../../customs/Spinner';
 
-export default function AdReview({ formData, onBack, onSubmit, currentUser }) {
+export default function AdReview({ formData, onBack, onSubmit, isLoading }) {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClose = () => setIsOpen(false);
@@ -65,8 +66,7 @@ export default function AdReview({ formData, onBack, onSubmit, currentUser }) {
                 {formData.adDetails.operatingSystem !== undefined ? <p>Système d'exploitation : {formData.adDetails.operatingSystem}</p> : null}
                 {formData.adDetails.condition !== undefined ? <p>Condition : {formData.adDetails.condition}</p> : null}
                 <p>Type de Prix: {formData.adDetails?.priceType}</p>
-                {/* <p>Devise: {formData.adDetails?.currency}</p> */}
-                <p>Prix: {formData.adDetails?.price} {formData.adDetails?.currency}</p>
+                <p>Prix: {formData.adDetails?.price} RUB</p>
 
 
             </div>
@@ -91,10 +91,6 @@ export default function AdReview({ formData, onBack, onSubmit, currentUser }) {
                 </div>
             </div>
 
-            {/* <div className="review-section">
-                <h3>Plan choisi</h3>
-                <p>{formData.plan.name} - {formData.plan.price === null ? "Gratuit" : `${formData.plan.price + " RUB"}`} / {formData.plan.duration}</p>
-            </div> */}
 
             <div className="form-navigation">
                 <button className="back-button" onClick={onBack}>
@@ -112,7 +108,7 @@ export default function AdReview({ formData, onBack, onSubmit, currentUser }) {
                 isHide={false}
                 onNext={handleSubmit}
                 hideText={"Non"}
-                nextText={"Oui"}
+                nextText={isLoading ? <Spinner /> : "Publier"}
                 onShow={isOpen}
                 onHide={handleClose}
             >

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import InputField from '../input-field/InputField';
 import Toast from '../../customs/Toast';
-import { carsState, childAge, childClothingCategory, childGender, clotheSize, clotheStuff, currency, typeOfPrice } from '../../data/database';
+import { carsState, childAge, childClothingCategory, childGender, clotheSize, clotheStuff, typeOfPrice } from '../../data/database';
 
 export default function ChildClothes({ formData, onBack, onChange, onNext }) {
     const [errors, setErrors] = useState({});
@@ -24,7 +24,6 @@ export default function ChildClothes({ formData, onBack, onChange, onNext }) {
         { label: 'Matériaux', name: 'materials', type: 'checkbox', options: clotheStuff.fr, message: 'Les matériaux sont requis.', required: true },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
         { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true, placeholder: 'Ex. : 1500 (sans symbole)' }
     ];
 

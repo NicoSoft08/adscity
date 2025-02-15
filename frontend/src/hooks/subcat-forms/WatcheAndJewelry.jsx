@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import InputField from '../input-field/InputField';
-import { carsState, currency, jewelryCategories, jewelsGender, jewelsMaterials, stoneTypes, typeOfPrice } from '../../data/database';
+import { carsState, jewelryCategories, jewelsGender, jewelsMaterials, stoneTypes, typeOfPrice } from '../../data/database';
 import Toast from '../../customs/Toast';
 
 export default function WatcheAndJewelry({ formData, onBack, onChange, onNext }) {
@@ -22,7 +22,6 @@ export default function WatcheAndJewelry({ formData, onBack, onChange, onNext })
         { label: 'Matériaux', name: 'materials', type: 'checkbox', options: jewelsMaterials.fr, message: 'Les matériaux sont requis.', required: true },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
         { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true },
     ];
 

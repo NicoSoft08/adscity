@@ -1,7 +1,24 @@
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
+const formatSpecialFeatures = (features) => {
+    if (!features) return '';
 
+    // If features is an array, join with commas
+    if (Array.isArray(features)) {
+        return features.join(', ');
+    }
+
+    // If features is an object, get selected values
+    if (typeof features === 'object') {
+        const selectedFeatures = Object.entries(features)
+            .filter(([_, selected]) => selected)
+            .map(([feature]) => feature);
+        return selectedFeatures.join(', ');
+    }
+
+    return features;
+};
 
 const formateDateTimestamp = (adTimestamp) => {
     const adDate = new Date(adTimestamp * 1000); // Convertir le timestamp en millisecondes
@@ -149,4 +166,5 @@ export {
     parseTimestamp,
     calculateEndDate,
     formatTimeDistance,
+    formatSpecialFeatures,
 };

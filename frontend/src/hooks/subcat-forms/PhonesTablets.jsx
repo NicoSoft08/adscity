@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import InputField from '../input-field/InputField';
-import { currency, phoneTabletConnectivity, phoneTabletSpecialFeatures, smartphoneOS, smartphoneState, typeOfPrice } from '../../data/database';
+import { phoneTabletConnectivity, phoneTabletSpecialFeatures, smartphoneOS, smartphoneState, typeOfPrice } from '../../data/database';
 import Toast from '../../customs/Toast';
 
 
@@ -24,7 +24,6 @@ export default function PhonesTablets({ formData, onBack, onChange, onNext }) {
         { label: 'Caractéristiques spéciales', name: 'specialFeatures', type: 'checkbox', options: phoneTabletSpecialFeatures.fr, message: 'Les caractéristiques spéciales sont requises.', required: true },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
         { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true, placeholder: 'Ex. : 1500 (sans symbole)' }
     ];
 

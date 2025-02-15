@@ -164,6 +164,7 @@ const deletePost = async (postID, userID) => {
         });
 
         const result = await response.json();
+        // console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'annonce:', error);
@@ -171,9 +172,29 @@ const deletePost = async (postID, userID) => {
     };
 };
 
+const markAsSold = async (userID, postID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts/${postID}/mark/sold`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID }),
+        });
+
+        const result = await response.json();
+        // console.log(result);
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'annonce:', error);
+        return null;
+    };
+};
+
 export {
     createPost,
     deletePost,
+    markAsSold,
     fetchPostByPostID,
     fetchPostsByCategory,
     fetchPostBySlug,

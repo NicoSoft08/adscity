@@ -13,7 +13,7 @@ const getPromotionLimits = async () => {
     }
 
     const result = await response.json();
-    console.log(result);
+    // console.log(result);
     return result;
 };
 
@@ -29,7 +29,7 @@ const isPromotionActive = async () => {
     }
 
     const result = await response.json();
-    console.log(result);
+    // console.log(result);
     return result;
 };
 

@@ -1,32 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { faCirclePlus, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { uploadImage } from '../../routes/storageRoutes';
 import Toast from '../../customs/Toast';
-import { getPromotionLimits, isPromotionActive } from '../../routes/promotionRoutes';
 import './ImageUpload.scss';
 
 export default function ImageUpload({ onNext, onBack, onChange, formData, currentUser, userData }) {
     const [selectedImages, setSelectedImages] = useState(formData.images || []);
-    const [maxPhotos, setMaxPhotos] = useState(3); // Limite par défaut
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    // ⚡ Gérer les promotions et limites utilisateur
-    useEffect(() => {
-        const fetchMaxPhotos = async () => {
-            const promotionActive = await isPromotionActive();
-
-            if (promotionActive) {
-                const promotionLimits = await getPromotionLimits();
-                setMaxPhotos(promotionLimits.maxPhotosPerAd || 3); // Limite de la promotion
-            } else {
-                const userPlanMaxPhotos = getUserPlanMaxPhotos(userData);
-                setMaxPhotos(userPlanMaxPhotos || 3); // Limite du plan utilisateur
-            }
-        };
-
-        fetchMaxPhotos();
-    }, [userData]);
+    
 
     const handleImageChange = async (index, e) => {
         const file = e.target.files[0];
@@ -91,17 +74,17 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
     };
 
     const getUserPlanMaxPhotos = (userData) => {
-        if (!userData || !userData?.user.plans) {
+        if (!userData || !userData?.plans) {
             return null; // Retourne null si les données utilisateur ou les plans sont absents
         }
 
         // Recherche d'un plan contenant la propriété 'max_photos'
-        const userPlan = Object.keys(userData?.user.plans).find(plan =>
-            userData?.user.plans[plan]?.max_photos !== undefined
+        const userPlan = Object.keys(userData?.plans).find(plan =>
+            userData?.plans[plan]?.max_photos !== undefined
         );
 
         // Si un plan valide est trouvé, retourne le nombre maximal de photos
-        return userPlan ? userData?.user.plans[userPlan].max_photos : null;
+        return userPlan ? userData?.plans[userPlan].max_photos : null;
     };
 
     return (
@@ -115,7 +98,7 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
 
                 {/* Grid pour les images (limite dynamique selon maxPhotos) */}
                 <div className="image-upload-grid">
-                    {maxPhotos && [...Array(maxPhotos)].map((_, index) => (
+                    {[...Array(getUserPlanMaxPhotos(userData))].map((_, index) => (
                         <div className="image-upload-box" key={index}>
                             {selectedImages[index] ? (
                                 <div className="image-container">

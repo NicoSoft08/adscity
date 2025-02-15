@@ -179,23 +179,13 @@ export default function CreatePostFlow() {
                         currentUser={currentUser}
                         userData={userData}
                         selectedSubcategory={formData.subcategory}
+                        isLoading={isLoading}
                     />
                 )
             ))}
 
-            <Toast
-                show={toast.show}
-                type={toast.type}
-                message={toast.message}
-                onClose={() => setToast({ ...toast, show: false })}
-            />
-            {showLimitModal && (
-                <LimitReachedModal
-                    isOpen={showLimitModal}
-                    onClose={() => setShowLimitModal(false)}
-                    onUpgrade={() => navigate('/pricing')}
-                />
-            )}
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
+            {showLimitModal && (<LimitReachedModal isOpen={showLimitModal} onClose={() => setShowLimitModal(false)} onUpgrade={() => navigate('/pricing')} />)}
             {isLoading && <Loading />}
         </div>
     );

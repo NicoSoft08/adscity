@@ -27,13 +27,13 @@ export default function LocationForm({ onNext, onBack, onChange, formData, userD
 
         if (isChecked) {
             // Check if userData contains location info
-            if (userData?.user.country && userData?.user.city && userData?.user.address) {
+            if (userData?.country && userData?.city && userData?.address) {
                 onChange({
                     ...formData,
                     location: {
-                        country: userData?.user.country,
-                        city: userData?.user.city,
-                        address: userData?.user.address
+                        country: userData?.country,
+                        city: userData?.city,
+                        address: userData?.address
                     }
                 });
 

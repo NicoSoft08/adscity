@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import InputField from '../input-field/InputField';
 import Toast from '../../customs/Toast';
-import { currency, deliveryOptions, serviceTypeOptions, typeOfPrice } from '../../data/database';
+import { deliveryOptions, serviceTypeOptions, typeOfPrice } from '../../data/database';
 
 export default function Delivery({ formData, onBack, onChange, onNext }) {
     const [errors, setErrors] = useState({});
@@ -19,7 +19,6 @@ export default function Delivery({ formData, onBack, onChange, onNext }) {
         { label: 'Options de livraison', name: 'deliveryOptions', type: 'checkbox', options: deliveryOptions.fr, message: 'Les options de livraison sont requises.', required: true },
         { label: 'Description', name: 'description', type: 'textarea', message: 'La description est requise.', required: true },
         { label: 'Type de prix', name: 'priceType', type: 'select', options: typeOfPrice.fr, message: 'Le type de prix est requis.', required: true },
-        { label: 'Devise', name: 'currency', type: 'select', options: currency.fr, message: 'La devise est requise.', required: true, title: 'La devise correspondant à votre zone géographique' },
         { label: 'Prix', name: 'price', type: 'number', message: 'Le prix est requis.', required: true },
     ];
 

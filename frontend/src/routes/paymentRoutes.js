@@ -4,7 +4,7 @@ import { analytics } from "../firebaseConfig";
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const fetchUserPaymentInfo = async (userID) => {
-    const response = await fetch(`${backendUrl}/api/payment/collect/${userID}`, {
+    const response = await fetch(`${backendUrl}/api/payments/collect/${userID}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -12,12 +12,12 @@ const fetchUserPaymentInfo = async (userID) => {
     });
 
     const result = await response.json();
-
+    // console.log(result);
     return result;
 };
 
 const paymentProcessing = async (userID, paymentData) => {
-    const response = await fetch(`${backendUrl}/api/payment/process`, {
+    const response = await fetch(`${backendUrl}/api/payments/create-intent`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

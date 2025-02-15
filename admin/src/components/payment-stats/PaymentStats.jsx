@@ -1,9 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {
-    fetchCompletedPayments,
-    fetchFailedPayments,
-    fetchProcessingPayments
-} from '../../routes/paymentRoutes';
+import { fetchPaymentStatus } from '../../routes/paymentRoutes';
 import { paymentStatuses } from '../../data';
 import './PaymentStats.scss';
 
@@ -16,15 +12,15 @@ export default function PaymentStats() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const [process, completed, failed] = await Promise.all([
-                fetchProcessingPayments(),
-                fetchCompletedPayments(),
-                fetchFailedPayments(),
-            ]);
-            setPaymentsProcessing(process?.processingPayments || []);
-            setPaymentsCompleted(completed?.completedPayments || []);
-            setPaymentsFailed(failed?.failedPayments || []);
-        }
+            try {
+                const data = await fetchPaymentStatus();
+                setPaymentsProcessing(data.processingPayments);
+                setPaymentsCompleted(data.completedPayments);
+                setPaymentsFailed(data.expiredPayments);
+            } catch (error) {
+                console.error('Erreur technique:', error);
+            }
+        };
 
         fetchData();
     }, []);

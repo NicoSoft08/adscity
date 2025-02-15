@@ -59,45 +59,8 @@ const deleteUser = async (userID) => {
     }
 };
 
-// Collect payment info
-const fetchPaymentInfo = async () => {
-    const response = await fetch(`${backendUrl}/api/payments/all`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    });
-
-    const result = await response.json();
-
-    return result;
-
-};
-
-
-// Update Payment Info Status
-const updatePaymentStatus = async (paymentID, newStatus) => {
-    const response = await fetch(`${backendUrl}/api/payments/update-status/${paymentID}`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: newStatus })
-    });
-
-    const result = await response.json();
-    console.log(result);
-
-    return result;
-};
-
-
-
-
 export {
     enableUser,
     disableUser,
     deleteUser,
-    fetchPaymentInfo,
-    updatePaymentStatus,
 };

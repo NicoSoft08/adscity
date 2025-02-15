@@ -1,5 +1,20 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const fetchAllUsersWithStatus = async () => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/all/status`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        
+    }
+}
+
 const fetchAllUsers = async () => {
     try {
         const response = await fetch(`${backendUrl}/api/users/all`, {
@@ -10,54 +25,12 @@ const fetchAllUsers = async () => {
         });
 
         const result = await response.json();
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur:', error);
         return [];
     }
 }
-
-
-// Fetch online users
-const fetchOnlineUsers = async () => {
-    try {
-        const response = await fetch(`${backendUrl}/api/users/all/online`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        const result = await response.json();
-        console.log(result);
-        return result;
-    } catch (error) {
-        console.error('Erreur:', error);
-        return [];
-    }
-};
-
-
-// Fetch offline users
-const fetchOfflineUsers = async () => {
-    try {
-        const response = await fetch(`${backendUrl}/api/users/all/offline`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        const result = await response.json();
-        console.log(result);
-        return result;
-    } catch (error) {
-        console.error('Erreur:', error);
-        return [];
-    }
-};
-
 
 const fetchDataByUserID = async (userID) => {
     try {
@@ -150,8 +123,7 @@ export {
     getUserDevices,
     fetchDataByUserID,
     fetchAllUsers,
-    fetchOfflineUsers,
-    fetchOnlineUsers,
+    fetchAllUsersWithStatus,
     fetchNotifications,
     markNotificationAsRead,
     setUserOnlineStatus,

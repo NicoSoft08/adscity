@@ -46,7 +46,6 @@ const fetchApprovedPosts = async () => {
     };
 };
 
-
 // Fetch all Pending Ads
 const fetchPendingPosts = async () => {
     try {
@@ -68,7 +67,6 @@ const fetchPendingPosts = async () => {
     };
 };
 
-
 // Fetch all Refused Ads 
 const fetchRefusedPosts = async () => {
     try {
@@ -89,7 +87,6 @@ const fetchRefusedPosts = async () => {
         return [];
     };
 };
-
 
 const suspendPost = async (postID, reason) => {
     try {
@@ -114,9 +111,6 @@ const updatePostStatus = async (postID, newStatus) => {
     
 };
 
-
-
-
 const onApprovePost = async (postID) => {
     const response = await fetch(`${backendUrl}/api/posts/post/${postID}/approve`, {
         method: 'POST',
@@ -133,9 +127,7 @@ const onApprovePost = async (postID) => {
     return result;
 };
 
-
 const onRefusePost = async (postID, reason) => {
-
     try {
         const response = await fetch(`${backendUrl}/api/posts/refuse`, {
             method: 'POST',
@@ -160,6 +152,24 @@ const onRefusePost = async (postID, reason) => {
     }
 };
 
+const deletePost = async (postID, reason) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts/${postID}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ reason }),
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'annonce.', error);
+        return false;
+    };
+};
+
 
 export {
     fetchAllPosts,
@@ -169,6 +179,7 @@ export {
     onApprovePost,
     onRefusePost,
     suspendPost,
+    deletePost,
 
     updatePostStatus,
 };

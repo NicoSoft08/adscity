@@ -19,51 +19,39 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let unsubscribe;
-
-        const initializeAuth = async () => {
-            unsubscribe = auth.onAuthStateChanged(async (user) => {
-                setLoading(true); // Commencez le chargement à chaque changement d'état
-                if (user) {
-                    try {
-                        // Utilisateur connecté
-                        setCurrentUser(user);
-                        const userData = await fetchDataByUserID(user.uid);
-                        setUserData(userData?.data);
-                        setUserRole(userData?.data.role);
-                        await setUserOnlineStatus(user.uid, true); // Met à jour le statut en ligne
-                    } catch (error) {
-                        console.error("Erreur lors de la récupération des données utilisateur :", error);
-                    }
-                } else {
-                    // Utilisateur déconnecté
-                    if (currentUser) {
-                        await setUserOnlineStatus(currentUser.uid, false);
-                    }
-                    setCurrentUser(null);
-                    setUserData(null);
-                    setUserRole(null);
+        const unsubscribe = auth.onAuthStateChanged(async (user) => {
+            setLoading(true);
+            if (user) {
+                try {
+                    setCurrentUser(user);
+                    const userDataResponse = await fetchDataByUserID(user.uid);
+                    setUserData(userDataResponse?.data);
+                    setUserRole(userDataResponse?.data.role);
+                    await setUserOnlineStatus(user.uid, true);
+                } catch (error) {
+                    console.error("Erreur lors de la récupération des données utilisateur :", error);
                 }
-                setLoading(false); // Arrêtez le chargement une fois terminé
-            });
-        };
-
-        initializeAuth();
-
-        return () => {
-            if (unsubscribe) unsubscribe();
-        };
-    }, [currentUser]);
-
-    useEffect(() => {
+            } else {
+                if (currentUser) {
+                    await setUserOnlineStatus(currentUser.uid, false);
+                }
+                setCurrentUser(null);
+                setUserData(null);
+                setUserRole(null);
+            }
+            setLoading(false);
+        });
+    
         return () => {
             if (currentUser) {
                 setUserOnlineStatus(currentUser.uid, false).catch((error) => {
                     console.error("Erreur lors de la mise à jour du statut hors ligne :", error);
                 });
             }
+            unsubscribe();
         };
     }, [currentUser]);
+    
 
     if (loading) {
         return <Loading />

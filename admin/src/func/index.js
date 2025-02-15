@@ -65,6 +65,19 @@ const saveFcmToken = async (userID, token) => {
     }
 };
 
+const formatViewCount = (count) => {
+    if (!count && count !== 0) {
+        return '0'; // Default to 0 if count is undefined or null
+    }
+
+    if (count >= 1000000) {
+        return (count / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+    }
+    if (count >= 1000) {
+        return (count / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    }
+    return count.toString();
+};
 
 const formatSpecialFeatures = (features) => {
     if (!features) return '';
@@ -118,4 +131,5 @@ export {
     formatSpecialFeatures,
     calculateEndDate,
     validatePhoneNumber,
+    formatViewCount,
 };

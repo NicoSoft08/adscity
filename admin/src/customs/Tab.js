@@ -51,7 +51,7 @@ export default function Tab({ pendingAd }) {
                         {pendingAd?.adDetails.condition !== undefined ? <p>Condition : {pendingAd?.adDetails.condition}</p> : null}
                         <p>Type de Prix: {pendingAd?.adDetails?.priceType}</p>
                         {/* <p>Devise: {formData.adDetails?.currency}</p> */}
-                        <p>Prix: {pendingAd?.adDetails?.price} {pendingAd?.adDetails?.currency}</p>
+                        <p>Prix: {pendingAd?.adDetails?.price} RUB</p>
                         {/* Other details */}
                     </div>
                 );

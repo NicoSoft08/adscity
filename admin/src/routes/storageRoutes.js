@@ -84,11 +84,25 @@ const uploadImage = async (file, userID) => {
     return result;
 };
 
+const uploadMedia = async (file) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(`${backendUrl}/api/storage/upload/media`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    const result = await response.json();
+    return result;
+};
+
 
 export {
     uploadImage,
     deleteProfilURLByUserID,
     fetchProfileByUserID,
     uploadBannerPhoto,
+    uploadMedia,
     uploadProfilePhoto,
 };

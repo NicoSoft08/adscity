@@ -33,3 +33,11 @@ export const MAX_ADS_PER_MONTH = 3;
 export const basicAdsDuration = 4;
 
 export const URL = 'http://localhost:3000';
+
+export const PUBS_CONFIG = {
+    IN_FEED: { width: "100%", height: "auto", position: "insideFeed" },
+    MASTHEAD: { width: "100%", height: "250px", position: "topHomepage" },
+    NATIVE_DISPLAY: { width: "100%", height: "auto", position: "insideContent" },
+    GEO_AD: { width: "100%", height: "auto", position: "targetedLocation" },
+};
+

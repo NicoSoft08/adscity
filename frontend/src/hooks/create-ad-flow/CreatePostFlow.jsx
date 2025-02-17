@@ -14,6 +14,8 @@ import Toast from '../../customs/Toast';
 import LimitReachedModal from '../../customs/LimitReachedModal';
 import Loading from '../../customs/Loading';
 import AdCreatedSuccess from '../../components/ad-created-success/AdCreatedSuccess';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 const createSearchableItem = (item) => {
     if (!item) return [];
@@ -98,10 +100,12 @@ export default function CreatePostFlow() {
                     type: 'success',
                     message: 'Annonce créée avec succès'
                 });
+                logEvent(analytics, 'post_created');
                 setHasSucceed(true);
             } else {
                 if (result.error === 'Limite d\'annonces atteinte') {
                     setShowLimitModal(true);
+                    logEvent(analytics, 'limit_reached');
                 } else {
                     setToast({
                         type: 'error',

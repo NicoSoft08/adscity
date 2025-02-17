@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Modal from '../../customs/Modal';
-import './AdReview.scss';
 import Spinner from '../../customs/Spinner';
+import './AdReview.scss';
 
 export default function AdReview({ formData, onBack, onSubmit, isLoading }) {
     const [isOpen, setIsOpen] = useState(false);

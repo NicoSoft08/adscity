@@ -1,8 +1,9 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-    faBan, faCalendarDay, faEllipsisV, faExclamationTriangle,
-    faEye, faEyeSlash, faFlag, faGavel, faShare
+    faBalanceScale,
+    faBan, faCalendarDay, faClone, faEllipsisV, faExclamationTriangle,
+    faEye, faFlag, faGavel, faQuestionCircle, faShare
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -10,17 +11,19 @@ import { formatViewCount } from '../../func';
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
-import { 
-    incrementClickCount, 
-    incrementViewCount, 
-    updateContactClick, 
-    updateInteraction 
+import {
+    incrementClickCount,
+    incrementViewCount,
+    updateContactClick,
+    updateInteraction
 } from '../../routes/apiRoutes';
 import { reportPost } from '../../routes/postRoutes';
 import { fetchProfileByUserID } from '../../routes/storageRoutes';
 import Menu from '../../customs/Menu';
 import Toast from '../../customs/Toast';
 import { toggleFavorites } from '../../routes/userRoutes';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
@@ -37,7 +40,7 @@ export default function CardItem({ post, onToggleFavorite }) {
         if (currentUser && userData.adsSaved?.includes(post.id)) {
             setIsFavorite(true);
         }
-    
+
         const fetchProfilURL = async () => {
             try {
                 const response = await fetchProfileByUserID(userID);
@@ -51,7 +54,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                 setProfilURL(null);
             }
         };
-    
+
         if (userID) {
             fetchProfilURL();
         }
@@ -76,6 +79,24 @@ export default function CardItem({ post, onToggleFavorite }) {
             icon: faExclamationTriangle,
             action: () => handleReportWithReason(post.id, 'Annonce frauduleuse')
         },
+        {
+            id: 4,
+            label: 'Violation des règles du site',
+            icon: faBalanceScale,
+            action: () => handleReportWithReason(post.id, 'Violation des règles du site')
+        },
+        {
+            id: 5,
+            label: 'Produit contrefait',
+            icon: faClone,
+            action: () => handleReportWithReason(post.id, 'Produit contrefait')
+        },
+        {
+            id: 6,
+            label: 'Informations trompeuses',
+            icon: faQuestionCircle,
+            action: () => handleReportWithReason(post.id, 'Informations trompeuses')
+        },
     ];
 
     const options = [
@@ -89,11 +110,11 @@ export default function CardItem({ post, onToggleFavorite }) {
             icon: faShare,
             action: () => handleShareAd(post.id)
         },
-        {
-            label: 'Masquer',
-            icon: faEyeSlash,
-            action: () => handleHideAd(post.id)
-        },
+        // {
+        //     label: 'Masquer',
+        //     icon: faEyeSlash,
+        //     action: () => handleHideAd(post.id)
+        // },
     ];
 
     const handleReportWithReason = async (postID, reasonLabel) => {
@@ -104,11 +125,21 @@ export default function CardItem({ post, onToggleFavorite }) {
                 message: 'Vous devez être connecté pour signaler une annonce.'
             });
             return;
-        }
+        };
+
+        // Confirmation avant d'envoyer le signalement
+        const confirmReport = window.confirm(`Êtes-vous sûr de vouloir signaler cette annonce pour : "${reasonLabel}" ?`);
+        if (!confirmReport) return;
 
         const userID = currentUser.id;
 
         const result = await reportPost(postID, userID, reasonLabel);
+        logEvent(analytics, 'report_ad', {
+            postID: postID,
+            userID: userID,
+            reason: reasonLabel
+        });
+
         if (result.success) {
             setToast({
                 show: true,
@@ -131,13 +162,47 @@ export default function CardItem({ post, onToggleFavorite }) {
         console.log(`Signaler l'annonce avec l'ID : ${postID}`);
     };
 
-    const handleShareAd = (postID) => {
-        console.log(`Partager l'annonce avec l'ID : ${postID}`);
+    const handleShareAd = async (postID) => {
+        const postUrl = `${window.location.origin}/post/${postID}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: "Découvrez cette annonce sur AdsCity !",
+                    text: "Jetez un œil à cette annonce, ça pourrait vous intéresser.",
+                    url: postUrl,
+                });
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: 'L\'annonce a été partagée avec succès.'
+                });
+            } catch (error) {
+                console.error('Erreur lors du partage :', error);
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Erreur lors du partage. Veuillez réessayer.'
+                });
+            }
+        } else {
+            navigator.clipboard.writeText(postUrl).then(() => {
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: 'L\'URL de l\'annonce a été copiée dans le presse-papiers.'
+                });
+            }).catch(err => setToast({
+                show: true,
+                type: 'error',
+                message: 'Erreur lors de la copie de l\'URL. Veuillez réessayer.'
+            }))
+        }
     };
 
-    const handleHideAd = (postID) => {
-        console.log(`Masquer l'annonce avec l'ID : ${postID}`);
-    };
+    // const handleHideAd = (postID) => {
+    //     console.log(`Masquer l'annonce avec l'ID : ${postID}`);
+    // };
 
 
     const formatPostedAt = (posted_at) => {
@@ -181,10 +246,12 @@ export default function CardItem({ post, onToggleFavorite }) {
 
 
     const handleProfileClick = async () => {
-
         if (!currentUser) return null;
-
         await updateContactClick(userID);
+        logEvent(analytics, 'view_profile', {
+            userID: userID,
+            postID: id,
+        });
     }
 
 
@@ -201,6 +268,11 @@ export default function CardItem({ post, onToggleFavorite }) {
         try {
             const userID = currentUser?.uid;
             const result = await toggleFavorites(postID, userID);
+            logEvent(analytics, 'favorite_ad', {
+                postID: postID,
+                userID: userID,
+                isFavorite: result.isFavorite,
+            });
             if (result.success) {
                 setIsFavorite(result.isFavorite);
                 setToast({

@@ -1,0 +1,183 @@
+@import './fonts';
+@import './variables';
+
+.create-admin {
+    margin-top: 4rem;
+
+    @media (max-width: 768px) {
+        margin-top: 8rem;
+    }
+
+    .head {
+        display: flex;
+        align-items: center;
+
+        svg {
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        h2 {
+            color: $dark;
+        }
+    }
+
+    p {
+        font-weight: $font-light;
+    }
+
+    .form {
+        max-width: 400px;
+        margin: 0 auto;
+        background-color: $white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        .step-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+
+            h3 {
+                color: $dark;
+                font-size: 18px;
+                margin: 0;
+            }
+        
+        
+            .error-text {
+                font-size: 13px;
+                font-family: "Ubuntu", sans-serif;
+                color: $red;
+                margin-bottom: 10px;
+                font-weight: $font-regular;
+                text-align: start;
+            }
+
+            .select-field {
+                width: 98%;
+                padding: 8px 15px;
+                margin: 5px 0;
+                display: inline-block;
+                border: 1px solid $dark;
+                outline: none;
+                font-size: 15px;
+                color: $dark;
+                font-weight: $font-light;
+                font-family: "Ubuntu", sans-serif;
+        
+                option {
+                    font-weight: $font-light;
+                    font-family: "Ubuntu", sans-serif;
+                }
+            }
+
+            input[type=text],
+            input[type=email],
+            input[type=tel],
+            input[type=password] {
+                width: 95%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                outline: none;
+                font-size: 14px;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-light;
+            }
+
+            .input-field.error {
+                border: 1px solid $danger;
+                background-color: #ffcccb;
+            }
+
+
+            .permissions-group {
+                .checkbox-container {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 10px;
+
+                    label {
+                        margin-left: 5px;
+                        font-size: 14px;
+                    }
+                }
+            }
+
+        }
+
+        .password-toggle {
+            position: relative;
+
+            .input-field.error {
+                border: 1px solid $danger;
+                background-color: #ffcccb;
+            }
+
+
+            .toggle-password-visibility {
+                position: absolute;
+                top: 35%;
+                right: 10px;
+                color: $dark;
+            }
+        }
+
+        label.checkbox-label {
+            font-weight: $font-light;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .error-text {
+            font-size: 13px;
+            font-weight: $font-light;
+            color: $danger;
+        }
+
+        .error {
+            font-size: 12px;
+            font-weight: $font-light;
+            color: $danger;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 1rem;
+
+            button {
+                padding: 10px 20px;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: 'Ubuntu', sans-serif;
+
+                &.prev {
+                    background-color: $danger;
+                }
+
+                &.next {
+                    background-color: $two;
+                }
+            }
+
+            .submit {
+                padding: 10px 20px;
+                background-color: $secondary-color;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+}

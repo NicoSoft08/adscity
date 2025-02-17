@@ -37,7 +37,8 @@
                         transition: all 0.2s ease;
     
                         @media (max-width: 768px) {
-                            padding: 10px;
+                            padding: 8px;
+                            // padding: 10px;
                         }
                         
                         &:hover {

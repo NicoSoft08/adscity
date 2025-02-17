@@ -13,10 +13,19 @@
     }
 
 
-    h2 {
-        padding: 10px 0;
-        font-weight: $font-regular;
-        color: $gray-dark;
+    .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        h2 {
+            color: $dark;
+        }
+
+        svg {
+            color: $dark;
+            cursor: pointer;
+        }
     }
 
     .card-list {
@@ -157,6 +166,33 @@
             .cancel-btn {
                 background-color: $danger;
             }
+        }
+    }
+
+    .filters {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        padding: 10px 20px;
+        background-color: $gray-dark;
+        border-radius: 12px;
+        margin: 10px 0;
+
+        @media (max-width: 768px) {
+            display: flex;
+            flex-wrap: nowrap;
+        }
+
+
+        input[type=text],
+        input[type=date],
+        input[type="number"],
+        select {
+            padding: 10px 8px;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 16px;
+            font-weight: $font-light;
+            outline: none;
         }
     }
 }

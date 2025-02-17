@@ -191,10 +191,28 @@ const markAsSold = async (userID, postID) => {
     };
 };
 
+const fetchNearbyPosts = async (country, city) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts/nearby?country=${encodeURIComponent(country)}&city=${encodeURIComponent(city)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des annonces proches:', error);
+        return [];
+    }
+};
+
 export {
     createPost,
     deletePost,
     markAsSold,
+    fetchNearbyPosts,
     fetchPostByPostID,
     fetchPostsByCategory,
     fetchPostBySlug,

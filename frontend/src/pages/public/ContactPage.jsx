@@ -2,11 +2,11 @@ import React, { useContext, useRef, useState } from 'react';
 import { faCheck, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { contactSupportClient } from '../../routes/apiRoutes';
 import { AuthContext } from '../../contexts/AuthContext';
-import '../../styles/ContactPage.scss';
 import Toast from '../../customs/Toast';
+import '../../styles/ContactPage.scss';
 
 export default function ContactPage() {
     const navigate = useNavigate();
@@ -219,7 +219,7 @@ export default function ContactPage() {
                         checked={formData.agree}
                         onChange={handleChange}
                     />
-                    J'accepte les conditions d'utilisation
+                    J'accepte les termes et conditions
 
                 </label>
                 <button
@@ -238,6 +238,14 @@ export default function ContactPage() {
                 {message && (
                     <div className="error-message">{message}</div>
                 )}
+
+                <div className="terms-container">
+                    <p>
+                        <Link to="/legal/privacy-policy" target="_blank">Confidentialité</Link>{" - "}
+                        <Link to="/legal/terms" target="_blank">Conditions d'utilisation</Link>
+                        {/* <Link to="/data-processing" target="_blank">Politique de traitement des données</Link>. */}
+                    </p>
+                </div>
             </form>
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />

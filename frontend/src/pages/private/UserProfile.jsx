@@ -12,6 +12,8 @@ import { uploadProfilePhoto } from '../../routes/storageRoutes';
 import ProfileStats from '../../components/profile-stats/ProfileStats';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 import '../../styles/UserProfile.scss';
 
 export default function UserProfile() {
@@ -69,6 +71,7 @@ export default function UserProfile() {
         setIsLoading(true);
         if (selectedFile) {
             const result = await uploadProfilePhoto(selectedFile, userID);
+            logEvent(analytics, 'profile_photo_changed');
             if (result.success) {
                 setToast({
                     show: true,

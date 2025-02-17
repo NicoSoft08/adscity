@@ -6,6 +6,8 @@ import { allCategories } from '../../data/database';
 import { fetchPostsByCategory } from '../../routes/postRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function CategoryNamePage() {
     const { categoryName } = useParams();
@@ -14,6 +16,7 @@ export default function CategoryNamePage() {
     useEffect(() => {
         const getAdsByCategory = async () => {
             const result = await fetchPostsByCategory(categoryName);
+            logEvent(analytics, 'view_category_page');
             if (result.success) {
                 setAdsCategory(result?.postsByCategoryName);
             }
@@ -34,6 +37,7 @@ export default function CategoryNamePage() {
                 headerOne={getItems().HeaderOne}
                 paragraph={"Découvrez les annonces relatives à cette catégorie."}
                 backgroundImage={getItems().BackgroundImage}
+                postsLength={adsCategory.length}
             />
             {adsCategory.length > 0 ? (
                 <CardList>

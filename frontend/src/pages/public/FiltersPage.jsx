@@ -5,6 +5,8 @@ import Toast from '../../customs/Toast';
 import Loading from '../../customs/Loading';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function FiltersPage() {
     const [posts, setPosts] = useState([]);
@@ -15,6 +17,7 @@ export default function FiltersPage() {
         try {
             setIsLoading(true);
             const result = await fetchFilteredPosts(filters);
+            logEvent(analytics, 'filter_posts');
             if (result.success) {
                 setPosts(result.filteredPosts);
                 setIsLoading(false);

@@ -10,26 +10,89 @@ import Toast from '../../customs/Toast';
 import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
 import Spinner from '../../customs/Spinner';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { allCategories } from '../../data/database';
 import '../../styles/MyPosts.scss';
 
-const PostTable = ({ index, post, onAction }) => {
+const PostsFilter = ({ onFilterChange }) => {
+    const [filters, setFilters] = useState({
+        search: '',
+        status: 'all', // 
+        category: 'all', //
+        city: '',
+        date: '',
+        views: '',
+    });
 
-    const formatPostStatut = (status) => {
-        switch (status) {
-            case 'pending':
-                return '🟠 En attente';
-            case 'approved':
-                return '🟢 Accepté';
-            case 'refused':
-                return '🔴 Rejetée';
-            default:
-                return '⚫ Indéfini';
-        }
-    };
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const updatedFilters = { ...filters, [name]: value };
+        setFilters(updatedFilters);
+        onFilterChange(updatedFilters);
+    }
 
+
+    return (
+        <div className="filters">
+            <input
+                type="text"
+                name="search"
+                placeholder="Rechercher par titre ou ID"
+                value={filters.search}
+                onChange={handleChange}
+            />
+
+            <select name="status" value={filters.status} onChange={handleChange}>
+                <option value="all">Tous les statuts</option>
+                <option value="approved">Publiée</option>
+                <option value="pending">En attente</option>
+                <option value="refused">Refusée</option>
+                <option value="expired">Expirée</option>
+            </select>
+
+            <select name="category" value={filters.category} onChange={handleChange}>
+                <option value="all">Toutes les catégories</option>
+                {allCategories.map(category => (
+                    <option
+                        key={category.key}
+                        value={category.categoryName}>
+                        {category.categoryTitles.fr}
+                    </option>
+                ))}
+            </select>
+
+            <input
+                type="text"
+                name="city"
+                placeholder="Ville"
+                value={filters.city}
+                onChange={handleChange}
+            />
+
+            <input
+                type="date"
+                name="date"
+                value={filters.date}
+                onChange={handleChange}
+            />
+
+            <input
+                type="number"
+                name="views"
+                placeholder="Nombre de vues minimum"
+                value={filters.views}
+                onChange={handleChange}
+            />
+        </div>
+    );
+};
+
+const PostRow = ({ index, post, onAction }) => {
     return (
         <tr>
             <td>{index + 1}</td>
+            <td>{post.PostID}</td>
             <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
             <td>{post.adDetails.title}</td>
             <td>{post.adDetails.price} RUB </td>
@@ -37,7 +100,7 @@ const PostTable = ({ index, post, onAction }) => {
             <td>{formatViewCount(post.clicks)}</td>
             <td>{post.views > 0 ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
             <td>{format(new Date(post.expiry_date), 'dd/MM/yyyy HH:mm', { locale: fr })}</td>
-            <td> {formatPostStatut(post.status)} </td>
+            <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
             <td>
                 <button
                     className='see-more'
@@ -52,6 +115,7 @@ const PostTable = ({ index, post, onAction }) => {
 
 export default function MyPosts({ currentUser }) {
     const [posts, setPosts] = useState([]);
+    const [filteredPosts, setFilteredPosts] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showEditModal, setShowEditModal] = useState(false);
     const [isLoading, setIsloading] = useState(false);
@@ -62,16 +126,18 @@ export default function MyPosts({ currentUser }) {
     const [postToDelete, setPostToDelete] = useState(null);
     const [editData, setEditData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
+    const [openFilter, setOpenFilter] = useState(false);
     const [filter, setFilter] = useState({});
     const [postPerPage] = useState(10);
 
-    useEffect(() => {        
+    useEffect(() => {
         const userID = currentUser?.uid;
         const fetchPosts = async () => {
             if (!userID) return;
             const result = await fetchPostsByUserID(userID);
             if (result.success) {
                 setPosts(result?.postsData || []);
+                setFilteredPosts(result.postsData || []);
             }
         };
 
@@ -80,7 +146,7 @@ export default function MyPosts({ currentUser }) {
 
     const indexOfLastPost = currentPage * postPerPage;
     const indexOfFirstPost = indexOfLastPost - postPerPage;
-    const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
 
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
@@ -200,7 +266,21 @@ export default function MyPosts({ currentUser }) {
         setShowMenu(true);
     };
 
-
+    // Fonction pour appliquer les filtres
+    const handleFilterChange = (filters) => {
+        const filtered = posts.filter(post =>
+            (filters.search === "" ||
+                post.adDetails.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+                post.PostID.toLowerCase().includes(filters.search.toLowerCase())
+            ) &&
+            (filters.status === "all" || post.status === filters.status) &&
+            (filters.category === "all" || post.category === filters.category) &&
+            (filters.city === "" || post.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
+            (filters.date === "" || format(new Date(post.expiry_date), "yyyy-MM-dd") === filters.date) &&
+            (filters.views === "" || post.views >= Number(filters.views))
+        );
+        setFilteredPosts(filtered);
+    };
 
     const options = [
         {
@@ -224,13 +304,25 @@ export default function MyPosts({ currentUser }) {
 
     return (
         <div className='my-ads'>
-            <h2>Mes Annonces</h2>
+            <div className="head">
+                <h2>Mes Annonces</h2>
+                <div className="filters-container" onClick={() => setOpenFilter(!openFilter)}>
+                    <FontAwesomeIcon icon={faFilter} />
+                </div>
+            </div>
+
+            {/* Filtres */}
+            {openFilter && (
+                <PostsFilter onFilterChange={handleFilterChange} />
+            )}
+
             <div className="ads-list">
                 <div className="card-list">
                     <table>
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Post ID</th>
                                 <th>📸 Image</th>
                                 <th>🏷️ Titre</th>
                                 <th>💰 Prix</th>
@@ -245,7 +337,7 @@ export default function MyPosts({ currentUser }) {
                         <tbody>
                             {currentPosts.length > 0 ? (
                                 currentPosts.map((post, index) => (
-                                    <PostTable
+                                    <PostRow
                                         key={post.id}
                                         index={index}
                                         post={post}

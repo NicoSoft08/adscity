@@ -29,7 +29,7 @@ export default function TeamPage() {
             description: 'Responsable de l\'expérience utilisateur (UX/UI) et du design graphique.',
         },
         {
-            name: 'Ismael MOUSSA',
+            name: 'Ismaël SANI',
             role: 'Chief Revenue Officer',
             photo: IconAvatar,
             description: 'Responsable du développement commercial et de la croissance des revenus.',
@@ -41,13 +41,13 @@ export default function TeamPage() {
             description: 'Responsable des stratégies marketing et de la communication.',
         },
         {
-            name: "Guy SORO",
+            name: "Guy I. SORO",
             role: 'Chief Marketing Vice Officer',
             photo: IconAvatar,
             description: 'Adjoint au Responsable des stratégies marketing et de la communication.',
         },
         {
-            name: "Marie Danielle Epse DOSSO",
+            name: "Madame DOSSO",
             role: 'Chief Community Officer',
             photo: IconAvatar,
             description: 'Responsable de la gestion des communautés et des réseaux sociaux.',

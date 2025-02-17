@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { facebook, IconAvatar, IconCover, instagram, whatsapp } from '../../config/images';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 import './PublicProfil.scss';
 
 export default function PublicProfil({ profile }) {
@@ -29,6 +31,7 @@ export default function PublicProfil({ profile }) {
             return false;
         }
 
+        logEvent(analytics, 'phone_viewed');   
         setShowPhone(true);
     };
 

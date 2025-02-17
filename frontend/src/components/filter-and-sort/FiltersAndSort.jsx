@@ -82,26 +82,15 @@ function FiltersAndSort({ onFilterChange, onSortChange }) {
             {/* Tri */}
             <div className="sort">
                 <h4>Trier par:</h4>
-                <div className='sort-container'>
-                    <div>
-                        <select value={sortOption} onChange={handleSortChange}>
-                            <option value="expensive">Plus Cher</option>
-                            <option value="cheaper">Moins Cher</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select value={sortOption} onChange={handleSortChange}>
-                            <option value="recent">Récent</option>
-                            <option value="older">Ancien</option>
-                        </select>
-                    </div>
-                    <div>
-                        <select value={sortOption} onChange={handleSortChange}>
-                            <option value="much_views">Plus de vues</option>
-                            <option value="best_rated">Meilleures notes</option>
-                        </select>
-                    </div>
-                </div>
+                <select value={sortOption} onChange={handleSortChange}>
+                    <option value="relevance">Pertinence</option>
+                    <option value="expensive">Plus Cher</option>
+                    <option value="cheaper">Moins Cher</option>
+                    <option value="recent">Récent</option>
+                    <option value="older">Ancien</option>
+                    <option value="much_views">Plus de vues</option>
+                    <option value="best_rated">Meilleures notes</option>
+                </select>
             </div>
         </div>
     );

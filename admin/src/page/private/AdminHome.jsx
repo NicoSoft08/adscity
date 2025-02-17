@@ -14,12 +14,14 @@ import {
     faUsers
 } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../components/dashboard-header/Header';
+import { faBuysellads } from '@fortawesome/free-brands-svg-icons';
 import '../../styles/AdminHome.scss';
 
 const menuItems = [
     { id: "panel", label: "Panel", icon: faChartLine, path: "/admin/dashboard/panel" },
     { id: "posts", label: "Annonces", icon: faBullhorn, path: "/admin/dashboard/posts" },
     { id: "users", label: "Utilisateurs", icon: faUsers, path: "/admin/dashboard/users" },
+    { id: "pubs", label: "Publicités", icon: faBuysellads, path: "/admin/dashboard/pubs" },
     { id: "notifications", label: "Notifications", icon: faBell, path: "/admin/dashboard/notifications" },
     { id: "payments", label: "Paiements", icon: faMoneyBill, path: "/admin/dashboard/payments" },
     { id: "profile", label: "Profil", icon: faUserCircle, path: "/admin/dashboard/profile" },

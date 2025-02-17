@@ -1,79 +1,177 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { fetchAllUsers } from '../../routes/userRoutes';
 import { deleteUser } from '../../routes/authRoutes';
-import UserManagementTable from './UserManagementTable';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { IconAvatar } from '../../config/images';
+import Modal from '../../customs/Modal';
+import Pagination from '../../components/pagination/Pagination';
 import '../../styles/ManageUsers.scss';
 
+const UsersFilter = ({ onFilterChange }) => {
+    const [filters, setFilters] = useState({
+        search: "",
+        role: "all", // "all", "admin", "user"
+        status: "all", // "all", "active", "suspended", "banned"
+        city: "",
+        subscription: "all", // "all", "free", "pro", "business"
+        registrationDate: "",
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const updatedFilters = { ...filters, [name]: value };
+        setFilters(updatedFilters);
+        onFilterChange(updatedFilters);
+    };
+
+
+    return (
+        <div className='filters'>
+            <input
+                type="text"
+                name='search'
+                placeholder="Rechercher par nom ou email"
+                value={filters.search}
+                onChange={handleChange}
+            />
+
+            <select name='role' value={filters.role} onChange={handleChange}>
+                <option value="all">Tous les rôles</option>
+                <option value="user">Utilisateur</option>
+                <option value="admin">Admin</option>
+            </select>
+
+            <select name='status' value={filters.status} onChange={handleChange}>
+                <option value="all">Tous les statuts</option>
+                <option value="active">Actif</option>
+                <option value="suspended">Suspendu</option>
+                <option value="banned">Banni</option>
+            </select>
+
+            <input
+                type="text"
+                name='city'
+                placeholder="Ville"
+                value={filters.city}
+                onChange={handleChange}
+            />
+
+            <select name='subscription' value={filters.subscription} onChange={handleChange}>
+                <option value="all">Tous les abonnements</option>
+                <option value="free">Gratuit</option>
+                <option value="pro">Professionnel</option>
+                <option value="business">Business</option>
+            </select>
+
+            <input
+                type="date"
+                name='registrationDate'
+                value={filters.registrationDate}
+                onChange={handleChange}
+            />
+        </div>
+    );
+};
+
+
+const UserRow = ({ index, user, onAction, options }) => {
+    const [openModal, setOpenModal] = useState(false);
+
+    const getProfilePicture = (user) => user.profilURL || IconAvatar;
+
+    const formatUserStatut = (isOnline) => (isOnline ? "🟢 En ligne" : "🔴 Hors ligne");
+
+
+    const handleActionClick = () => {
+        const userID = user.id;
+        console.log(userID);
+        onAction(user);
+        setOpenModal(true);
+    };
+
+    return (
+        <>
+            <tr>
+                <td>{index + 1}</td>
+                <td>{user.UserID}</td>
+                <td><img src={getProfilePicture(user)} alt={user.displayName} width="50" height="50" className="profile-img" /></td>
+                <td>{user.displayName}</td>
+                <td>{user.email}</td>
+                <td>{user.profileNumber}</td>
+                <td>{user.phoneNumber}</td>
+                <td>{formatUserStatut(user.isOnline)}</td>
+                <td>{user.reportingCount || 0}</td>
+                <td><button className="see-more" onClick={() => handleActionClick(user)}>Détails</button></td>
+            </tr>
+
+            {openModal && (
+                <Modal title={"Actions"} onShow={openModal} onHide={() => setOpenModal(false)}>
+                    <div className="modal-menu">
+                        {options.map((option, index) => (
+                            <div key={index} className="menu-item" onClick={option.action}>
+                                {/* <FontAwesomeIcon icon={option.icon} /> */}
+                                <span>{option.icon}</span>
+                                <span>{option.label}</span>
+                            </div>
+                        ))}
+                    </div>
+                </Modal>
+            )}
+        </>
+    );
+}
 
 export default function ManageUsers() {
     const { currentUser, userData } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [userPerPage] = useState(10);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [openFilter, setOpenFilter] = useState(false);
-    const [filters, setFilters] = useState({ createdAt: '', role: '', isActive: '' });
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [modalType, setModalType] = useState(null); // "desable" | "delete" | null
+    const [reason, setReason] = useState("");
 
     useEffect(() => {
         const fetchUsers = async () => {
             const all = await fetchAllUsers();
             if (all.success) {
-                setUsers(all?.allUsers);
-                setFilteredUsers(all?.allUsers);
+                setUsers(all.allUsers);
+                setFilteredUsers(all.allUsers);
             }
         };
 
         fetchUsers();
     }, []);
 
+    const indexOfLastUser = currentPage * userPerPage;
+    const indexOfFirstUser = indexOfLastUser - userPerPage;
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
-    const convertFirebaseTimestampToDate = (timestamp) => {
-        if (timestamp?._seconds) {
-            const date = new Date(timestamp._seconds * 1000); // Convertir les secondes en millisecondes
-            return date.toISOString().slice(0, 10); // Retourner uniquement la partie date sous format YYYY-MM-DD
-        }
-        return null;
-    };
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
     // Fonction pour appliquer les filtres
-    const applyFilters = () => {
-        const { createdAt, role, isActive } = filters;
-
-        const filtered = users.filter(user => {
-            const userCreationDate = convertFirebaseTimestampToDate(user.createdAt);
-
-            const matchesCreatedAt = createdAt ? userCreationDate === createdAt : true;
-            const matchesRole = role ? user.role === role : true;
-            const matchesIsActive = isActive !== '' ? user.isActive === (isActive === 'true') : true;
-
-            return matchesCreatedAt && matchesRole && matchesIsActive;
+    const handleFilterChange = (filters) => {
+        let filtered = users.filter(user => {
+            return (
+                (filters.role === "all" || user.role === filters.role) &&
+                (filters.status === "all" || user.isActive === (filters.status === "active")) &&
+                (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
+                (filters.subscription === "all" || user.subscription === filters.subscription) &&
+                (filters.search === "" || 
+                    user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || 
+                    user.email.toLowerCase().includes(filters.search.toLowerCase())
+                )
+            );
         });
         setFilteredUsers(filtered);
     };
 
-
-    // Fonction pour réinitialiser (annuler) les filtres
-    // const resetFilters = () => {
-    //     setFilters({
-    //         createdAt: '',
-    //         accountType: '',
-    //         isActive: ''
-    //     });
-    //     setFilteredUsers(users); // Réinitialiser la liste filtrée à la liste complète
-    // };
-
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilters(prevFilters => ({
-            ...prevFilters,
-            [name]: value
-        }));
-    };
 
 
     const handleToggleActive = (id, newStatus) => {
@@ -94,6 +192,40 @@ export default function ManageUsers() {
         }
     };
 
+    const handleAction = (user, action) => {
+        setSelectedUser(user);
+        setModalType(action);
+    };
+
+    const handleDesableUser = () => {
+        setModalType('desable');
+    };
+
+    const handleDeleteUser = () => {
+        setModalType('delete');
+    };
+
+    const handleConfirmAction = async () => {
+        if (modalType === "delete" && selectedUser) {
+            await deleteUser(selectedUser.id);
+            setUsers(users.filter(u => u.id !== selectedUser.id));
+        }
+        setModalType(null);
+    };
+
+    const options = [
+        {
+            label: 'Désactiver',
+            icon: '⏸️',
+            action: () => handleDesableUser(),
+        },
+        {
+            label: 'Supprimer',
+            icon: '🗑️',
+            action: () => handleDeleteUser(),
+        },
+    ];
+
     return (
         <div className='manage-user'>
             <div className="head">
@@ -105,50 +237,71 @@ export default function ManageUsers() {
 
             {/* Filtres */}
             {openFilter && (
-                <div className='filters'>
-                    <label>
-                        Création:
-                        <input
-                            type="date"
-                            name="createdAt"
-                            value={filters.createdAt}
-                            onChange={handleFilterChange}
-                        />
-                    </label>
-
-                    <label>
-                        Role:
-                        <select
-                            name="role"
-                            value={filters.role}
-                            onChange={handleFilterChange}>
-                            <option value="">Tous</option>
-                            <option value="admin">Admin</option>
-                            <option value="user">User</option>
-                        </select>
-                    </label>
-
-                    <label>
-                        Statut:
-                        <select
-                            name="isActive"
-                            value={filters.isActive}
-                            onChange={handleFilterChange}>
-                            <option value="">Tous</option>
-                            <option value="true">Actif</option>
-                            <option value="false">Inactif</option>
-                        </select>
-                    </label>
-
-                    <button onClick={applyFilters}>Appliquer</button>
-                </div>
+                <UsersFilter onFilterChange={handleFilterChange} />
             )}
 
-            <UserManagementTable
-                users={filteredUsers}
-                onDelete={handleDelete}
-                onToggleActive={handleToggleActive}
-            />
+            <div className="ads-list">
+                <div className="card-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User ID</th>
+                                <th> 📸Profile</th>
+                                <th>👤 Nom Complet</th>
+                                <th>✉️ Email</th>
+                                <th>🏷️ No. Profile</th>
+                                <th>📲Téléphone</th>
+                                <th>⚡Status</th>
+                                <th>🚨 Signalements</th>
+                                <th>🛠️ Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {currentUsers.map((user, index) => (
+                                <UserRow
+                                    key={user.id}
+                                    user={user}
+                                    index={index}
+                                    options={options}
+                                    onAction={(user) => handleAction(user)}
+                                />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                <Pagination
+                    currentPage={currentPage}
+                    elements={users}
+                    elementsPerPage={userPerPage}
+                    paginate={paginate}
+                />
+            </div>
+
+            {/* MODALE D'ACTION */}
+            {modalType && (
+                <Modal
+                    title={modalType === "desable" ? "Désactiver l'utilisateur" : "Supprimer l'utilisateur"}
+                    onShow={!!modalType}
+                    onHide={() => setModalType(null)}
+                >
+                    <div className="action-menu">
+                        <p><strong>Utilisateur :</strong> {selectedUser?.displayName}</p>
+                        <label>Motif de l'action :</label>
+                        <textarea
+                            value={reason}
+                            onChange={(e) => setReason(e.target.value)}
+                            placeholder="Expliquez pourquoi cette action est nécessaire..."
+                            rows="4"
+                        />
+                        <div className="modal-actions">
+                            <button onClick={handleConfirmAction} className="confirm-btn">Confirmer</button>
+                            <button onClick={() => setModalType(null)} className="cancel-btn">Annuler</button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>

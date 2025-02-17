@@ -44,13 +44,14 @@ export default function UserManagementTable({ users, onToggleActive, onDelete })
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Profile</th>
-                            <th>Nom Complet</th>
-                            <th>Email</th>
-                            <th>No. Profile</th>
-                            <th>Téléphone</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th> 📸Profile</th>
+                            <th>👤 Nom Complet</th>
+                            <th>✉️ Email</th>
+                            <th>🏷️ No. Profile</th>
+                            <th>📲Téléphone</th>
+                            <th>⚡Status</th>
+                            <th>🚨 Signalements</th>
+                            <th>🛠️ Actions</th>
                         </tr>
                     </thead>
                     <tbody>

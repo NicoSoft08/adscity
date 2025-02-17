@@ -6,37 +6,97 @@ import { fetchDataByUserID } from "../../routes/userRoutes";
 import { fetchAllPosts, suspendPost, deletePost } from "../../routes/postRoutes";
 import Modal from "../../customs/Modal";
 import Pagination from "../../components/pagination/Pagination";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { allCategories } from "../../data/database";
 import "../../styles/ManagePosts.scss";
 
-const PostTable = ({ index, post, onAction, options }) => {
+const PostsFilter = ({ onFilterChange }) => {
+    const [filters, setFilters] = useState({
+        search: '',
+        status: 'all', // 
+        category: 'all', //
+        city: '',
+        date: '',
+        views: '',
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        const updatedFilters = { ...filters, [name]: value };
+        setFilters(updatedFilters);
+        onFilterChange(updatedFilters);
+    }
+
+
+    return (
+        <div className="filters">
+            <input
+                type="text"
+                name="search"
+                placeholder="Rechercher par titre ou ID"
+                value={filters.search}
+                onChange={handleChange}
+            />
+
+            <select name="status" value={filters.status} onChange={handleChange}>
+                <option value="all">Tous les statuts</option>
+                <option value="approved">Publiée</option>
+                <option value="pending">En attente</option>
+                <option value="refused">Refusée</option>
+                <option value="expired">Expirée</option>
+            </select>
+
+            <select name="category" value={filters.category} onChange={handleChange}>
+                <option value="all">Toutes les catégories</option>
+                {allCategories.map(category => (
+                    <option
+                        key={category.key}
+                        value={category.categoryName}>
+                        {category.categoryTitles.fr}
+                    </option>
+                ))}
+            </select>
+
+            <input
+                type="text"
+                name="city"
+                placeholder="Ville"
+                value={filters.city}
+                onChange={handleChange}
+            />
+
+            <input
+                type="date"
+                name="date"
+                value={filters.date}
+                onChange={handleChange}
+            />
+
+            <input
+                type="number"
+                name="views"
+                placeholder="Nombre de vues minimum"
+                value={filters.views}
+                onChange={handleChange}
+            />
+        </div>
+    );
+};
+
+const PostRow = ({ index, post, onAction, options }) => {
     const [postOwner, setPostOwner] = useState(null);
-    const [loading, setLoading] = useState(true);
     const [openModal, setOpenModal] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             if (!post) return;
             const result = await fetchDataByUserID(post.userID);
-            if (result.success) {
-                setPostOwner(result.data);
-            }
-            setLoading(false);
+            if (result.success) setPostOwner(result.data);
         };
         fetchData();
     }, [post]);
 
-    const formatPostStatut = (status) => {
-        switch (status) {
-            case "pending":
-                return "🟠 En attente";
-            case "approved":
-                return "🟢 Accepté";
-            case "refused":
-                return "🔴 Rejetée";
-            default:
-                return "⚫ Indéfini";
-        }
-    };
 
     const handleActionClick = () => {
         const postID = post.id;
@@ -49,6 +109,7 @@ const PostTable = ({ index, post, onAction, options }) => {
         <>
             <tr>
                 <td>{index + 1}</td>
+                <td>{post.PostID}</td>
                 <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
                 <td>{post.adDetails.title}</td>
                 <td>{post.adDetails.price} RUB</td>
@@ -56,8 +117,8 @@ const PostTable = ({ index, post, onAction, options }) => {
                 <td>{formatViewCount(post.clicks)}</td>
                 <td>{post.views ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
                 <td>{format(new Date(post.expiry_date), "dd/MM/yyyy HH:mm", { locale: fr })}</td>
-                <td>{formatPostStatut(post.status)}</td>
-                <td>{loading ? "Chargement..." : postOwner?.displayName || "Inconnu"}</td>
+                <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
+                <td>{postOwner?.displayName || "Inconnu"}</td>
                 <td>{post.reportingCount || 0}</td>
                 <td>
                     <button className="see-more" onClick={() => handleActionClick(post)}>Détails</button>
@@ -82,31 +143,53 @@ const PostTable = ({ index, post, onAction, options }) => {
 
 export default function ManagePosts() {
     const [posts, setPosts] = useState([]);
+    const [filteredPosts, setFilteredPosts] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [postPerPage] = useState(10);
+    const postPerPage = 10;
     const [selectedPost, setSelectedPost] = useState(null);
-    const [modalType, setModalType] = useState(null); // "suspend" | "delete" | null
+    const [modalType, setModalType] = useState(null);
     const [reason, setReason] = useState("");
+    const [openFilter, setOpenFilter] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             const result = await fetchAllPosts();
             if (result.success) {
                 setPosts(result.postsData || []);
+                setFilteredPosts(result.postsData || []);
             }
+            setLoading(false);
         };
         fetchData();
     }, []);
 
     const indexOfLastPost = currentPage * postPerPage;
     const indexOfFirstPost = indexOfLastPost - postPerPage;
-    const currentPosts = posts.slice(indexOfFirstPost, indexOfLastPost);
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const handleAction = (post, action) => {
         setSelectedPost(post);
         setModalType(action);
+    };
+
+    // Fonction pour appliquer les filtres
+    const handleFilterChange = (filters) => {
+        const filtered = posts.filter(post =>
+            (filters.search === "" ||
+                post.adDetails.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+                post.PostID.toLowerCase().includes(filters.search.toLowerCase())
+            ) &&
+            (filters.status === "all" || post.status === filters.status) &&
+            (filters.category === "all" || post.category === filters.category) &&
+            (filters.city === "" || post.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
+            (filters.date === "" || format(new Date(post.expiry_date), "yyyy-MM-dd") === filters.date) &&
+            (filters.views === "" || post.views >= Number(filters.views))
+        );
+        setFilteredPosts(filtered);
     };
 
     const handleConfirmAction = async () => {
@@ -118,15 +201,13 @@ export default function ManagePosts() {
         try {
             if (modalType === "suspend") {
                 await suspendPost(selectedPost.id, reason);
-                console.log(`Annonce ${selectedPost.id} suspendue pour : ${reason}`);
             } else if (modalType === "delete") {
                 await deletePost(selectedPost.id, reason);
-                console.log(`Annonce ${selectedPost.id} supprimée pour : ${reason}`);
             }
-            setPosts(posts.filter(post => post.id !== selectedPost.id)); // Mettre à jour la liste
+            setFilteredPosts(filteredPosts.filter(post => post.id !== selectedPost.id));
             setModalType(null);
         } catch (error) {
-            console.error(`Erreur lors de l'action (${modalType}) :`, error);
+            console.error("Erreur :", error);
         }
     };
 
@@ -153,13 +234,25 @@ export default function ManagePosts() {
 
     return (
         <div className="ads-section">
-            <h2>Gestion des Annonces</h2>
+            <div className="head">
+                <h2>Gestion des Annonces</h2>
+                <div className="filters-container" onClick={() => setOpenFilter(!openFilter)}>
+                    <FontAwesomeIcon icon={faFilter} />
+                </div>
+            </div>
+
+            {/* Filtres */}
+            {openFilter && (
+                <PostsFilter onFilterChange={handleFilterChange} />
+            )}
+
             <div className="ads-list">
                 <div className="card-list">
                     <table>
                         <thead>
                             <tr>
                                 <th>#</th>
+                                <th>Post ID</th>
                                 <th>📸 Image</th>
                                 <th>🏷️ Titre</th>
                                 <th>💰 Prix</th>
@@ -175,7 +268,7 @@ export default function ManagePosts() {
                         </thead>
                         <tbody>
                             {currentPosts.map((post, index) => (
-                                <PostTable
+                                <PostRow
                                     key={post.id}
                                     index={index}
                                     post={post}

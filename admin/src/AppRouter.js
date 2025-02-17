@@ -13,6 +13,9 @@ import PaymentIntents from './page/public/PaymentIntents';
 import Notifications from './page/private/Notifications';
 import UserProfile from './page/private/UserProfile';
 import Settings from './page/private/Settings';
+import ManagePubs from './page/private/ManagePubs';
+import CreatePub from './page/private/CreatePub';
+import CreateAdmin from './page/private/CreateAdmin';
 
 
 export default function AppRouter() {
@@ -22,8 +25,11 @@ export default function AppRouter() {
                 <Route path='/' element={<LoginPage />} />
                 <Route path='/admin/dashboard' element={<AdminHome />}>
                     <Route path="panel" element={<DashboardPanel />} />
+                    <Route path="panel/create-admin" element={<CreateAdmin />} />
                     <Route path='posts' element={<ManagePosts />} />
                     <Route path='users' element={<ManageUsers />} />
+                    <Route path='pubs' element={<ManagePubs />} />
+                    <Route path='pubs/create-pub' element={<CreatePub />} />
                     <Route path='payments' element={<PaymentIntents />} />
                     <Route path='notifications' element={<Notifications />} />
                     <Route path='profile' element={<UserProfile />} />

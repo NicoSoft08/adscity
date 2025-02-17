@@ -5,12 +5,31 @@
 .home-page {
     background-color: $white;
 
-
-    p {
-        text-align: center;
-        font-size: 15px;
-        color: $dark;
-        font-family: 'Ubuntu', sans-serif;
-        font-weight: $font-regular;
+    .home-container {
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+    
+        .main-content {
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+    
+            .no-post {
+                text-align: center;
+                font-size: 15px;
+                color: $dark;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-regular;
+            }
+        }
+    
+        .ads-sidebar {
+            width: 20%;
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     }
 }

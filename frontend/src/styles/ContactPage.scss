@@ -152,5 +152,21 @@
                 margin-left: 0.25rem;
             }
         }
+
+        .terms-container {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+            text-align: center;
+    
+            a {
+                color: $primary;
+                text-decoration: none;
+            }
+    
+            a:hover {
+                text-decoration: underline;
+            }
+        }
     }
 }

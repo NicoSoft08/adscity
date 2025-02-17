@@ -3,27 +3,25 @@
 
 
 .signup-page {
-    min-height: 90vh;
+    height: 100vh;
     background-color: $two;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: center;    
 
-    @media (max-width: 480px) {
-        min-height: 100vh;
-    }
-    
-
-    .form {
+    .signup-form {
         padding: 2rem;
         border-radius: 8px;
         border: 1px solid $gray;
         background-color: $white;
         box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px,
             rgba(0, 0, 0, 0.24) 0px 1px 2px;
-        max-width: 300px;
-        width: 100%;
+        width: 300px;
+
+        @media (max-width: 768px) {
+            width: 250px;
+        }
 
         .progress-bar {
             display: flex;
@@ -82,6 +80,23 @@
                 font-size: 14px;
                 font-family: 'Ubuntu', sans-serif;
                 font-weight: $font-light;
+            }
+
+            select {
+                width: 100%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                outline: none;
+                font-size: 14px;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-light;
+
+                option {
+                    font-family: 'Ubuntu', sans-serif;
+                    font-weight: $font-light;
+                }
             }
 
             .input-field.error {
@@ -170,6 +185,21 @@
             a {
                 text-decoration: none;
                 color: $primary;
+            }
+        }
+
+        .terms-container {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #555;
+    
+            a {
+                color: $primary;
+                text-decoration: none;
+            }
+    
+            a:hover {
+                text-decoration: underline;
             }
         }
     }

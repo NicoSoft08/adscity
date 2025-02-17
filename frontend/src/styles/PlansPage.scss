@@ -41,6 +41,52 @@
         }
     }
 
+    .compare-plans {
+        margin-top: 20px;
+        background-color: $secondary-color;
+        padding: 10px;
+        border-radius: 5px;
+        color: $white;
+        cursor: pointer;
+    }
+
+    .category-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        .category-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-weight: $font-light;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .category-item:hover {
+            background: #f0f0f0;
+        }
+
+        .category-item.selected {
+            background-color: $two;
+            color: $white;
+            border-color: $two;
+        }
+
+        .confirm-btn {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: $secondary-color;
+            color: $white;
+            font-weight: $font-regular;
+            font-family: 'Ubuntu', sans-serif;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+    }
+
 
     .action-section {
         margin-top: 3rem;

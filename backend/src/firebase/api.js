@@ -283,36 +283,93 @@ const incrementClick = async (postID) => {
 const fetchFilteredPostsQuery = async (item, category, minPrice, maxPrice) => {
     try {
         let postRef = firestore.collection('POSTS');
-        if (item) postRef = postRef.where('searchableTerms', 'array-contains-any', item)
+
         if (category) postRef = postRef.where('category', '==', category);
         if (minPrice) postRef = postRef.where("adDetails.price", ">=", parseInt(minPrice));
         if (maxPrice) postRef = postRef.where("adDetails.price", "<=", parseInt(maxPrice));
 
         const querySnapshot = await postRef.get();
-        if (querySnapshot.empty) {
-            console.log('Aucun post trouvé');
-            return [];
-        }
-        const posts = [];
-        querySnapshot.forEach(doc => {
-            posts.push({ id: doc.id, ...doc.data() });
-        })
+        if (querySnapshot.empty) return [];
 
-        return  posts;
+        let posts = [];
+        querySnapshot.forEach(doc => posts.push({ id: doc.id, ...doc.data() }));
+
+        // 🔥 Si `item` est défini, filtrer les résultats en mémoire (Firestore limite les `where`)
+        if (item) {
+            const keywords = item.toLowerCase().split(/\s+/); // Découpe en mots-clés
+            posts = posts.filter(post =>
+                post.searchableTerms.some(term => keywords.includes(term.toLowerCase()))
+            );
+        }
+
+        return posts;
     } catch (error) {
         console.error('Erreur lors de la recherche avancée:', error);
         return [];
     }
 };
 
+const publishAdvertising = async (pubData) => {
+    try {
+        const pubsRef = firestore.collection('ADVERTISING');
+
+        // 📌 Récupérer la dernière publicité créée (triée par pubID)
+        const lastPubSnap = await pubsRef.orderBy("pubID", "desc").limit(1).get();
+        let lastPubID = "PUB000"; // Valeur par défaut si aucune pub existante
+        if (!lastPubSnap.empty) {
+            lastPubID = lastPubSnap.docs[0].data().pubID;
+        }
+
+        // 📌 Extraire le numéro et incrémenter
+        const lastNumber = parseInt(lastPubID.replace("PUB", ""), 10);
+        const newNumber = lastNumber + 1;
+        const newPubID = `PUB${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
+        const newPubRef = pubsRef.doc();
+
+        await newPubRef.set({
+            ...pubData,
+            clicks:  0,
+            views: 0,
+            status: 'approved',
+            reportingCount: 0,
+            id: newPubRef.id,
+            pubID: newPubID,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la publication de l\'annonce:', error);
+        return null;
+    };
+};
+
+const collectPubs = async () => {
+    try {
+        const pubsRef = firestore.collection('ADVERTISING');
+        const querySnapshot = await pubsRef.get();
+        if (querySnapshot.empty) return [];
+
+        const pubs = [];
+        querySnapshot.forEach(doc => {
+            pubs.push({ id: doc.id, ...doc.data() });
+        });
+        return pubs;
+    } catch (error) {
+        console.error('Erreur lors de la recherche avancée:', error);
+        return [];
+    }
+}
+
 module.exports = {
     advancedItemSearch,
     collectLocations,
+    collectPubs,
     contactUs,
     evaluateUser,
     fetchFilteredPostsQuery,
     incrementClick,
     incrementView,
+    publishAdvertising,
     searchQuery,
     updateInteraction,
     updateContactClick,

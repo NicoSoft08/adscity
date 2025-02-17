@@ -47,8 +47,23 @@ const createUser = async (address, city, country, email, password, firstName, la
         }
 
         // Ajouter les informations de l'utilisateur dans Firestore
-        const userRef = firestore.collection('USERS').doc(userRecord.uid);
-        await userRef.set({
+        const userRef = firestore.collection('USERS');
+
+        // 📌 Récupérer le dernier utilisateur créé (triée par userID)
+        const lastUserSnapshot = await userRef.orderBy('UserID', 'desc').limit(1).get();
+        let lastUserID = "USER000";
+        if (!lastUserSnapshot.empty) {
+            lastUserID = lastUserSnapshot.docs[0].data().UserID;
+        }
+
+        // 📌 Extraire le numéro et incrémenter
+        const lastNumber = parseInt(lastUserID.replace("USER", ""), 10);
+        const newNumber = lastNumber + 1;
+        const newUserID = `PUB${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
+        const newUserRef = userRef.doc(userRecord.uid);
+
+
+        await newUserRef.set({
             address,
             adHistory: [],
             adsClicked: [],
@@ -97,6 +112,7 @@ const createUser = async (address, city, country, email, password, firstName, la
                 count: 0,
                 distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
             },
+            reportingCount: 0,
             role: 'user',
             reviews: {
                 received: [],
@@ -110,8 +126,11 @@ const createUser = async (address, city, country, email, password, firstName, la
             },
             searchHistory: [],
             socialLinks: null,
+            status: 'active', // suspended, banned
+            subscription: 'free', // free, pro, business
             timeSpent: 0,
             totalAdsViewed: 0,
+            UserID: newUserID,
             userID: userRecord.uid,
             verificationCode: code,
         });

@@ -12,7 +12,9 @@ const {
     updateUserSocialLinks,
     incrementViewCount,
     incrementClickCount,
-    fetchFilteredPosts
+    fetchFilteredPosts,
+    hostAdvertising,
+    fetchPubs
 } = require('../controllers/apiController');
 
 const router = express.Router();
@@ -27,6 +29,8 @@ router.post('/rate/:userID', rateUser);
 router.post('/update/:userID/social-links', updateUserSocialLinks);
 router.post('/increment/view/:postID', incrementViewCount);
 router.post('/increment/click/:postID', incrementClickCount);
-router.get('/search/filtered', fetchFilteredPosts)
+router.get('/search/filtered', fetchFilteredPosts);
+router.post('/host/advertising', hostAdvertising);
+router.get('/collect/advertising', fetchPubs);
 
 module.exports = router;

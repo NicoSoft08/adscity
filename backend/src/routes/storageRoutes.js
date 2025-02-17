@@ -7,7 +7,8 @@ const {
     uploadProfileURL, 
     uploadBannerURL, 
     getUserProfilePicture, 
-    deletePostImages
+    deletePostImages,
+    uploadMedia
 } = require('../controllers/storageController');
 
 const router = express.Router();
@@ -18,5 +19,6 @@ router.post('/upload/:userID/profile', upload.single('profilURL'), uploadProfile
 router.post('/upload/:userID/banner', upload.single('coverURL'), uploadBannerURL);
 router.get('/user/:userID/profilURL', getUserProfilePicture);
 router.delete('/delete/post-images/:postID', deletePostImages);
+router.post('/upload/media', upload.single('file'), uploadMedia);
 
 module.exports = router;

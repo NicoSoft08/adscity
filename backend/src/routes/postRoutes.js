@@ -22,7 +22,8 @@ const {
     updatePost,
     deletePost,
     suspendPost,
-    markPostAsSold
+    markPostAsSold,
+    fetchNearbyPosts
 } = require('../controllers/postController');
 // const { collectPostBySlug } = require('../firebase/post');
 
@@ -50,6 +51,7 @@ router.put('/:postID/update', updatePost);
 router.delete('/:postID/delete', deletePost);
 router.post('/:postID/suspend', suspendPost);
 router.post('/:postID/mark/sold', markPostAsSold);
+router.get('/nearby', fetchNearbyPosts);
 
 
 module.exports = router;

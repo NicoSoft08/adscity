@@ -20,7 +20,8 @@ const {
     updatePostByID,
     deletePostByID,
     suspendPostByID,
-    markPostSold
+    markPostSold,
+    fetchNearbyPostsByLocation
 } = require("../firebase/post");
 
 const createPost = async (req, res) => {
@@ -74,6 +75,31 @@ const approvePost = async (req, res) => {
 const reportPostByID = async (req, res) => {
     const { postID } = req.params;
     const { userID, reason } = req.body;
+
+    // Vérification des données d'entrée
+    if (!postID || !userID || !reason) {
+        return res.status(400).json({
+            success: false,
+            message: 'Données invalides'
+        });
+    }
+
+    // Liste des raisons valides
+    const validReasons = [
+        'Contenu inapproprié',
+        'Produit illégal',
+        'Annonce frauduleuse',
+        'Violation des règles du site',
+        'Produit contrefait',
+        'Informations trompeuses',
+    ];
+
+    if (!validReasons.includes(reason)) {
+        return res.status(400).json({
+            success: false,
+            message: 'Raison de signalement invalide'
+        });
+    }
 
     try {
         const isPostReported = await reportPostID(postID, userID, reason);
@@ -562,11 +588,38 @@ const markPostAsSold = async (req, res) => {
     };
 };
 
+const fetchNearbyPosts = async (req, res) => {
+    const { country, city } = req.query;
+
+    try {
+        const nearbyPosts = await fetchNearbyPostsByLocation(country, city);
+        if (!nearbyPosts) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la récupération des annonces par proximité'
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Annonces récupérées avec succès',
+            nearbyPosts: nearbyPosts,
+        });
+    } catch (error) {
+        console.error('Erreur pendant la récupération des annonces par proximité:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+        
+    }
+}
+
 
 module.exports = {
     approvePost,
     createPost,
     deletePost,
+    fetchNearbyPosts,
     getActivePostsByUserID,
     getApprovedPosts,
     getApprovedPostsByUserID,

@@ -11,7 +11,7 @@ const collectUserProfilePhoto = async (userID) => {
         };
         const userData = userDoc.data();
         const { profilURL } = userData;
-       return profilURL;
+        return profilURL;
     } catch (error) {
         console.error('Erreur lors de la récupération de la photo de profil :', error);
         return null;
@@ -207,7 +207,7 @@ const deleteImagesByPostID = async (postID) => {
             const urlParts = imageURL.split('/');
             const imageName = urlParts[urlParts.length - 1];
             return `PHOTOS/POSTS/${imageName}`;
-        }); 
+        });
         await storage.bucket().deleteFiles({
             prefix: imagePaths.join(','),
         });
@@ -219,10 +219,31 @@ const deleteImagesByPostID = async (postID) => {
     };
 };
 
+const uploadMediaURL = async (file) => {
+    try {
+        const fileName = `PHOTOS/PUBS_MEDIA/${Date.now()}_${file.originalname}`;
+        const fileUpload = storage.bucket().file(fileName);
+        await fileUpload.save(file.buffer, {
+            metadata: {
+                contentType: file.mimetype,
+            },
+        });
+        const [imageUrl] = await fileUpload.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491',
+        });
+        return imageUrl;
+    } catch (error) {
+        console.error('Erreur lors du téléchargement de l\'image :', error);
+        return false;
+    }
+}
+
 module.exports = {
     deleteImagesByPostID,
     collectUserProfilePhoto,
     uploadPostImage,
     uploadUserBannerPicture,
+    uploadMediaURL,
     uploadUserProfilePicture,
 };

@@ -9,7 +9,9 @@ const {
     socialLinksUpdate,
     incrementView,
     incrementClick,
-    fetchFilteredPostsQuery
+    fetchFilteredPostsQuery,
+    publishAdvertising,
+    collectPubs
 } = require("../firebase/api");
 
 const searchItems = async (req, res) => {
@@ -260,7 +262,7 @@ const fetchFilteredPosts = async (req, res) => {
 
     try {
         const filteredPosts = await fetchFilteredPostsQuery(item, category, minPrice, maxPrice);
-        if (!filteredPosts || filteredPosts.length === 0) {
+        if (!filteredPosts) {
             return res.status(404).json({
                 success: false,
                 message: 'Aucun post trouvé'
@@ -280,11 +282,60 @@ const fetchFilteredPosts = async (req, res) => {
     };
 };
 
+const hostAdvertising = async (req, res) => {
+    const pubData = req.body;
+
+    try {
+        const isPublished = await publishAdvertising(pubData);
+        if (!isPublished) {
+            return res.status(404).json({
+                success: false,
+                message: 'Echec de la publication'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Annonce publiée avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la publication d\'un annonce: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    }
+};
+
+const fetchPubs = async (req, res) => {
+    try {
+        const pubs = await collectPubs();
+        if (!pubs) {
+            return res.status(404).json({
+                success: false,
+                message: 'Aucune annonce trouvée'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Annonces récupérées avec succès',
+            pubs: pubs
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération des annonces: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    };
+};
+
 module.exports = {
     advancedSearch,
     contactSupportClient,
     fetchFilteredPosts,
+    fetchPubs,
     getPostsLocations,
+    hostAdvertising,
     incrementViewCount,
     incrementClickCount,
     manageInteraction,

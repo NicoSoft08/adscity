@@ -59,7 +59,22 @@ const makePost = async (postData, userID) => {
 
 
         // 6️⃣ Ajouter l'annonce dans Firestore
-        const postRef = await firestore.collection('POSTS').add({
+        const postRef = firestore.collection('POSTS')
+
+        // 📌 Récupérer le dernier utilisateur créé (triée par userID)
+        const lastPostSnapshot = await userRef.orderBy('PostID', 'desc').limit(1).get();
+        let lastPostID = "POST000";
+        if (!lastPostSnapshot.empty) {
+            lastPostID = lastPostSnapshot.docs[0].data().PostID;
+        }
+
+        // 📌 Extraire le numéro et incrémenter
+        const lastNumber = parseInt(lastPostID.replace("POST", ""), 10);
+        const newNumber = lastNumber + 1;
+        const newPostID = `POST${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
+        const newPostRef = userRef.doc();
+
+        await newPostRef.set({
             userID: userID,
             ...postData,
             expiry_date: null,
@@ -70,6 +85,7 @@ const makePost = async (postData, userID) => {
             favorites: 0,
             shares: 0,
             comments: 0,
+            PostID: newPostID,
             posted_at: admin.firestore.FieldValue.serverTimestamp(),
             updated_at: null,
             isActive: false,
@@ -119,14 +135,15 @@ const reportPostID = async (postID, userID, reason) => {
     try {
         const postRef = firestore.collection('POSTS').doc(postID);
         const userRef = firestore.collection('USERS').doc(userID);
-        const userDoc = await userRef.get();
-        const postDoc = await postRef.get();
 
+        // Vérification si l'utilisateur et l'annonce existent
+        const [userDoc, postDoc] = await Promise.all([userRef.get(), postRef.get()]);
         if (!userDoc.exists || !postDoc.exists) {
             console.log('Utilisateur ou annonce non trouvé');
             return false;
-        };
+        }
 
+        // Vérifier si l'utilisateur a déjà signalé ce post
         const existingReportQuery = await firestore
             .collection('REPORTS')
             .where('postID', '==', postID)
@@ -136,8 +153,21 @@ const reportPostID = async (postID, userID, reason) => {
         if (!existingReportQuery.empty) {
             console.log('Signalement déjà enregistré');
             return false;
-        };
+        }
 
+        // Vérifier si l'utilisateur n'a pas signalé trop d'annonces en 24h
+        const recentReportsQuery = await firestore
+            .collection('REPORTS')
+            .where('userID', '==', userID)
+            .where('reported_at', '>=', admin.firestore.Timestamp.fromMillis(Date.now() - 24 * 60 * 60 * 1000))
+            .get();
+
+        if (recentReportsQuery.size >= 5) {
+            console.log('Utilisateur a atteint la limite de signalements');
+            return false;
+        }
+
+        // Ajouter le signalement
         await firestore.collection('REPORTS').add({
             postID,
             userID,
@@ -145,8 +175,9 @@ const reportPostID = async (postID, userID, reason) => {
             reported_at: admin.firestore.FieldValue.serverTimestamp()
         });
 
+        // Incrémenter le nombre de signalements sur l'annonce
         await postRef.update({
-            reportCount: admin.firestore.FieldValue.increment(1),
+            reportingCount: admin.firestore.FieldValue.increment(1),
         });
 
         return true;
@@ -678,6 +709,34 @@ const markPostSold = async (postID, userID) => {
     }
 };
 
+const fetchNearbyPostsByLocation = async (country, city) => {
+    try {
+        const postsCollection = firestore.collection('POSTS');
+        const query = postsCollection
+        .where('status', '==', 'approved')
+        .where('isActive', '==', true)
+        .where('location.country', '==', country)
+        .where('location.city', '==', city)
+        .orderBy('posted_at', 'desc');
+
+        const querySnapshot = await query.get();
+        if (querySnapshot.empty) {
+            console.error('Aucune annonce trouvée.');
+            return [];
+        }
+
+        const posts = [];
+        querySnapshot.forEach(doc => {
+            posts.push({ id: doc.id, ...doc.data() });
+        });
+
+        return posts;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des annonces par proximité:', error);
+        return [];
+    }
+};
+
 module.exports = {
     collectActivePostsByUserID,
     collectApprovedPosts,
@@ -694,6 +753,7 @@ module.exports = {
     collectRejectedPosts,
     collectRelatedPosts,
     deletePostByID,
+    fetchNearbyPostsByLocation,
     makePost,
     markPostSold,
     rejectPost,

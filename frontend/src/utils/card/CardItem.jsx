@@ -308,7 +308,7 @@ export default function CardItem({ post, onToggleFavorite }) {
 
     // Vérifier si l'annonce a expiré
     function parseTimestamp(timestamp) {
-        return new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1000000);
+        return new Date(timestamp?._seconds * 1000 + timestamp?._nanoseconds / 1000000);
     }
 
     const moderatedAtDate = parseTimestamp(moderated_at);

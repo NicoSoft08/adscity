@@ -21,7 +21,7 @@
     .login-form {
         display: flex;
         flex-direction: column;
-        width: 300px;
+        width: 400px;
         padding: 2rem;
         border-radius: 8px;
         border: 1px solid $gray;
@@ -30,7 +30,7 @@
             rgba(0, 0, 0, 0.24) 0px 1px 2px;
 
         @media (max-width: 768px) {
-            width: 250px;
+            width: 300px;
         }
 
 
@@ -65,7 +65,7 @@
                 position: absolute;
                 top: 35px;
                 color: $dark;
-                right: 0.25rem;
+                right: 1rem;
                 cursor: pointer;
             }
         }

@@ -25,7 +25,7 @@
     "react-scripts": "5.0.1",
     "sass": "^1.80.4",
     "serve": "^14.2.4",
-    "ua-parser-js": "^2.0.0",
+    "ua-parser-js": "^2.0.2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

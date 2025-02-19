@@ -9,13 +9,16 @@ import AdminHome from './page/private/AdminHome';
 import DashboardPanel from './page/private/DashboardPanel';
 import ManagePosts from './page/private/ManagePosts';
 import ManageUsers from './page/private/ManageUsers';
-import PaymentIntents from './page/public/PaymentIntents';
 import Notifications from './page/private/Notifications';
 import UserProfile from './page/private/UserProfile';
 import Settings from './page/private/Settings';
 import ManagePubs from './page/private/ManagePubs';
 import CreatePub from './page/private/CreatePub';
 import CreateAdmin from './page/private/CreateAdmin';
+import ManagePayments from './page/public/ManagePayments';
+import ManageUserID from './page/private/ManageUserID';
+import ManagePostID from './page/private/ManagePostID';
+import ManagePubID from './page/private/ManagePubID';
 
 
 export default function AppRouter() {
@@ -27,10 +30,13 @@ export default function AppRouter() {
                     <Route path="panel" element={<DashboardPanel />} />
                     <Route path="panel/create-admin" element={<CreateAdmin />} />
                     <Route path='posts' element={<ManagePosts />} />
+                    <Route path='posts/:post_id' element={<ManagePostID />} />
                     <Route path='users' element={<ManageUsers />} />
+                    <Route path='users/:user_id' element={<ManageUserID />} />
                     <Route path='pubs' element={<ManagePubs />} />
+                    <Route path='pubs/:pub_id' element={<ManagePubID />} />
                     <Route path='pubs/create-pub' element={<CreatePub />} />
-                    <Route path='payments' element={<PaymentIntents />} />
+                    <Route path='payments' element={<ManagePayments />} />
                     <Route path='notifications' element={<Notifications />} />
                     <Route path='profile' element={<UserProfile />} />
                     <Route path='settings' element={<Settings />} />

@@ -17,13 +17,13 @@ const fetchAllPosts = async () => {
             throw new Error('Erreur lors de la récupération des annonces.');
         }
         const result = await response.json();
+        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur:', error);
         return [];
     };
 };
-
 
 // Fetch all Approved Ads
 const fetchApprovedPosts = async () => {
@@ -170,10 +170,27 @@ const deletePost = async (postID, reason) => {
     };
 };
 
+const fetchPostById = async (post_id) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts/${post_id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur:', error);
+        throw error;
+    }
+};
+
 
 export {
     fetchAllPosts,
     fetchPendingPosts,
+    fetchPostById,
     fetchRefusedPosts,
     fetchApprovedPosts,
     onApprovePost,

@@ -8,6 +8,7 @@ import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { IconAvatar } from '../../config/images';
 import Modal from '../../customs/Modal';
 import Pagination from '../../components/pagination/Pagination';
+import { useNavigate } from 'react-router-dom';
 import '../../styles/ManageUsers.scss';
 
 const UsersFilter = ({ onFilterChange }) => {
@@ -77,50 +78,25 @@ const UsersFilter = ({ onFilterChange }) => {
 };
 
 
-const UserRow = ({ index, user, onAction, options }) => {
-    const [openModal, setOpenModal] = useState(false);
+const UserRow = ({ index, user, onAction }) => {
 
     const getProfilePicture = (user) => user.profilURL || IconAvatar;
 
     const formatUserStatut = (isOnline) => (isOnline ? "🟢 En ligne" : "🔴 Hors ligne");
 
-
-    const handleActionClick = () => {
-        const userID = user.id;
-        console.log(userID);
-        onAction(user);
-        setOpenModal(true);
-    };
-
     return (
-        <>
-            <tr>
-                <td>{index + 1}</td>
-                <td>{user.UserID}</td>
-                <td><img src={getProfilePicture(user)} alt={user.displayName} width="50" height="50" className="profile-img" /></td>
-                <td>{user.displayName}</td>
-                <td>{user.email}</td>
-                <td>{user.profileNumber}</td>
-                <td>{user.phoneNumber}</td>
-                <td>{formatUserStatut(user.isOnline)}</td>
-                <td>{user.reportingCount || 0}</td>
-                <td><button className="see-more" onClick={() => handleActionClick(user)}>Détails</button></td>
-            </tr>
-
-            {openModal && (
-                <Modal title={"Actions"} onShow={openModal} onHide={() => setOpenModal(false)}>
-                    <div className="modal-menu">
-                        {options.map((option, index) => (
-                            <div key={index} className="menu-item" onClick={option.action}>
-                                {/* <FontAwesomeIcon icon={option.icon} /> */}
-                                <span>{option.icon}</span>
-                                <span>{option.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </Modal>
-            )}
-        </>
+        <tr>
+            <td>{index + 1}</td>
+            <td>{user.UserID}</td>
+            <td><img src={getProfilePicture(user)} alt={user.displayName} width="50" height="50" className="profile-img" /></td>
+            <td>{user.displayName}</td>
+            <td>{user.email}</td>
+            <td>{user.profileNumber}</td>
+            <td>{user.phoneNumber}</td>
+            <td>{formatUserStatut(user.isOnline)}</td>
+            <td>{user.reportingCount || 0}</td>
+            <td><button className="see-more" onClick={() => onAction(user)}>Voir</button></td>
+        </tr>
     );
 }
 
@@ -135,6 +111,7 @@ export default function ManageUsers() {
     const [selectedUser, setSelectedUser] = useState(null);
     const [modalType, setModalType] = useState(null); // "desable" | "delete" | null
     const [reason, setReason] = useState("");
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -163,8 +140,8 @@ export default function ManageUsers() {
                 (filters.status === "all" || user.isActive === (filters.status === "active")) &&
                 (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
                 (filters.subscription === "all" || user.subscription === filters.subscription) &&
-                (filters.search === "" || 
-                    user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || 
+                (filters.search === "" ||
+                    user.displayName.toLowerCase().includes(filters.search.toLowerCase()) ||
                     user.email.toLowerCase().includes(filters.search.toLowerCase())
                 )
             );
@@ -192,9 +169,10 @@ export default function ManageUsers() {
         }
     };
 
-    const handleAction = (user, action) => {
-        setSelectedUser(user);
-        setModalType(action);
+    const handleAction = (user) => {
+        const UserID = user.UserID;
+        const user_id = UserID.toLowerCase();
+        navigate(`${user_id}`);
     };
 
     const handleDesableUser = () => {
@@ -227,7 +205,7 @@ export default function ManageUsers() {
     ];
 
     return (
-        <div className='manage-user'>
+        <div className='manage-users'>
             <div className="head">
                 <h2>Gestion des Utilisateurs</h2>
                 <div className="filters-container" onClick={() => setOpenFilter(!openFilter)}>
@@ -247,12 +225,12 @@ export default function ManageUsers() {
                             <tr>
                                 <th>#</th>
                                 <th>User ID</th>
-                                <th> 📸Profile</th>
+                                <th>📸 Profile</th>
                                 <th>👤 Nom Complet</th>
                                 <th>✉️ Email</th>
                                 <th>🏷️ No. Profile</th>
-                                <th>📲Téléphone</th>
-                                <th>⚡Status</th>
+                                <th>📲 Téléphone</th>
+                                <th>⚡ Status</th>
                                 <th>🚨 Signalements</th>
                                 <th>🛠️ Actions</th>
                             </tr>

@@ -154,25 +154,21 @@
 
             button {
                 padding: 10px 20px;
-                color: white;
+                color: $white;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;
                 font-family: 'Ubuntu', sans-serif;
 
-                &.prev {
-                    background-color: $danger;
-                }
-
                 &.next {
-                    background-color: $two;
+                    background-color: $danger;
                 }
             }
 
             .submit {
                 padding: 10px 20px;
-                background-color: $secondary-color;
-                color: white;
+                background-color: $two;
+                color: $white;
                 border: none;
                 border-radius: 4px;
                 cursor: pointer;

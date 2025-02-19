@@ -303,10 +303,10 @@ export default function CreateAdmin() {
                 </div>
 
                 <div className="navigation-buttons">
+                    <button className='next' onClick={handleCancel}>Annuler</button>
                     <button onClick={handleConfirm} className='submit'>
                         {isLoading ? <Spinner /> : "Confirmer"}
                     </button>
-                    <button className='next' onClick={handleCancel}>Annuler</button>
                 </div>
             </div>
 

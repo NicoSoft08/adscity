@@ -38,10 +38,9 @@ const PubsFilter = ({ onFilterChange }) => {
 
             <select name='status' value={filters.status} onChange={handleChange}>
                 <option value="all">Tous les statuts</option>
-                <option value="active">Active</option>
-                <option value="pending">En attente</option>
-                <option value="expired">Expirée</option>
-                <option value="rejected">Refusée</option>
+                <option value="active">Actif</option>
+                <option value="expired">Expiré</option>
+                <option value="suspended">Suspendu</option>
             </select>
 
             <select name='pubType' value={filters.pubType} onChange={handleChange}>
@@ -80,12 +79,11 @@ const PubsFilter = ({ onFilterChange }) => {
 };
 
 
-const PubRow = ({ index, pub, onAction, options }) => {
-    const [openModal, setOpenModal] = useState(false);
+const PubRow = ({ index, pub, onAction }) => {
 
     const formatPostStatut = (status) => {
         switch (status) {
-            case "approved":
+            case "active":
                 return "🟢 Actif";
             case "refused":
                 return "🔴 Expiré";
@@ -94,45 +92,22 @@ const PubRow = ({ index, pub, onAction, options }) => {
         }
     };
 
-    const handleActionClick = () => {
-        const pubID = pub.id;
-        console.log(pubID);
-        onAction(pub);
-        setOpenModal(true);
-    }
-
     return (
-        <>
-            <tr>
-                <td>{index + 1}</td>
-                <td>{pub.pubID}</td>
-                <td>{pub.mediaFile && <img src={pub.mediaFile} alt={pub.advertiserName} width={50} height={50} />}</td>
-                <td>{pub.advertiserName || "Inconnu"}</td>
-                <td>{pub.contact}</td>
-                <td>{formatViewCount(pub.views)}</td>
-                <td>{formatViewCount(pub.clicks)}</td>
-                <td>{pub.views ? ((pub.clicks / pub.views) * 100).toFixed(1) + "%" : "0%"}</td>
-                <td>{formatPostStatut(pub.status)}</td>
-                <td>{pub.reportingCount || 0}</td>
-                <td>
-                    <button className="see-more" onClick={() => handleActionClick(pub)}>Détails</button>
-                </td>
-            </tr>
-
-            {openModal && (
-                <Modal title={"Actions"} onShow={openModal} onHide={() => setOpenModal(false)}>
-                    <div className="modal-menu">
-                        {options.map((option, index) => (
-                            <div key={index} className="menu-item" onClick={option.action}>
-                                {/* <FontAwesomeIcon icon={option.icon} /> */}
-                                <span>{option.icon}</span>
-                                <span>{option.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </Modal>
-            )}
-        </>
+        <tr>
+            <td>{index + 1}</td>
+            <td>{pub.pubID}</td>
+            <td>{pub.mediaFile && <img src={pub.mediaFile} alt={pub.advertiserName} width={50} height={50} />}</td>
+            <td>{pub.advertiserName || "Inconnu"}</td>
+            <td>{pub.contact}</td>
+            <td>{formatViewCount(pub.views)}</td>
+            <td>{formatViewCount(pub.clicks)}</td>
+            <td>{pub.views ? ((pub.clicks / pub.views) * 100).toFixed(1) + "%" : "0%"}</td>
+            <td>{formatPostStatut(pub.status)}</td>
+            <td>{pub.reportingCount || 0}</td>
+            <td>
+                <button className="see-more" onClick={() => onAction(pub)}>Voir</button>
+            </td>
+        </tr>
     )
 };
 
@@ -141,7 +116,6 @@ export default function ManagePubs() {
     const [currentPage, setCurrentPage] = useState(1);
     const [pubPerPage] = useState(10);
     const [filteredPubs, setFilteredPubs] = useState([]);
-    const [selectedPub, setSelectedPub] = useState(null);
     const [modalType, setModalType] = useState(null);
     const [openFilter, setOpenFilter] = useState(false);
     const navigate = useNavigate();
@@ -152,6 +126,7 @@ export default function ManagePubs() {
 
             if (result.success) {
                 setPubs(result.pubs);
+                setFilteredPubs(result.pubs);
             }
         };
 
@@ -182,9 +157,10 @@ export default function ManagePubs() {
     };
 
 
-    const handleAction = (pub, action) => {
-        setSelectedPub(pub);
-        setModalType(action);
+    const handleAction = (pub) => {
+        const PubID = pub?.PubID;
+        const pub_id = PubID.toLowerCase();
+        navigate(`${pub_id}`);
     };
 
     const handleSuspendPost = () => {
@@ -228,7 +204,7 @@ export default function ManagePubs() {
                 <PubsFilter onFilterChange={handleFilterChange} />
             )}
 
-            <div className="ads-list">
+            <div className="ads-list">;
                 <div className="card-list">
                     <table>
                         <thead>
@@ -247,12 +223,16 @@ export default function ManagePubs() {
                             </tr>
                         </thead>
                         <tbody>
+                            {currentPubs.length === 0 ? (
+                                <tr>
+                                    <td colSpan="12">Aucune publicité trouvée.</td>
+                                </tr>
+                            ) : null}
                             {currentPubs.map((pub, index) => (
                                 <PubRow
                                     key={pub.id}
                                     index={index}
                                     pub={pub}
-                                    options={options}
                                     onAction={(pub) => handleAction(pub)}
                                 />
                             ))}

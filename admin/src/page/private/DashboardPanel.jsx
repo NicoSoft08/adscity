@@ -5,8 +5,8 @@ import PaymentStats from '../../components/payment-stats/PaymentStats';
 import PostsStatistics from './PostsStatistics';
 import PendingPosts from './PendingPosts';
 import AdminPostsChart from './AdminPostsChart';
-import '../../styles/DashboardPanel.scss';
 import Pagination from '../../components/pagination/Pagination';
+import '../../styles/DashboardPanel.scss';
 
 export default function DashboardPanel() {
     const [postsPending, setPostsPending] = useState([]);

@@ -1,11 +1,32 @@
-@import '../styles/fonts';
-@import '../styles/variables';
+@import './fonts';
+@import './variables';
 
-.manage-pubs {
-    margin-top: 4rem;
+
+.payment-actions {
+
+    .action-btn {
+        padding: 5px 12px;
+        // font-size: 13px;
+        color: $white;
+        cursor: pointer;
+        border-radius: 4px;
+        font-weight: $font-regular;
+        border: none;
+    }
+
+    .success {
+        background-color: $green;
+    }
+
+    .danger {
+        background-color: $red;
+    }
+}
+
+.manage-payments {
 
     @media (max-width: 768px) {
-        margin-top: 8rem;
+        margin-top: 10rem;
     }
 
     .head {
@@ -24,44 +45,16 @@
             flex-direction: row;
             gap: 10px;
 
-            .filter {
-                padding: 10px;
-                border-radius: 5px;
+            svg {
+                color: $dark;
                 cursor: pointer;
-                color: $white;
-                background-color: $dark;
-
-                svg {
-                    color: $white;
-                    cursor: pointer;
-                }
-            }
-
-            .create-pubs {
-                padding: 10px;
-                border-radius: 5px;
-                cursor: pointer;
-                color: $white;
-                background-color: $dark;
-
-                svg {
-                    color: $white;
-                    cursor: pointer;
-                }
-
-                span {
-                    font-weight: $font-light;
-                    margin-left: 8px;
-
-                    @media (max-width: 768px) {
-                        display: none;
-                    }
-                }
             }
         }
     }
 
-    .ads-list {
+
+
+    .payment-list {
 
         .card-list {
             overflow-x: auto;

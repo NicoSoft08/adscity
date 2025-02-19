@@ -1,5 +1,6 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
+import { collectDeviceInfo } from "../services/apiServices";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -19,24 +20,28 @@ const signinUser = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        const userID = user.uid;
 
         if (!user.emailVerified) {
             throw new Error('Veuillez vérifier votre email avant de continuer.');
         };
 
+        // 🔹 Récupérer le jeton Firebase
         const idToken = await user.getIdToken();
+
+        // 🔹 Récupérer les informations sur le périphérique
+        const deviceInfo = await collectDeviceInfo();
         
+        // 🔹 Envoyer les données au backend
         const response = await fetch(`${backendUrl}/api/auth/login-user`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ userID, deviceInfo }),
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la connexion de l\'utilisateur');
-        };
 
         const result = await response.json();
         return result;
@@ -48,7 +53,8 @@ const signinUser = async (email, password) => {
 
 const logoutUser = async () => {
     try {
-        const  user = auth.currentUser;
+        const user = auth.currentUser;
+
         const idToken = await user.getIdToken();
 
         const response = await fetch(`${backendUrl}/api/auth/logout-user`, {
@@ -59,16 +65,17 @@ const logoutUser = async () => {
             },
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la déconnexion de l\'utilisateur');
-        };
-
         const result = await response.json();
-        return result;
+
+        // 🔹 Déconnexion locale après validation côté serveur
+        await signOut(auth);
+
+        return { success: true, message: result.message || "Déconnexion réussie." };
+
     } catch (error) {
-        console.error('Erreur lors de la déconnexion de l\'utilisateur :', error);
-        throw error;
-    };
+        console.error('❌ Erreur lors de la déconnexion :', error.message);
+        return { success: false, message: error.message || "Une erreur est survenue." };
+    }
 };
 
 const sendVerificationCode = async (userID, newEmail) => {

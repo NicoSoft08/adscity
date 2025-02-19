@@ -2,17 +2,18 @@ import React, { useContext, useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEnvelope, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
-import Spinner from '../../customs/Spinner';
-import Toast from '../../customs/Toast';
 import { signinUser } from '../../routes/authRoutes';
 import { AuthContext } from '../../contexts/AuthContext';
+import Spinner from '../../customs/Spinner';
+import Toast from '../../customs/Toast';
 import '../../styles/LoginPage.scss';
 
 export default function LoginPage() {
     const navigate = useNavigate();
     const { currentUser, userRole } = useContext(AuthContext);
-    const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoginSuspecious, setIsLoginSuspicious] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '', agree: false });
     const [formData, setFormData] = useState({ email: '', password: '', agree: false });
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
@@ -59,59 +60,65 @@ export default function LoginPage() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const formErrors = validateForm();
-        if (Object.keys(formErrors).length > 0) {
-            setErrors(formErrors);
-            setIsLoading(false);
+        setLoading(true);
+        setErrors({}); // Réinitialise les erreurs
+    
+        // 🔹 Validation des champs avant d'envoyer la requête
+        const errors = validateForm();
+        if (Object.keys(errors).length > 0) {
+            setErrors(errors);
+            setLoading(false);
             return;
         }
-
+    
         try {
-            setIsLoading(true);
             const { email, password } = formData;
-        
+    
+            // 🔹 Tentative de connexion
             const result = await signinUser(email, password);
     
             if (!result.success) {
-                setToast({
-                    type: 'error',
-                    message: `${result.message}, ${result.actionRequired || ''}`,
-                    show: true,
-                });
-                return;
+                if (result.status === "pending_verification") {
+                    setIsLoginSuspicious(true);
+                    return;
+                }
+                throw new Error(result.message || "Accès refusé.");
             }
     
-            if (result.role !== 'admin') {
-                setToast({
-                    type: 'error',
-                    message: 'Vous n\'êtes pas autorisé à accéder à cette page.',
-                    show: true,
-                });
-                return;
-            }
-    
-            // Si tout est correct
             setToast({
+                show: true,
                 type: 'success',
-                message: result.message,
-                show: true,
+                message: result.message || "Connexion réussie.",
             });
-            navigate('/admin/dashboard');
+    
+            // 🔹 Redirection selon le rôle
+            if (result.role === 'admin') {
+                navigate('/admin/dashboard/panel');
+            } else {
+                navigate('/access-denied');
+            }
         } catch (error) {
-            console.error('Connexion échouée: ', error);
+            console.error("❌ Erreur lors de la connexion :", error.message);
+
             setToast({
-                type: 'error',
-                message: 'Une erreur est survenue. Veuillez réessayer.',
                 show: true,
+                type: 'error',
+                message: error.message || "Une erreur est survenue. Veuillez réessayer.",
             });
+    
+            navigate('/access-denied');
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
-    };
+    };    
 
     return (
         <div className='login-page'>
+            {isLoginSuspecious && (
+                <div className="suspicious-login-message">
+                    <p>Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.</p>
+                </div>
+            )}
             <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Admin Panel</h2>
                 <div className='password-toggle'>
@@ -164,9 +171,9 @@ export default function LoginPage() {
 
                 <button
                     type="submit"
-                    disabled={isLoading}
+                    disabled={loading}
                 >
-                    {isLoading ? <Spinner /> : "Se connecter"}
+                    {loading ? <Spinner /> : "Se connecter"}
                 </button>
                 <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
             </form>

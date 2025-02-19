@@ -185,27 +185,30 @@ export default function Settings() {
 
     const handleLogout = async () => {
         setIsLoading(true);
-
+    
         const response = await logoutUser();
-
+    
+        setIsLoading(false);
+    
         if (response.success) {
             setToast({
                 show: true,
                 message: response.message,
                 type: 'success',
             });
-            setIsLoading(false);
+    
+            navigate('/');  // 🔹 Redirection vers la page d'accueil après la déconnexion
             setOpen(false);
-            navigate('/');
+    
         } else {
             setToast({
                 show: true,
                 message: response.message,
                 type: 'error',
             });
-            setIsLoading(false);
-        };
+        }
     };
+    
 
 
     const handleAccountDeletion = async () => {

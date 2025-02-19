@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { fr } from "date-fns/locale";
-import { format } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { formatViewCount } from "../../func";
 import { fetchDataByUserID } from "../../routes/userRoutes";
-import { fetchAllPosts, suspendPost, deletePost } from "../../routes/postRoutes";
-import Modal from "../../customs/Modal";
-import Pagination from "../../components/pagination/Pagination";
+import { fetchAllPosts } from "../../routes/postRoutes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { allCategories } from "../../data/database";
+import { useNavigate } from 'react-router-dom';
+import Pagination from "../../components/pagination/Pagination";
 import "../../styles/ManagePosts.scss";
 
 const PostsFilter = ({ onFilterChange }) => {
@@ -84,9 +84,8 @@ const PostsFilter = ({ onFilterChange }) => {
     );
 };
 
-const PostRow = ({ index, post, onAction, options }) => {
+const PostRow = ({ index, post, onAction }) => {
     const [postOwner, setPostOwner] = useState(null);
-    const [openModal, setOpenModal] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -98,46 +97,25 @@ const PostRow = ({ index, post, onAction, options }) => {
     }, [post]);
 
 
-    const handleActionClick = () => {
-        const postID = post.id;
-        console.log(postID);
-        onAction(post);
-        setOpenModal(true);
-    }
 
     return (
-        <>
-            <tr>
-                <td>{index + 1}</td>
-                <td>{post.PostID}</td>
-                <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
-                <td>{post.adDetails.title}</td>
-                <td>{post.adDetails.price} RUB</td>
-                <td>{formatViewCount(post.views)}</td>
-                <td>{formatViewCount(post.clicks)}</td>
-                <td>{post.views ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
-                <td>{format(new Date(post.expiry_date), "dd/MM/yyyy HH:mm", { locale: fr })}</td>
-                <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
-                <td>{postOwner?.displayName || "Inconnu"}</td>
-                <td>{post.reportingCount || 0}</td>
-                <td>
-                    <button className="see-more" onClick={() => handleActionClick(post)}>Détails</button>
-                </td>
-            </tr>
-            {openModal && (
-                <Modal title={"Actions"} onShow={openModal} onHide={() => setOpenModal(false)}>
-                    <div className="modal-menu">
-                        {options.map((option, index) => (
-                            <div key={index} className="menu-item" onClick={option.action}>
-                                {/* <FontAwesomeIcon icon={option.icon} /> */}
-                                <span>{option.icon}</span>
-                                <span>{option.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </Modal>
-            )}
-        </>
+        <tr>
+            <td>{index + 1}</td>
+            <td>{post.PostID}</td>
+            <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
+            <td>{post.adDetails.title}</td>
+            <td>{post.adDetails.price} RUB</td>
+            <td>{formatViewCount(post.views)}</td>
+            <td>{formatViewCount(post.clicks)}</td>
+            <td>{post.views ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
+            <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
+            <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
+            <td>{postOwner?.displayName || "Inconnu"}</td>
+            <td>{post.reportingCount || 0}</td>
+            <td>
+                <button className="see-more" onClick={() => onAction(post)}>Voir</button>
+            </td>
+        </tr>
     );
 };
 
@@ -146,11 +124,9 @@ export default function ManagePosts() {
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const postPerPage = 10;
-    const [selectedPost, setSelectedPost] = useState(null);
-    const [modalType, setModalType] = useState(null);
-    const [reason, setReason] = useState("");
     const [openFilter, setOpenFilter] = useState(false);
+    const [postPerPage] = useState(10);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -171,9 +147,11 @@ export default function ManagePosts() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const handleAction = (post, action) => {
-        setSelectedPost(post);
-        setModalType(action);
+    const handleAction = (post) => {
+        const PostID = post.PostID;
+        const post_id = PostID.toLowerCase();
+        console.log(post_id);
+        navigate(`${post_id}`);
     };
 
     // Fonction pour appliquer les filtres
@@ -191,46 +169,6 @@ export default function ManagePosts() {
         );
         setFilteredPosts(filtered);
     };
-
-    const handleConfirmAction = async () => {
-        if (!selectedPost || !modalType || !reason.trim()) {
-            alert("Veuillez entrer un motif.");
-            return;
-        }
-
-        try {
-            if (modalType === "suspend") {
-                await suspendPost(selectedPost.id, reason);
-            } else if (modalType === "delete") {
-                await deletePost(selectedPost.id, reason);
-            }
-            setFilteredPosts(filteredPosts.filter(post => post.id !== selectedPost.id));
-            setModalType(null);
-        } catch (error) {
-            console.error("Erreur :", error);
-        }
-    };
-
-    const handleSuspendPost = () => {
-        setModalType('suspend');
-    };
-
-    const handleDeletePost = () => {
-        setModalType('delete');
-    };
-
-    const options = [
-        {
-            label: 'Suspendre',
-            icon: '⏸️',
-            action: () => handleSuspendPost(),
-        },
-        {
-            label: 'Supprimer',
-            icon: '🗑️',
-            action: () => handleDeletePost(),
-        },
-    ];
 
     return (
         <div className="ads-section">
@@ -267,12 +205,16 @@ export default function ManagePosts() {
                             </tr>
                         </thead>
                         <tbody>
+                            {currentPosts.length === 0 ? (
+                                <tr>
+                                    <td colSpan="12">Aucune annonce trouvée.</td>
+                                </tr>
+                            ) : null}
                             {currentPosts.map((post, index) => (
                                 <PostRow
                                     key={post.id}
                                     index={index}
                                     post={post}
-                                    options={options}
                                     onAction={(post) => handleAction(post)}
                                 />
                             ))}
@@ -287,30 +229,6 @@ export default function ManagePosts() {
                     paginate={paginate}
                 />
             </div>
-
-            {/* MODALE D'ACTION */}
-            {modalType && (
-                <Modal
-                    title={modalType === "suspend" ? "Suspendre l'annonce" : "Supprimer l'annonce"}
-                    onShow={!!modalType}
-                    onHide={() => setModalType(null)}
-                >
-                    <div className="action-menu">
-                        <p><strong>Annonce :</strong> {selectedPost?.adDetails?.title}</p>
-                        <label>Motif de l'action :</label>
-                        <textarea
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            placeholder="Expliquez pourquoi cette action est nécessaire..."
-                            rows="4"
-                        />
-                        <div className="modal-actions">
-                            <button onClick={handleConfirmAction} className="confirm-btn">Confirmer</button>
-                            <button onClick={() => setModalType(null)} className="cancel-btn">Annuler</button>
-                        </div>
-                    </div>
-                </Modal>
-            )}
         </div>
     );
 }

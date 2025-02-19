@@ -11,7 +11,7 @@ const fetchAllUsersWithStatus = async () => {
         const result = await response.json();
         return result;
     } catch (error) {
-        
+
     }
 }
 
@@ -31,6 +31,22 @@ const fetchAllUsers = async () => {
         return [];
     }
 }
+
+const fetchUserById = async (user_id) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/user/${user_id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur:', error);
+        throw error;
+    }
+};
 
 const fetchDataByUserID = async (userID) => {
     try {
@@ -121,6 +137,7 @@ const markNotificationAsRead = async (userID, notificationID) => {
 
 export {
     getUserDevices,
+    fetchUserById,
     fetchDataByUserID,
     fetchAllUsers,
     fetchAllUsersWithStatus,

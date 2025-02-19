@@ -26,5 +26,10 @@ export const instagram = require('../assets/social-media/instagram.png');
 export const whatsapp = require('../assets/social-media/whatsapp.png');
 export const globe = require('../assets/social-media/globe.png');
 
+export const img_1 = require('../imgs/carrousel/1.png');
+export const img_2 = require('../imgs/carrousel/2.png');
+export const img_3 = require('../imgs/carrousel/3.png');
+export const img_4 = require('../imgs/carrousel/4.png');
+export const img_5 = require('../imgs/carrousel/5.png');
 
 

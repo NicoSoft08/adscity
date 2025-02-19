@@ -328,19 +328,42 @@ const publishAdvertising = async (pubData) => {
 
         await newPubRef.set({
             ...pubData,
-            clicks:  0,
+            clicks: 0,
             views: 0,
-            status: 'approved',
+            status: 'active',
             reportingCount: 0,
             id: newPubRef.id,
             pubID: newPubID,
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            type: 'business',
         });
         return true;
     } catch (error) {
         console.error('Erreur lors de la publication de l\'annonce:', error);
         return null;
     };
+};
+
+const collectPubById = async (pub_id) => {
+    try {
+        const PubID = pub_id.toLocaleUpperCase();
+        const pubsRef = firestore.collection('ADVERTISING');
+        const querySnapshot = await pubsRef
+            .where('pubID', '==', PubID)
+            .limit(1)
+            .get();
+
+        if (querySnapshot.empty) {
+            console.log('Aucune annonce trouvée avec cet ID.');
+            return null;
+        }
+
+        const pubData = querySnapshot.docs[0].data();
+        return pubData;
+    } catch (error) {
+        console.error('Erreur lors de la collecte par ID:', error);
+        return null;
+    }
 };
 
 const collectPubs = async () => {
@@ -366,6 +389,7 @@ module.exports = {
     collectPubs,
     contactUs,
     evaluateUser,
+    collectPubById,
     fetchFilteredPostsQuery,
     incrementClick,
     incrementView,

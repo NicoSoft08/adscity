@@ -12,7 +12,8 @@ const {
     storeDeviceToken,
     collectAllUsersWithStatus,
     collectInterlocutorProfile,
-    collectUserUnreadNotifications
+    collectUserUnreadNotifications,
+    collectUserData
 } = require("../firebase/user");
 
 const getAllUsersWithStatus = async (req, res) => {
@@ -56,6 +57,31 @@ const getUsersData = async (req, res) => {
         });
     }
 };
+
+const getDataFromUserID = async (req, res) => {
+    const { user_id } = req.params;
+
+    try {
+        const data = await collectUserData(user_id);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucun utilisateur trouvé"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Données de l'utilisateur récupérées avec succès",
+            data: data
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des données utilisateur"
+        });
+    };
+}
 
 const getUserData = async (req, res) => {
     const { userID } = req.params;
@@ -301,7 +327,7 @@ const getUserUnreadNotifications = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: "Aucune notification non lue trouvée pour cet utilisateur"
-            }); 
+            });
         }
         res.status(200).json({
             success: true,
@@ -341,10 +367,10 @@ const readUserNotification = async (req, res) => {
     };
 };
 
-const updateDeviceToken = async (req, res) => { 
+const updateDeviceToken = async (req, res) => {
     const user = req.user;
     const { userID } = user;
-    const  { deviceToken } = req.body;
+    const { deviceToken } = req.body;
     console.log(deviceToken);
     try {
         const isTokenStored = await storeDeviceToken(deviceToken, userID);
@@ -388,12 +414,13 @@ const fetchInterlocutorProfile = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plustard'
-        }); 
+        });
     };
 };
 
 
 module.exports = {
+    getDataFromUserID,
     fetchInterlocutorProfile,
     getAllUsersWithStatus,
     getUsersData,

@@ -13,7 +13,8 @@ const {
     updateDeviceToken,
     getAllUsersWithStatus,
     fetchInterlocutorProfile,
-    getUserUnreadNotifications
+    getUserUnreadNotifications,
+    getDataFromUserID
 } = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
@@ -23,6 +24,7 @@ const router = express.Router();
 router.get('/all', getUsersData);
 router.get('/all/status', getAllUsersWithStatus);
 router.get('/:userID', getUserData);
+router.get('/user/:user_id', getDataFromUserID);
 // router.get('/:interlocutorID', fetchInterlocutorProfile);
 router.post('/user/status', setUserOnline);
 router.get('/:userID/favorites', getUserFavorites);

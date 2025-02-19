@@ -21,7 +21,8 @@ const {
     deletePostByID,
     suspendPostByID,
     markPostSold,
-    fetchNearbyPostsByLocation
+    fetchNearbyPostsByLocation,
+    collectDataFromPostID
 } = require("../firebase/post");
 
 const createPost = async (req, res) => {
@@ -263,6 +264,39 @@ const getPostBySlug = async (req, res) => {
     };
 };
 
+const getDataFromPostID = async (req, res) => {
+    const { post_id } = req.params;
+
+    if (!post_id) {
+        return res.status(400).json({
+            success: false,
+            message: "L'ID de l'annonce est requis."
+        });
+    }
+
+
+    try {
+        const data = await collectDataFromPostID(post_id);
+        if (!data) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la récupération de l\'annonce'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Annonce récupérée avec succès',
+            data: data,
+        });
+    } catch (error) {
+        console.error('Erreur pendant la récupération de l\'annonce par ID:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+    };
+};
+
 const getPostByID = async (req, res) => {
     const { postID } = req.params;
 
@@ -280,7 +314,7 @@ const getPostByID = async (req, res) => {
             postData: postData,
         });
     } catch (error) {
-        consolee.error('Erreur pendant la récupération de l\'annonce par ID:', error);
+        console.error('Erreur pendant la récupération de l\'annonce par ID:', error);
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plus tard'
@@ -639,4 +673,5 @@ module.exports = {
     reportPostByID,
     suspendPost,
     updatePost,
+    getDataFromPostID,
 };

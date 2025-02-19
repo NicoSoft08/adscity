@@ -11,7 +11,8 @@ const {
     incrementClick,
     fetchFilteredPostsQuery,
     publishAdvertising,
-    collectPubs
+    collectPubs,
+    collectPubById
 } = require("../firebase/api");
 
 const searchItems = async (req, res) => {
@@ -306,6 +307,38 @@ const hostAdvertising = async (req, res) => {
     }
 };
 
+const fetchPubById = async (req, res) => {
+    const { pub_id } = req.params;
+
+    if (!pub_id) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'annonce manquant'
+        });
+    }
+
+    try {
+        const data = await collectPubById(pub_id);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: 'Aucune annonce trouvée'
+            }); 
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Annonce récupérée avec succès',
+            data: data
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'annonce: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    };
+};
+
 const fetchPubs = async (req, res) => {
     try {
         const pubs = await collectPubs();
@@ -334,6 +367,7 @@ module.exports = {
     contactSupportClient,
     fetchFilteredPosts,
     fetchPubs,
+    fetchPubById,
     getPostsLocations,
     hostAdvertising,
     incrementViewCount,

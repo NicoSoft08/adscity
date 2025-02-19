@@ -19,6 +19,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const promotionRoutes = require('./routes/promotionRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
+// const createNodemailerTransport = require('./func')
 
 const updateServices = require('./services/updateServices');
 const {
@@ -32,6 +33,7 @@ const {
     // createDefaultAdmin, 
     createDefaultSuperAdmin
 } = require('./firebase/admin');
+const { createNodemailerTransport } = require('./func');
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit
@@ -73,6 +75,24 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('', async (req, res) => {
     res.send('AdsCity Server is running');
 });
+
+app.get('/api/test-email', async (req, res) => {
+    const nodemailerTransport = createNodemailerTransport();
+    const mailOptions = {
+        from: 'noreply@adscity.net',
+        to: 'contact@adscity.net',
+        subject: 'Test email',
+        text: 'This is a test email from AdsCity server',
+    };
+
+    try {
+        await nodemailerTransport.sendMail(mailOptions);
+        res.send('Email sent successfully');
+    } catch (error) {
+        console.error('Error sending email:', error);
+        res.status(500).send('Error sending email');
+    }
+})
 
 app.use('/api', updateServices);
 

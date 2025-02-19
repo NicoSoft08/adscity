@@ -23,7 +23,8 @@ const {
     deletePost,
     suspendPost,
     markPostAsSold,
-    fetchNearbyPosts
+    fetchNearbyPosts,
+    getDataFromPostID
 } = require('../controllers/postController');
 // const { collectPostBySlug } = require('../firebase/post');
 
@@ -37,6 +38,7 @@ router.get('/pending', getPendingPosts);
 router.get('/approved', getApprovedPosts);
 router.get('/refused', getRefusedPosts);
 router.get('/post/:postID', getPostByID);
+router.get('/:post_id', getDataFromPostID);
 router.post('/post/:postID/report', reportPostByID)
 // router.get('/:category/:subcategory/:slug', collectPostBySlug);
 router.get('/user/:userID', getPostsByUserID);

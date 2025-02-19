@@ -3,7 +3,7 @@ const { UAParser } = require('ua-parser-js');
 const { format, isToday, isYesterday } = require('date-fns');
 const { fr } = require('date-fns/locale');
 const crypto = require('crypto');
-const { admin, firestore } = require('../config/firebase-admin');
+const { admin, firestore, auth } = require('../config/firebase-admin');
 const nodemailer = require('nodemailer');
 
 
@@ -201,6 +201,10 @@ const generateSlug = (title) => {
         .trim();
 };
 
+const checkIfPhoneNumberExists = async (phoneNumber) => {
+    const querySnapshot = await firestore.collection('USERS').where('phoneNumber', '==', phoneNumber).limit(1).get();
+    return !querySnapshot.empty;
+};
 
 
 module.exports = {
@@ -208,6 +212,7 @@ module.exports = {
     formateDateTimestamp,
     generateVerificationCode,
     generateVerificationToken,
+    checkIfPhoneNumberExists,
     monthNames,
     getUserProfileNumber,
     upload,

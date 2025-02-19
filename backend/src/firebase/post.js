@@ -62,7 +62,7 @@ const makePost = async (postData, userID) => {
         const postRef = firestore.collection('POSTS')
 
         // 📌 Récupérer le dernier utilisateur créé (triée par userID)
-        const lastPostSnapshot = await userRef.orderBy('PostID', 'desc').limit(1).get();
+        const lastPostSnapshot = await postRef.orderBy('PostID', 'desc').limit(1).get();
         let lastPostID = "POST000";
         if (!lastPostSnapshot.empty) {
             lastPostID = lastPostSnapshot.docs[0].data().PostID;
@@ -72,7 +72,7 @@ const makePost = async (postData, userID) => {
         const lastNumber = parseInt(lastPostID.replace("POST", ""), 10);
         const newNumber = lastNumber + 1;
         const newPostID = `POST${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
-        const newPostRef = userRef.doc();
+        const newPostRef = postRef.doc();
 
         await newPostRef.set({
             userID: userID,
@@ -97,6 +97,7 @@ const makePost = async (postData, userID) => {
             report_reason: null,
             reported: false,
             slug: generateSlug(postData?.adDetails.title),
+            type: 'regular',
         });
 
         // 7️⃣ Gérer le compteur d'annonces mensuelles
@@ -395,6 +396,28 @@ const collectPostBySlug = async (category, subcategory, slug) => {
         console.error(`Erreur lors de la récupération de l\'annonce avec ${slug}:`, error);
         return false;
     };
+};
+
+const collectDataFromPostID = async (post_id) => {
+    try {
+        const PostID = post_id.toLocaleUpperCase();
+        const postRef = firestore.collection('POSTS');
+        const postSnap = await postRef
+            .where('PostID', '==', PostID)
+            .limit(1)
+            .get();
+
+        if (postSnap.empty) {
+            console.log('Aucune annonce trouvée avec cet ID.');
+            return null;
+        }
+
+        const postData = postSnap.docs[0].data();
+        return postData;
+    } catch (error) {
+        console.error(`Erreur lors de la récupération de l\'annonce avec ${post_id}:`, error);
+        throw error;
+    }
 };
 
 const collectPostByID = async (postID) => {
@@ -713,11 +736,11 @@ const fetchNearbyPostsByLocation = async (country, city) => {
     try {
         const postsCollection = firestore.collection('POSTS');
         const query = postsCollection
-        .where('status', '==', 'approved')
-        .where('isActive', '==', true)
-        .where('location.country', '==', country)
-        .where('location.city', '==', city)
-        .orderBy('posted_at', 'desc');
+            .where('status', '==', 'approved')
+            .where('isActive', '==', true)
+            .where('location.country', '==', country)
+            .where('location.city', '==', city)
+            .orderBy('posted_at', 'desc');
 
         const querySnapshot = await query.get();
         if (querySnapshot.empty) {
@@ -761,4 +784,5 @@ module.exports = {
     reportPostID,
     suspendPostByID,
     updatePostByID,
+    collectDataFromPostID,
 };

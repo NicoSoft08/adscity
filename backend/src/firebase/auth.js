@@ -59,7 +59,7 @@ const createUser = async (address, city, country, email, password, firstName, la
         // 📌 Extraire le numéro et incrémenter
         const lastNumber = parseInt(lastUserID.replace("USER", ""), 10);
         const newNumber = lastNumber + 1;
-        const newUserID = `PUB${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
+        const newUserID = `USER${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
         const newUserRef = userRef.doc(userRecord.uid);
 
 
@@ -163,28 +163,28 @@ const signinUser = async (userID, deviceInfo) => {
         }
 
         const userData = userDoc.data();
-        const { displayName, email, loginCount = 0 } = userData;
+        const { displayName, email, role, loginCount = 0 } = userData;
 
         if (loginCount === 0) {
-            // Première connexion : enregistrement de l'appareil comme vérifié
-            const userDevicesRef = userRef.collection('DEVICES');
-            await userDevicesRef.add({
+            // 🔹 Première connexion : enregistrement de l'appareil
+            await userRef.collection('DEVICES').add({
                 ...deviceInfo,
                 verified: true,
                 createdAt: admin.firestore.FieldValue.serverTimestamp(),
             });
 
-            // Mettre à jour le loginCount et statut de connexion
+            // 🔹 Mise à jour de l'utilisateur
             await userRef.update({
                 loginCount: 1,
                 isOnline: true,
                 lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
             });
 
-            console.log("Première connexion validée :", userID);
+            console.log("✅ Première connexion validée :", userID);
             return {
                 success: true,
                 message: "Connexion réussie (première connexion).",
+                role,
             };
         }
 
@@ -192,8 +192,9 @@ const signinUser = async (userID, deviceInfo) => {
         const { requiresVerification, deviceID } = await trackUserDevice(userID, deviceInfo, email, displayName);
 
         if (requiresVerification) {
-            // 📩 Envoi de l'alerte email pour validation de l'appareil
+            // 📩 Envoi d'un email pour validation de l'appareil
             await sendNewDeviceAlert(email, displayName, deviceInfo, deviceID);
+
             return {
                 success: false,
                 status: "pending_verification",
@@ -208,40 +209,57 @@ const signinUser = async (userID, deviceInfo) => {
             loginCount: admin.firestore.FieldValue.increment(1),
         });
 
-        console.log("Connexion réussie :", userID);
+        console.log("✅ Connexion réussie :", userID);
         return {
             success: true,
             message: "Connexion réussie.",
+            role,
         };
     } catch (error) {
-        console.error("Erreur dans signinUser :", error.message);
+        console.error("❌ Erreur dans signinUser :", error.message);
         return { success: false, message: error.message };
     }
 };
 
-const logoutUser = async (email) => {
+const logoutUser = async (userID) => {
     try {
-        const userRecord = await auth.getUserByEmail(email);
-        if (!userRecord) {
-            throw new Error("Utilisateur introuvable dans Firebase Authentication.");
-        };
-        const userSnapshot = await firestore.collection('USERS').doc(userRecord.uid).get();
+        console.log(`🟢 Début de la déconnexion pour ${userID}`);
 
-        if (!userSnapshot.exists) {
-            throw new Error("Les données utilisateur sont introuvables dans la base Firestore.");
+        // 🔹 Vérifie si l'utilisateur existe dans Firebase Authentication
+        const userRecord = await auth.getUser(userID);
+        if (!userRecord) {
+            console.error(`❌ Utilisateur ${userID} introuvable dans Firebase Authentication.`);
+            return false;
         }
 
-        await userSnapshot.ref.update({
+        console.log(`✅ Utilisateur trouvé : ${userRecord.email}`);
+
+        // 🔹 Révocation des tokens
+        await auth.revokeRefreshTokens(userID);
+        console.log(`🔄 Tokens Firebase révoqués pour ${userID}`);
+
+        // 🔹 Vérifie si l'utilisateur existe dans Firestore
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            console.error(`⚠️ Aucune donnée Firestore trouvée pour ${userID}`);
+            return false;
+        }
+
+        console.log(`✅ Données Firestore trouvées pour ${userID}, mise à jour en cours...`);
+
+        // 🔹 Mise à jour de Firestore
+        await userRef.update({
             isOnline: false,
             lastLogoutAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
-        await auth.revokeRefreshTokens(userRecord.uid);
-
-        console.log('Déconnexion réussie');
+        console.log(`🚀 Déconnexion réussie pour ${userID}`);
         return true;
     } catch (error) {
-        console.error('Erreur lors de la déconnexion', error);
+        console.error("❌ Erreur lors de la déconnexion :", error);
+        return false;
     }
 };
 
@@ -344,10 +362,9 @@ const updatePassword = async (email, newPassword) => {
 
 const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, permissions) => {
     try {
-        const userRef = firestore
-            .collection('USERS')
-            .where('email', '==', email)
-            .limit(1);
+        // Ajouter les informations de l'utilisateur dans Firestore
+        const userRef = firestore.collection('USERS');
+        userRef.where('email', '==', email).limit(1);
 
         const userSnapshot = await userRef.get();
         if (!userSnapshot.empty) {
@@ -366,7 +383,20 @@ const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, pe
             disabled: false,
         });
 
-        await firestore.collection('USERS').doc(user.uid).set({
+        // 📌 Récupérer le dernier utilisateur créé (triée par userID)
+        const lastUserSnapshot = await userRef.orderBy('UserID', 'desc').limit(1).get();
+        let lastUserID = "USER000";
+        if (!lastUserSnapshot.empty) {
+            lastUserID = lastUserSnapshot.docs[0].data().UserID;
+        }
+
+        // 📌 Extraire le numéro et incrémenter
+        const lastNumber = parseInt(lastUserID.replace("USER", ""), 10);
+        const newNumber = lastNumber + 1;
+        const newUserID = `USER${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
+        const newUserRef = userRef.doc(user.uid);
+
+        await newUserRef.set({
             userID: user.uid,
             displayName: `${firstName} ${lastName}`,
             firstName: firstName,
@@ -376,6 +406,7 @@ const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, pe
             isOnline: false,
             lastActivity: admin.firestore.FieldValue.serverTimestamp(),
             permissions: permissions,
+            UserID: newUserID,  // 🔥 Ajout de l'ID généré
             city: null,
             country: null,
             address: null,

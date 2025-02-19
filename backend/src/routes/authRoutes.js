@@ -10,7 +10,8 @@ const {
     changePassword,
     createNewAdmin,
     validateDevice,
-    refuseDevice
+    refuseDevice,
+    loginAdmin
 } = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 

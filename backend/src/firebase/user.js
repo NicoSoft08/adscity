@@ -40,6 +40,27 @@ const getUser = async (userID) => {
     }
 };
 
+const collectUserData = async (user_id) => {
+    try {
+        const UserID = user_id.toLocaleUpperCase();
+        const userRef = firestore.collection('USERS');
+        const userSnap = await userRef
+            .where('UserID', '==', UserID)
+            .limit(1)
+            .get();
+
+        if (userSnap.empty) {
+            console.log('Aucun utilisateur trouvé avec cet ID');
+            return null;
+        };
+        const userData = userSnap.docs[0].data();
+        return userData;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données utilisateur :', error);
+        throw error;
+    };
+};
+
 const collectAllUsersWithStatus = async () => {
     try {
         const usersSnapshot = await firestore.collection('USERS').get();
@@ -322,6 +343,7 @@ module.exports = {
     collectUserFavorites,
     getUser,
     getUsers,
+    collectUserData,
     collectAllUsersWithStatus,
     collectUserNotifications,
     collectUserUnreadNotifications,

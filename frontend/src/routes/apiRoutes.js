@@ -189,7 +189,6 @@ const updatePost = async (postID, updatedData, userID) => {
         });
 
         const result = await response.json();
-        // console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'annonce', error);
@@ -199,20 +198,20 @@ const updatePost = async (postID, updatedData, userID) => {
 
 const fetchPubs = async () => {
     try {
-        const response = await fetch(`${backendUrl}/api/do/collect/advertising`, {
+        const response = await fetch(`${backendUrl}/api/do/collect/pub`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
         });
         const result = await response.json();
-        console.log(result)
         return result;
     } catch (error) {
         console.error('Erreur lors de la récupération des publicités :', error);
         throw error;
     }
 };
+
 
 export {
     advancedSearch,

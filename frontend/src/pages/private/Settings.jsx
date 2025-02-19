@@ -199,15 +199,27 @@ export default function Settings() {
 
     const handleLogout = async () => {
         setIsLoading(true);
-        try {
-            await logoutUser();
-            navigate('/');
+    
+        const response = await logoutUser();
+    
+        setIsLoading(false);
+    
+        if (response.success) {
+            setToast({
+                show: true,
+                message: response.message,
+                type: 'success',
+            });
+    
+            navigate('/');  // 🔹 Redirection vers la page d'accueil après la déconnexion
             setOpen(false);
-            setIsLoading(false);
-            setToast({ show: true, message: 'Déconnexion réussie !', type: 'success' });
-        } catch (error) {
-            setToast({ show: true, message: 'Erreur lors de la déconnexion.', type: 'error' });
-            setIsLoading(false)
+    
+        } else {
+            setToast({
+                show: true,
+                message: response.message,
+                type: 'error',
+            });
         }
     };
 

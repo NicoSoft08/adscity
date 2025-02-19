@@ -155,6 +155,8 @@ export default function SignUpPage() {
         } catch (error) {
             console.error('Inscription échouée: ', error);
             setToast({ show: true, type: 'error', message: 'Une erreur est survenue. Veuillez réessayer.' });
+        } finally {
+            setLoading(false);
         }
     }
 

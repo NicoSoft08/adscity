@@ -54,51 +54,52 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-
-        // Validation des champs
+        setErrors({}); // Réinitialise les erreurs
+    
+        // 🔹 Validation des champs avant d'envoyer la requête
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
             setErrors(errors);
             setLoading(false);
             return;
         }
-
+    
         try {
-            // Tentative de connexion
             const { email, password } = formData;
-
+    
+            // 🔹 Tentative de connexion
             const result = await signinUser(email, password);
-
-            if (result.success === false && result.message === "Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.") {
-                setIsLoginSuspicious(true);
-                return; // 🔹 Stoppe le processus, l'utilisateur doit d'abord vérifier son email
+    
+            if (!result.success) {
+                if (result.status === "pending_verification") {
+                    setIsLoginSuspicious(true);
+                    return;
+                }
+                throw new Error(result.message || "Accès refusé.");
             }
-
-            const { signInResult } = result;
-
-            if (signInResult.success) {
-                setToast({
-                    show: true,
-                    type: 'success',
-                    message: signInResult.message,
-                });
-
+    
+            setToast({
+                show: true,
+                type: 'success',
+                message: result.message || "Connexion réussie.",
+            });
+    
+            // 🔹 Redirection selon le rôle
+            if (result.role === 'user') {
                 navigate('/user/dashboard/panel');
             } else {
-                setToast({
-                    show: true,
-                    type: 'error',
-                    message: signInResult.message || "Accès refusé.",
-                });
                 navigate('/access-denied');
             }
         } catch (error) {
-            console.error("Erreur lors de la soumission :", error.message);
+            console.error("❌ Erreur lors de la connexion :", error.message);
+
             setToast({
                 show: true,
                 type: 'error',
-                message: "Une erreur est survenue. Veuillez réessayer.",
+                message: error.message || "Une erreur est survenue. Veuillez réessayer.",
             });
+    
+            navigate('/access-denied');
         } finally {
             setLoading(false);
         }

@@ -1,4 +1,4 @@
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { collectDeviceInfo } from "../services/apiServices";
 
@@ -17,10 +17,6 @@ const createUser = async (address, city, country, email, password, firstName, la
                 lastName, phoneNumber, displayName,
             }),  // Si tu envoies le mot de passe, assure-toi que c'est sécurisé
         });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la création de l\'utilisateur');
-        };
 
         const result  = await response.json();
         return result;
@@ -65,7 +61,8 @@ const signinUser = async (email, password) => {
 
 const logoutUser = async () => {
     try {
-        const  user = auth.currentUser;
+        const user = auth.currentUser;
+
         const idToken = await user.getIdToken();
 
         const response = await fetch(`${backendUrl}/api/auth/logout-user`, {
@@ -76,16 +73,17 @@ const logoutUser = async () => {
             },
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la déconnexion de l\'utilisateur');
-        };
-
         const result = await response.json();
-        return result;
+
+        // 🔹 Déconnexion locale après validation côté serveur
+        await signOut(auth);
+
+        return { success: true, message: result.message || "Déconnexion réussie." };
+
     } catch (error) {
-        console.error('Erreur lors de la déconnexion de l\'utilisateur :', error);
-        throw error;
-    };
+        console.error('❌ Erreur lors de la déconnexion :', error.message);
+        return { success: false, message: error.message || "Une erreur est survenue." };
+    }
 };
 
 const sendVerificationCode = async (userID, newEmail) => {

@@ -1,10 +1,10 @@
 import {
-    FaTachometerAlt, 
-    FaUser, 
-    FaBullhorn, 
-    FaHeart, 
-    FaUserCircle, 
-    FaCogs, 
+    FaTachometerAlt,
+    FaUser,
+    FaBullhorn,
+    FaHeart,
+    FaUserCircle,
+    FaCogs,
     FaQuestionCircle,
     FaChartLine,
     FaUsers,
@@ -12,26 +12,28 @@ import {
 } from 'react-icons/fa';
 import { calculateEndDate } from '../func';
 import { faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { img_1, img_2, img_3, img_4, img_5 } from '../config/images';
+import { video_1 } from '../config/video';
 
 
 
 const userLeftBarContent = [
-    { id: 1, name: 'Panel', selectId: 'panel', icon: FaTachometerAlt, activeIcon: FaTachometerAlt, onClick: () => {} },
-    { id: 2, name: 'Compte', selectId: 'users', icon: FaUser, activeIcon: FaUser, onClick: () => {} },
-    { id: 3, name: 'Annonces', selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => {} },
-    { id: 4, name: 'Favoris', selectId: 'favoris', icon: FaHeart, activeIcon: FaHeart, onClick: () => {} },
-    { id: 5, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => {} },
-    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => {} },
-    { id: 7, name: 'Support', selectId: 'support', icon: FaQuestionCircle, activeIcon: FaQuestionCircle, onClick: () => {} },
+    { id: 1, name: 'Panel', selectId: 'panel', icon: FaTachometerAlt, activeIcon: FaTachometerAlt, onClick: () => { } },
+    { id: 2, name: 'Compte', selectId: 'users', icon: FaUser, activeIcon: FaUser, onClick: () => { } },
+    { id: 3, name: 'Annonces', selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => { } },
+    { id: 4, name: 'Favoris', selectId: 'favoris', icon: FaHeart, activeIcon: FaHeart, onClick: () => { } },
+    { id: 5, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => { } },
+    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => { } },
+    { id: 7, name: 'Support', selectId: 'support', icon: FaQuestionCircle, activeIcon: FaQuestionCircle, onClick: () => { } },
 ];
 
 const adminSidebarData = [
-    { id: 1, name: "Panel", selectId: 'panel', icon: FaChartLine, activeIcon: FaChartLine, onClick: () => {} },
-    { id: 2, name: "Annonces", selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => {} },
-    { id: 3, name: 'Utilisateurs', selectId: 'users', icon: FaUsers, activeIcon: FaUsers, onClick: () => {} },
-    { id: 4, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => {} },
-    { id: 5, name: "Notifications", selectId: 'notifications', icon: FaBell, activeIcon: FaBell, onClick: () => {} },
-    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => {} },
+    { id: 1, name: "Panel", selectId: 'panel', icon: FaChartLine, activeIcon: FaChartLine, onClick: () => { } },
+    { id: 2, name: "Annonces", selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => { } },
+    { id: 3, name: 'Utilisateurs', selectId: 'users', icon: FaUsers, activeIcon: FaUsers, onClick: () => { } },
+    { id: 4, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => { } },
+    { id: 5, name: "Notifications", selectId: 'notifications', icon: FaBell, activeIcon: FaBell, onClick: () => { } },
+    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => { } },
 ];
 
 
@@ -131,11 +133,24 @@ const securityAdvice = {
     }
 };
 
+const banners = [
+    { pubType: 'masthead', imageUrl: img_1, targetUrl: "https://www.adscity.net" },
+    { pubType: 'masthead', imageUrl: img_2, targetUrl: "https://example.com/annonce" },
+    { pubType: 'masthead', imageUrl: img_3, targetUrl: "https://example.com/offre" },
+];
 
-export { 
-    userLeftBarContent, 
-    adminSidebarData, 
-    plans, 
+const spots = [
+    { mediaType: 'image', mediaFile: img_4, targetUrl: "https://www.adscity.net" },
+    { mediaType: 'video', mediaFile: video_1, targetUrl: "https://www.adscity.net/video" },
+    { mediaType: 'image', mediaFile: img_5, targetUrl: "https://example.com/annonce" },
+];
+
+export {
+    banners,
+    spots,
+    userLeftBarContent,
+    adminSidebarData,
+    plans,
     tabs,
     securityAdvice,
 };

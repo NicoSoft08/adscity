@@ -1,0 +1,128 @@
+@import './fonts';
+@import './variables';
+
+
+.user-card {
+    // width: 300px;
+    background: $white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    font-family: 'Ubuntu', sans-serif;
+
+    .drop {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        background-color: #ddd;
+        padding: 8px 12px;
+        margin: 10px 0;
+
+        h2 {
+            text-transform: uppercase;
+            font-size: 18px;
+            color: $dark;
+            margin: 0;
+        }
+
+        svg {
+            font-size: 18px;
+            color: $dark;
+        }
+    }
+
+    .profile-pic {
+        margin-bottom: 10px;
+
+        img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        p {
+            margin-top: 5px;
+            font-size: 15px;
+            color: $black;
+            font-weight: $font-medium;
+        }
+    }
+
+    .user-info {
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .profile-number,
+        .profile-type,
+        .location,
+        .status,
+        .member-since,
+        .role {
+            font-size: 14px;
+            color: $black;
+        }
+    }
+
+    .user-stats p,
+    .user-ratings p,
+    .subscription-info p {
+        font-size: 14px;
+        margin: 5px 0;
+        color: $black;
+    }
+
+    .rating {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .star-icon {
+        color: gold;
+        margin-right: 5px;
+    }
+
+    .subscription-info {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #eee;
+    }
+
+    .actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+
+        .action-button {
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-regular;
+            font-size: 15px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .suspend {
+            background-color: $orange;
+            color: $white;
+        }
+
+        .delete {
+            background-color: $danger;
+            color: $white;
+        }
+
+        .restaure {
+            background-color: $green;
+            color: $white;
+        }
+    }
+}

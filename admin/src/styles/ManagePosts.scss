@@ -5,7 +5,9 @@
     border-radius: 12px;
     padding: 0 10px;
     background-color: $white;
-    margin-top: 6rem;
+    margin: 6rem auto 0;
+    max-width: 1000px;
+    // margin: 0 auto;
 
 
     @media (max-width: 768px) {
@@ -31,11 +33,11 @@
     .card-list {
         overflow-x: auto;
         scrollbar-width: thin;
-
+        
         table {
             width: 100%;
             border-collapse: collapse;
-            min-width: 800px;
+            max-width: 600px;
             background-color: $white;
             border-radius: 12px;
 

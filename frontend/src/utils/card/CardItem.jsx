@@ -28,7 +28,7 @@ import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
-    const { id, userID, adDetails, images, location, category, subcategory, views, isActive, moderated_at, isSold } = post;
+    const { id, PostID, UserID, userID, adDetails, images, location, category, subcategory, views, isActive, moderated_at, isSold } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -225,7 +225,7 @@ export default function CardItem({ post, onToggleFavorite }) {
         const userID = currentUser?.uid;
         const postID = id;
 
-        navigate(url);
+        navigate(url, { state: { id: id} });
 
         if (!userID) return null;
 
@@ -316,6 +316,7 @@ export default function CardItem({ post, onToggleFavorite }) {
     // Déterminer l'image de profil à afficher
     const profileImage = profilURL ?? IconAvatar;
 
+    const post_id = PostID?.toLowerCase();
 
     if (!isActive) return null;
 
@@ -324,7 +325,7 @@ export default function CardItem({ post, onToggleFavorite }) {
             {isSold && <span className="sold-badge">VENDU</span>}
             {/* Image de l'annonce */}
             {images && images.length > 0 && (
-                <div onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${id}`)}>
+                <div onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${post_id}`)}>
                     <img
                         title={`Annonce<<${adDetails.title}>>`}
                         src={images[0]}
@@ -344,7 +345,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                 </h2>
                 <p className="card-price">{adDetails.price} RUB</p>
                 <p className="card-city">{location.city}, {location.country}</p>
-                <Link to={`/users/user/${userID}/profile/show`} onClick={() => handleProfileClick(userID)} className="announcer">
+                <Link to={`/users/user/${UserID}/profile/show`} onClick={() => handleProfileClick(userID)} className="announcer">
                     <img src={profileImage} alt="avatar" className="avatar" />
                 </Link>
                 <div className="card-footer">

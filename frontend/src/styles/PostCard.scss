@@ -1,0 +1,150 @@
+@import './fonts';
+@import './variables';
+
+.post-card {
+    background: $white;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    font-family: 'Ubuntu', sans-serif;
+
+    .image-gallery {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 600px; // Ajuste selon ta mise en page
+        margin: 0 auto;
+
+        @media (max-width: 576px) {
+            max-width: 400px;
+        }
+
+        .main-image-container {
+            position: relative;
+            width: 100%;
+            height: 400px; // Ajuste la hauteur
+            overflow: hidden;
+
+            .main-image {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                transition: transform 0.5s ease; // Animation simple
+            }
+
+            .nav-button {
+                position: absolute;
+                top: 50%;
+                transform: translateY(-50%);
+                background: rgba(0, 0, 0, 0.3);
+                border: none;
+                color: #fff;
+                font-size: 2rem;
+                width: 40px;
+                height: 40px;
+                cursor: pointer;
+                z-index: 2;
+
+                &.left {
+                    left: 0;
+                }
+
+                &.right {
+                    right: 0;
+                }
+
+                &:hover {
+                    background: rgba(0, 0, 0, 0.5);
+                }
+            }
+        }
+
+        .thumbnails {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+            gap: 8px;
+
+            .thumbnail {
+                width: 60px;
+                height: 60px;
+                overflow: hidden;
+                cursor: pointer;
+                border: 2px solid transparent;
+                transition: border-color 0.3s;
+
+                &.active {
+                    border-color: $secondary-color;
+                }
+
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    display: block;
+                }
+            }
+        }
+    }
+
+    .ad-details {
+        margin-top: 15px;
+
+        h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .price,
+        .description {
+            font-size: 14px;
+            color: $black;
+        }
+    }
+
+    .specs,
+    .location,
+    .engagement,
+    .dates {
+        p {
+            font-size: 14px;
+            color: $black;
+        }
+    }
+
+    .actions {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+
+        .action-button {
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-regular;
+            font-size: 15px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .edit {
+            background-color: $primary-color;
+            color: $white;
+        }
+
+        .delete {
+            background-color: $danger;
+            color: $white;
+        }
+
+        .restaure {
+            background-color: $green;
+            color: $white;
+        }
+    }
+}

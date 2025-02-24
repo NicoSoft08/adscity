@@ -33,7 +33,7 @@ function TabFilter({ adsApproved, setFilteredAds, onFilterClick, currentUser, us
                 setFilteredAds(result.nearbyPosts);
                 setToast({ show: true, type: 'info', message: 'Annonces filtrées par proximité.' });
             } else {
-                setToast({ show: true, type: 'error', message: result.message || 'Aucune annonce trouvée.' });
+                setToast({ show: true, type: 'error', message: 'Aucune annonce trouvée.' });
             }
 
             setIsLoading(false);  // ✅ Désactive le loader après la requête
@@ -56,7 +56,6 @@ function TabFilter({ adsApproved, setFilteredAds, onFilterClick, currentUser, us
             </span>
             <FontAwesomeIcon
                 icon={faFilter}
-                size="2x"
                 className="filter-icon"
                 onClick={onFilterClick}
             />

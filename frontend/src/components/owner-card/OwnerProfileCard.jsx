@@ -49,6 +49,8 @@ const OwnerProfileCard = ({ owner, userID }) => {
         return '';
     };
 
+    const user_id = owner.UserID?.toLowerCase();
+
     return (
         <div className='owner-card'>
             <div className='owner-image'>
@@ -70,7 +72,7 @@ const OwnerProfileCard = ({ owner, userID }) => {
                 </button>
             </div>
             <div className='action-buttons'>
-                <button className='message' onClick={() => handleProfileClick(`/users/user/${owner.userID}/profile/show`)}>Voir Profil</button>
+                <button className='message' onClick={() => handleProfileClick(`/users/user/${user_id}/profile/show`)}>Voir Profil</button>
             </div>
 
             <Toast

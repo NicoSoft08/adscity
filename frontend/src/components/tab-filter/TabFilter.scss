@@ -7,7 +7,7 @@
     align-items: center;
     justify-content: space-between; 
     background-color: #f8f9fa; 
-    padding: 1rem;
+    padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
@@ -15,7 +15,7 @@
         font-family: 'Ubuntu', sans-serif;
         font-size: 1rem;
         text-align: center;
-        font-weight: $font-regular;
+        font-weight: $font-light;
         color: $dark;
         padding: 0.5rem 1rem;
         border-bottom: 2px solid transparent; 
@@ -29,7 +29,7 @@
 
     .active {
         font-family: 'Ubuntu', sans-serif;
-        font-weight: $font-medium;
+        font-weight: $font-regular;
         color: $two; 
         border-bottom: 2px solid $two; 
     }
@@ -37,6 +37,7 @@
     .filter-icon {
         color: $two;
         cursor: pointer;
+        font-size: 16px;
         transition: color 0.3s ease;
 
         &:hover {

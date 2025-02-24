@@ -1,6 +1,5 @@
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import { collectDeviceInfo } from "../services/apiServices";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -30,18 +29,18 @@ const signinUser = async (email, password) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
-        const userID = user.uid;
 
+        // 🔹 Vérifier si l'utilisateur est vérifié
         if (!user.emailVerified) {
             throw new Error('Veuillez vérifier votre email avant de continuer.');
-        }
+        };
 
         // 🔹 Récupérer le jeton Firebase
         const idToken = await user.getIdToken();
 
         // 🔹 Récupérer les informations sur le périphérique
-        const deviceInfo = await collectDeviceInfo();
-
+        // const deviceInfo = await collectDeviceInfo();
+        
         // 🔹 Envoyer les données au backend
         const response = await fetch(`${backendUrl}/api/auth/login-user`, {
             method: 'POST',
@@ -49,14 +48,14 @@ const signinUser = async (email, password) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ userID, deviceInfo }),
         });
 
         const result = await response.json();
         return result;
     } catch (error) {
         console.error('Erreur lors de la connexion de l\'utilisateur :', error);
-    }
+        throw error;
+    };
 };
 
 const logoutUser = async () => {
@@ -77,6 +76,8 @@ const logoutUser = async () => {
 
         // 🔹 Déconnexion locale après validation côté serveur
         await signOut(auth);
+
+        console.log(result);
 
         return { success: true, message: result.message || "Déconnexion réussie." };
 

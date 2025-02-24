@@ -13,7 +13,6 @@ export default function LoginPage() {
     const { email } = useParams();
     const navigate = useNavigate();
     const [errors, setErrors] = useState({});
-    const [isLoginSuspecious, setIsLoginSuspicious] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -69,14 +68,21 @@ export default function LoginPage() {
     
             // 🔹 Tentative de connexion
             const result = await signinUser(email, password);
+
+            const { success, message, role } = result;
     
-            if (!result.success) {
-                if (result.status === "pending_verification") {
-                    setIsLoginSuspicious(true);
-                    return;
-                }
-                throw new Error(result.message || "Accès refusé.");
+            if (!success) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: message || "Une erreur est survenue. Veuillez réessayer.",
+                });
+                setLoading(false);
+                return;
             }
+
+            // 🔹 Vérification de la sécurité de la connexion
+
     
             setToast({
                 show: true,
@@ -85,7 +91,7 @@ export default function LoginPage() {
             });
     
             // 🔹 Redirection selon le rôle
-            if (result.role === 'user') {
+            if (role === 'user') {
                 navigate('/user/dashboard/panel');
             } else {
                 navigate('/access-denied');
@@ -113,11 +119,6 @@ export default function LoginPage() {
 
     return (
         <div className='login-page'>
-            {isLoginSuspecious && (
-                <div className="suspicious-login-message">
-                    <p>Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.</p>
-                </div>
-            )}
             <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Connexion</h2>
                 <div>

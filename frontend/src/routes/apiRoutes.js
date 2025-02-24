@@ -198,7 +198,7 @@ const updatePost = async (postID, updatedData, userID) => {
 
 const fetchPubs = async () => {
     try {
-        const response = await fetch(`${backendUrl}/api/do/collect/pub`, {
+        const response = await fetch(`${backendUrl}/api/do/collect/pubs`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

@@ -9,10 +9,6 @@ const fetchDataByUserID = async (userID) => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données de l\'utilisateur');
-        }
-
         const result = await response.json();
         return result;
     } catch (error) {

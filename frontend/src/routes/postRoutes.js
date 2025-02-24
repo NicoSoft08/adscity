@@ -208,10 +208,27 @@ const fetchNearbyPosts = async (country, city) => {
     }
 };
 
+const fetchPostById = async (post_id) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts/${post_id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur:', error);
+        throw error;
+    }
+};
+
 export {
     createPost,
     deletePost,
     markAsSold,
+    fetchPostById,
     fetchNearbyPosts,
     fetchPostByPostID,
     fetchPostsByCategory,

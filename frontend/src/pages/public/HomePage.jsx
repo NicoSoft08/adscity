@@ -8,70 +8,77 @@ import TabFilter from '../../components/tab-filter/TabFilter';
 import { AuthContext } from '../../contexts/AuthContext';
 import { fetchApprovedPosts } from '../../routes/postRoutes';
 import CardItem from '../../utils/card/CardItem';
-import { fetchPubs } from '../../routes/apiRoutes';
-import BusinessPost from '../../utils/business-posts/BusinessPost';
-import { fetchCombinedPosts } from '../../helpers/algorythms';
-import BannerCarousel from '../../utils/business-posts/BannerCarousel';
-import { banners, spots } from '../../data';
-import SpotPost from '../../utils/business-posts/SpotPost';
+// import { fetchPubs } from '../../routes/apiRoutes';
+// import { fetchCombinedPosts } from '../../helpers/algorythms';
+// import PubsSwitcher from '../../utils/pubs/PubsSwitcher';
+// import { MastheadSlider, NativeDisplayPub, VideoInFeedPub } from '../../utils/pubs/Pubs';
 import '../../styles/HomePage.scss';
 
 export default function HomePage() {
     const navigate = useNavigate();
     const { currentUser, userData } = useContext(AuthContext);
     const [adsApproved, setAdsApproved] = useState([]);
-    const [businessPosts, setBusinessPosts] = useState([]);
+    // const [businessPosts, setBusinessPosts] = useState([]);
     const [filteredAds, setFilteredAds] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [combinedPosts, setCombinedPosts] = useState([]);
+    // const [combinedPosts, setCombinedPosts] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
         const getApprovedAds = async () => {
             setIsLoading(true);
-            try {
-                const [postsResult, businessResult] = await Promise.all([
-                    fetchApprovedPosts(),
-                    fetchPubs(),
-                ])
-                setAdsApproved(postsResult.approvedPosts);
-                setFilteredAds(postsResult.approvedPosts);
-                setBusinessPosts(businessResult.pubs);
-            } catch (error) {
-                setToast({ show: true, type: "error", message: "Erreur lors du chargement des annonces." });
-            } finally {
+
+            const result = await fetchApprovedPosts();
+            if (result.success) {
+                setAdsApproved(result.approvedPosts);
+                setFilteredAds(result.approvedPosts);
                 setIsLoading(false);
             }
+
+            // try {
+            //     const [postsResult, businessResult] = await Promise.all([
+            //         fetchApprovedPosts(),
+            //         fetchPubs(),
+            //     ])
+            //     setAdsApproved(postsResult.approvedPosts);
+            //     setFilteredAds(postsResult.approvedPosts);
+            //     setBusinessPosts(businessResult.pubs);
+            //     setIsLoading(false);
+            // } catch (error) {
+            //     setToast({ show: true, type: "error", message: "Erreur lors du chargement des annonces." });
+            // } finally {
+            //     setIsLoading(false);
+            // }
         };
 
         getApprovedAds();
     }, []);
 
-    useEffect(() => {
-        const loadPosts = async () => {
-            setIsLoading(true);
-            const posts = await fetchCombinedPosts();
-            setCombinedPosts(posts);
-            setIsLoading(false);
-        };
+    // useEffect(() => {
+    //     const loadPosts = async () => {
+    //         setIsLoading(true);
+    //         const posts = await fetchCombinedPosts();
+    //         setCombinedPosts(posts);
+    //         setIsLoading(false);
+    //     };
 
-        loadPosts();
-    }, []);
+    //     loadPosts();
+    // }, []);
 
-    const mergedPosts = [];
-    const adsCopy = [...filteredAds];
-    const businessCopy = [...businessPosts];
+    // const mergedPosts = [];
+    // const adsCopy = [...filteredAds];
+    // const businessCopy = [...businessPosts];
 
-    while (adsCopy.length || businessCopy.length) {
-        mergedPosts.push(...adsCopy.splice(0, 1)); // Ajoute 3 annonces normales
-        if (businessCopy.length) mergedPosts.push(businessCopy.shift()); // Ajoute 1 annonce Business
-    }
+    // while (adsCopy.length || businessCopy.length) {
+    //     mergedPosts.push(...adsCopy.splice(0, 1)); // Ajoute 3 annonces normales
+    //     if (businessCopy.length) mergedPosts.push(businessCopy.shift()); // Ajoute 1 annonce Business
+    // }
 
 
     return (
         <div className="home-page">
             <div style={{ marginTop: '1rem' }}></div>
-            <BannerCarousel banners={banners} />
+            {/* <MastheadSlider pubs={businessPosts} interval={6000} /> */}
 
             <div style={{ marginBottom: '1rem' }}></div>
 
@@ -92,18 +99,39 @@ export default function HomePage() {
                     {isLoading && <Loading />}
 
                     <CardList>
+                        {filteredAds.length > 0 ? (
+                            filteredAds.map((item, index) => (
+                                <CardItem key={index} post={item} />
+                            ))
+                        ) : (
+                            <p>Aucune annonce trouvée.</p>
+                        )}
+                    </CardList>
+
+                    {/* <CardList>
                         {combinedPosts.length > 0 ? (
-                            combinedPosts.map((item, index) =>
-                                item.type === 'business' ? (
-                                    <BusinessPost key={index} post={item} />
+                            combinedPosts.map((item, index) => {
+                                const pubElement = item.type === 'business' ? (
+                                    <NativeDisplayPub key={index} pub={item} />
                                 ) : (
                                     <CardItem key={index} post={item} />
-                                )
-                            )
+                                );
+
+                                if ((index + 1) % 4 === 0) {
+                                    return (
+                                        <React.Fragment key={index}>
+                                            {pubElement}
+                                            <VideoInFeedPub pub={item} />
+                                        </React.Fragment>
+                                    )
+                                } else {
+                                    return pubElement;
+                                }
+                            })
                         ) : (
                             <p className='no-post'>Aucune annonce publiée</p>
                         )}
-                    </CardList>
+                    </CardList> */}
 
                     <Toast
                         show={toast.show}
@@ -113,16 +141,13 @@ export default function HomePage() {
                     />
                 </div>
 
-                <div className="pubs-sidebar">
+                {/* <div className="pubs-sidebar">
                     {businessPosts.map((post, index) =>
                         post &&
-                            post.type === 'business' &&
-                            post.pubType === 'native' ? (
-                            <BusinessPost key={index} post={post} />
-                        ) : null
+                        post.type === 'business' &&
+                        <PubsSwitcher key={index} pub={post} />
                     )}
-                    <SpotPost spots={spots} />
-                </div>
+                </div> */}
             </div>
         </div>
 

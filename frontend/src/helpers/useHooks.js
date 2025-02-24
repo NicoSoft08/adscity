@@ -24,7 +24,13 @@ const useBusinessPostActions = (post, setShowMenu, setShowReportModal) => {
         setShowMenu(false);
     }, [post, setShowMenu]);
 
-    return { handleClosePost, handleReportPost, handleShareAd, handleCopyLink };
+    const handleReportWithReason = useCallback((reason) => {
+        console.log(`Signalement de l'annonce ${post.id} avec la raison : ${reason}`);
+        setShowReportModal(false);
+        setShowMenu(false);
+    }, [post, setShowMenu, setShowReportModal]);
+
+    return { handleClosePost, handleReportPost, handleShareAd, handleCopyLink, handleReportWithReason };
 };
 
 export { useBusinessPostActions };

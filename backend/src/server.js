@@ -51,7 +51,7 @@ cron.schedule("0 0 * * *", async () => {
 // Supprimer les annonces expirées depuis plus d’un mois (Tous les 1er du mois à 3h du matin)
 cron.schedule("0 3 1 * *", async () => {
     console.log("🗑️ Annonces expirées supprimées après 1 mois !");
-   await deleteOldExpiredPosts();
+    await deleteOldExpiredPosts();
 });
 
 // Envoyer une notification avant la suppression (Tous les dimanches à 8h)
@@ -79,8 +79,8 @@ app.get('', async (req, res) => {
 app.get('/api/test-email', async (req, res) => {
     const nodemailerTransport = createNodemailerTransport();
     const mailOptions = {
-        from: 'noreply@adscity.net',
-        to: 'contact@adscity.net',
+        from: 'support@adscity.net',
+        to: 'admin@adscity.net',
         subject: 'Test email',
         text: 'This is a test email from AdsCity server',
     };

@@ -39,18 +39,17 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { userID, deviceInfo } = req.body;
-    console.log('🔍 Device Info reçu:', deviceInfo);
+    const { userID } = req.user;
 
-    if (!userID || !deviceInfo) {
+    if (!userID) {
         return res.status(400).json({
             success: false,
-            message: "Données incomplètes. Veuillez fournir l'identifiant et les informations de l'appareil.",
+            message: "Données incomplètes. Veuillez fournir l'identifiant.",
         });
     }
 
     try {
-        const signInResult = await signinUser(userID, deviceInfo);
+        const signInResult = await signinUser(userID);
 
         if (!signInResult || !signInResult.success) {
             const statusCode = signInResult.status === "pending_verification" ? 403 : 400;
@@ -107,15 +106,15 @@ const loginAdmin = async (req, res) => {
 };
 
 const signoutUser = async (req, res) => {
+    const { userID } = req.user;
     try {
-        if (!req.user || !req.user.uid) {
+        if (!userID) {
             return res.status(401).json({
                 success: false,
                 message: "Utilisateur non authentifié.",
             });
         }
 
-        const userID = req.user.uid;
         console.log(`🟡 Tentative de déconnexion pour : ${userID}`);
 
         const isSignedOut = await logoutUser(userID);
@@ -251,9 +250,10 @@ const createNewAdmin = async (req, res) => {
 const validateDevice = async (req, res) => {
     const { deviceID } = req.params;
     const { verificationToken } = req.body;
+    const { userID } = req.user;
 
     try {
-        const isDeviceValidated = await authorizeDevice(deviceID, verificationToken);
+        const isDeviceValidated = await authorizeDevice(deviceID, verificationToken, userID);
         if (!isDeviceValidated) {
             return res.status(400).json({
                 success: false,
@@ -278,9 +278,10 @@ const validateDevice = async (req, res) => {
 const refuseDevice = async (req, res) => {
     const { deviceID } = req.params;
     const { verificationToken } = req.body;
+    const { userID } = req.user;
 
     try {
-        const isDeviceRefused = await desableDevice(deviceID, verificationToken);
+        const isDeviceRefused = await desableDevice(deviceID, verificationToken, userID);
         if (!isDeviceRefused) {
             return res.status(400).json({
                 success: false,

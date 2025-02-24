@@ -149,12 +149,9 @@ const createUser = async (address, city, country, email, password, firstName, la
 };
 
 
-const signinUser = async (userID, deviceInfo) => {
+const signinUser = async (userID) => {
     try {
-        if (!userID || !deviceInfo) {
-            throw new Error("Données incomplètes.");
-        }
-
+        // 🔹 Vérification de l'utilisateur
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
 
@@ -163,16 +160,9 @@ const signinUser = async (userID, deviceInfo) => {
         }
 
         const userData = userDoc.data();
-        const { displayName, email, role, loginCount = 0 } = userData;
+        const { role, loginCount = 0 } = userData;
 
         if (loginCount === 0) {
-            // 🔹 Première connexion : enregistrement de l'appareil
-            await userRef.collection('DEVICES').add({
-                ...deviceInfo,
-                verified: true,
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-
             // 🔹 Mise à jour de l'utilisateur
             await userRef.update({
                 loginCount: 1,
@@ -185,20 +175,6 @@ const signinUser = async (userID, deviceInfo) => {
                 success: true,
                 message: "Connexion réussie (première connexion).",
                 role,
-            };
-        }
-
-        // 🔹 Vérification de l'appareil pour les connexions suivantes
-        const { requiresVerification, deviceID } = await trackUserDevice(userID, deviceInfo, email, displayName);
-
-        if (requiresVerification) {
-            // 📩 Envoi d'un email pour validation de l'appareil
-            await sendNewDeviceAlert(email, displayName, deviceInfo, deviceID);
-
-            return {
-                success: false,
-                status: "pending_verification",
-                message: "Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.",
             };
         }
 
@@ -421,6 +397,7 @@ const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, pe
         });
         console.log('Utilisateur admin créé avec succès');
 
+        // 🔹 Envoi des identifiants par email
         await sendAdminEmail(email, password, `${firstName} ${lastName}`);
 
         return true;
@@ -430,7 +407,7 @@ const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, pe
     };
 };
 
-const authorizeDevice = async (deviceID, verificationToken) => {
+const authorizeDevice = async (deviceID, verificationToken, userID) => {
     try {
         const tokenDoc = await firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
         if (!tokenDoc.exists) {
@@ -473,7 +450,7 @@ const authorizeDevice = async (deviceID, verificationToken) => {
     }
 };
 
-const desableDevice = async (deviceID, verificationToken) => {
+const desableDevice = async (deviceID, verificationToken, userID) => {
     try {
         const tokenDoc = await firestore.collection('DEVICE_VERIFY_TOKENS').doc(deviceID).get();
         if (!tokenDoc.exists) {

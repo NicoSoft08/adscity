@@ -98,7 +98,7 @@ const createDefaultAdmin = async () => {
 };
 
 const createDefaultSuperAdmin = async () => {
-    const adminEmail = 'n.dahpenielnicolas123@gmail.com';
+    const adminEmail = 'admin@adscity.net';
     const adminPassword = 'admin1234';
     const firstName = "Nicolas";
     const lastName = "N'DAH";
@@ -107,6 +107,8 @@ const createDefaultSuperAdmin = async () => {
     const address = 'Ulitsa 2-ya Krasnodarskaya 113/1';
     const adminPhoneNumber = '+79017087027';
     const profilURL = null;
+
+    const profileNumber = getUserProfileNumber();
 
     try {
         // 🔹 Vérifie si l'utilisateur existe déjà dans Firebase Authentication
@@ -168,6 +170,7 @@ const createDefaultSuperAdmin = async () => {
             emailVerified: true,
             isActive: true,
             isOnline: false,
+            profileNumber: profileNumber,
             location: `${country}, ${city}, ${address}`,
             profilURL: profilURL,
             role: 'admin',

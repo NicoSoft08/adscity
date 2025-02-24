@@ -81,6 +81,22 @@ const PubsFilter = ({ onFilterChange }) => {
 
 const PubRow = ({ index, pub, onAction }) => {
 
+    const mediaFilesType = (item) => {
+        if (item && item.pubType === "masthead") {
+            return <img src={item.mediaFiles[0]} alt={item.advertiserName} width={50} height={50} />;
+        } else if (item && item.pubType === "video-in-feed") {
+            return <video controls width={50} height={50}>
+                <source src={item.mediaFiles[0]} type="video/mp4" />
+            </video>;
+        } else if (item && item.pubType === "native-display") {
+            return <img src={item.mediaFiles[0]} alt={item.advertiserName} width={50} height={50} />;
+        } else if (item && item.pubType === "geo-located") {
+            return <img src={item.mediaFiles[0]} alt={item.advertiserName} width={50} height={50} />;
+        } else {
+            return "unknown";
+        }
+    };
+
     const formatPostStatut = (status) => {
         switch (status) {
             case "active":
@@ -96,7 +112,8 @@ const PubRow = ({ index, pub, onAction }) => {
         <tr>
             <td>{index + 1}</td>
             <td>{pub.pubID}</td>
-            <td>{pub.mediaFile && <img src={pub.mediaFile} alt={pub.advertiserName} width={50} height={50} />}</td>
+            <td>{mediaFilesType(pub)}</td>
+            {/* <td>{pub.mediaFiles && <img src={pub.mediaFiles[0]} alt={pub.advertiserName} width={50} height={50} />}</td> */}
             <td>{pub.advertiserName || "Inconnu"}</td>
             <td>{pub.contact}</td>
             <td>{formatViewCount(pub.views)}</td>
@@ -204,7 +221,7 @@ export default function ManagePubs() {
                 <PubsFilter onFilterChange={handleFilterChange} />
             )}
 
-            <div className="ads-list">;
+            <div className="ads-list">
                 <div className="card-list">
                     <table>
                         <thead>

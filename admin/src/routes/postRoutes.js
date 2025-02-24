@@ -17,7 +17,6 @@ const fetchAllPosts = async () => {
             throw new Error('Erreur lors de la récupération des annonces.');
         }
         const result = await response.json();
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur:', error);

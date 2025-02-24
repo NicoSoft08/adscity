@@ -12,7 +12,6 @@ export default function LoginPage() {
     const navigate = useNavigate();
     const { currentUser, userRole } = useContext(AuthContext);
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoginSuspecious, setIsLoginSuspicious] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({ email: '', password: '', agree: false });
     const [formData, setFormData] = useState({ email: '', password: '', agree: false });
@@ -76,14 +75,21 @@ export default function LoginPage() {
     
             // 🔹 Tentative de connexion
             const result = await signinUser(email, password);
+
+            const { success, message, role } = result;
     
-            if (!result.success) {
-                if (result.status === "pending_verification") {
-                    setIsLoginSuspicious(true);
-                    return;
-                }
-                throw new Error(result.message || "Accès refusé.");
+            if (!success) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: message || "Une erreur est survenue. Veuillez réessayer.",
+                });
+                setLoading(false);
+                return;
             }
+
+            // 🔹 Vérification de la sécurité de la connexion
+
     
             setToast({
                 show: true,
@@ -92,7 +98,7 @@ export default function LoginPage() {
             });
     
             // 🔹 Redirection selon le rôle
-            if (result.role === 'admin') {
+            if (role === 'admin') {
                 navigate('/admin/dashboard/panel');
             } else {
                 navigate('/access-denied');
@@ -114,11 +120,6 @@ export default function LoginPage() {
 
     return (
         <div className='login-page'>
-            {isLoginSuspecious && (
-                <div className="suspicious-login-message">
-                    <p>Nouvel appareil détecté. Vérifiez votre email pour autoriser la connexion.</p>
-                </div>
-            )}
             <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Admin Panel</h2>
                 <div className='password-toggle'>

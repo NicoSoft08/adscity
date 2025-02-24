@@ -20,7 +20,7 @@ const createPub = async (pubData) => {
 
 const fetchPubById = async (pub_id) => {
     try {
-        const response = await fetch(`${backendUrl}/api/do/collect/pub/${pub_id}`, {
+        const response = await fetch(`${backendUrl}/api/do/collect/pubs/${pub_id}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ const fetchPubById = async (pub_id) => {
 
 const fetchPubs = async () => {
     try {
-        const response = await fetch(`${backendUrl}/api/do/collect/pub`, {
+        const response = await fetch(`${backendUrl}/api/do/collect/pubs`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

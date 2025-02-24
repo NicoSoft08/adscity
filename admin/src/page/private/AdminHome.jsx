@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 
 // components
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBars,
@@ -14,14 +14,15 @@ import {
     faUsers
 } from '@fortawesome/free-solid-svg-icons';
 import Header from '../../components/dashboard-header/Header';
-import { faBuysellads } from '@fortawesome/free-brands-svg-icons';
+// import { faBuysellads } from '@fortawesome/free-brands-svg-icons';
+import { AuthContext } from '../../contexts/AuthContext';
 import '../../styles/AdminHome.scss';
 
 const menuItems = [
     { id: "panel", label: "Panel", icon: faChartLine, path: "/admin/dashboard/panel" },
     { id: "posts", label: "Annonces", icon: faBullhorn, path: "/admin/dashboard/posts" },
     { id: "users", label: "Utilisateurs", icon: faUsers, path: "/admin/dashboard/users" },
-    { id: "pubs", label: "Publicités", icon: faBuysellads, path: "/admin/dashboard/pubs" },
+    // { id: "pubs", label: "Publicités", icon: faBuysellads, path: "/admin/dashboard/pubs" },
     { id: "notifications", label: "Notifications", icon: faBell, path: "/admin/dashboard/notifications" },
     { id: "payments", label: "Paiements", icon: faMoneyBill, path: "/admin/dashboard/payments" },
     { id: "profile", label: "Profil", icon: faUserCircle, path: "/admin/dashboard/profile" },
@@ -30,9 +31,16 @@ const menuItems = [
 
 
 export default function AdminHome() {
+    const navigate = useNavigate();
+        const { currentUser } = useContext(AuthContext);
     const location = useLocation();
     const [isCollapsed, setIsCollapsed] = useState(false);
 
+    useEffect(() => {
+        if (!currentUser) {
+            navigate('/');
+        }
+    }, [currentUser, navigate]);
 
     return (
         <div className='user-home'>

@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchUserById } from '../../routes/userRoutes';
 import Loading from '../../customs/Loading';
+import UserCard from '../../components/card/UserCard';
 import '../../styles/ManageUserID.scss';
 
 export default function ManageUserID() {
@@ -40,8 +41,8 @@ export default function ManageUserID() {
                 <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
                 <h2>Utilisateur: {user_id.toLocaleUpperCase()}</h2>
             </div>
-            
-            {JSON.stringify(user)}
+
+            <UserCard user={user} />
         </div>
     );
 };

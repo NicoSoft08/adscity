@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchPostById } from '../../routes/postRoutes';
 import Loading from '../../customs/Loading';
+import PostCard from '../../components/card/PostCard';
 import '../../styles/ManagePostID.scss';
 
 export default function ManagePostID() {
@@ -11,8 +12,6 @@ export default function ManagePostID() {
     const [post, setPost] = useState(null);
     const { post_id } = useParams();
     const navigate = useNavigate();
-
-    console.log("Post ID envoyé vers le serveur",post_id);
 
     const handleBack = () => {
         navigate('/admin/dashboard/posts');
@@ -42,7 +41,7 @@ export default function ManagePostID() {
                 <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
                 <h2>Annonce: {post_id.toLocaleUpperCase()}</h2>
             </div>
-            {JSON.stringify(post)}
+            <PostCard post={post} />
         </div>
     );
 };

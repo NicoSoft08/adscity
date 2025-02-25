@@ -42,7 +42,7 @@ const getUser = async (userID) => {
 
 const collectUserData = async (user_id) => {
     try {
-        const UserID = user_id.toLocaleUpperCase();
+        const UserID = user_id.toUpperCase();
         const userRef = firestore.collection('USERS');
         const userSnap = await userRef
             .where('UserID', '==', UserID)

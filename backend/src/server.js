@@ -19,9 +19,10 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const promotionRoutes = require('./routes/promotionRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 
-// const createNodemailerTransport = require('./func')
-
 const updateServices = require('./services/updateServices');
+
+// const { createNodemailerTransport } = require('./func');
+
 const {
     checkFreeTrialExpiry,
     paymentStatusChecker,
@@ -34,6 +35,7 @@ const {
     createDefaultSuperAdmin
 } = require('./firebase/admin');
 const { createNodemailerTransport } = require('./func');
+
 
 
 // Mettre en place un cron job pour exécuter la vérification chaque jour à minuit
@@ -80,7 +82,7 @@ app.get('/api/test-email', async (req, res) => {
     const nodemailerTransport = createNodemailerTransport();
     const mailOptions = {
         from: 'support@adscity.net',
-        to: 'admin@adscity.net',
+        to: 'koffigalloharistide@gmail.com',
         subject: 'Test email',
         text: 'This is a test email from AdsCity server',
     };

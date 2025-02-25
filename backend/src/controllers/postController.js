@@ -267,14 +267,6 @@ const getPostBySlug = async (req, res) => {
 const getDataFromPostID = async (req, res) => {
     const { post_id } = req.params;
 
-    if (!post_id) {
-        return res.status(400).json({
-            success: false,
-            message: "L'ID de l'annonce est requis."
-        });
-    }
-
-
     try {
         const data = await collectDataFromPostID(post_id);
         if (!data) {

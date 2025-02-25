@@ -400,7 +400,7 @@ const collectPostBySlug = async (category, subcategory, slug) => {
 
 const collectDataFromPostID = async (post_id) => {
     try {
-        const PostID = post_id.toLocaleUpperCase();
+        const PostID = post_id.toUpperCase();
         const postRef = firestore.collection('POSTS');
         const postSnap = await postRef
             .where('PostID', '==', PostID)

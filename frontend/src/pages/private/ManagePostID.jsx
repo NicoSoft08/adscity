@@ -13,8 +13,6 @@ export default function ManagePostID() {
     const { post_id } = useParams();
     const navigate = useNavigate();
 
-    console.log("Post ID envoyé vers le serveur",post_id);
-
     const handleBack = () => {
         navigate('/user/dashboard/posts');
     };

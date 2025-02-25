@@ -92,7 +92,7 @@ export default function LoginPage() {
     
             // 🔹 Redirection selon le rôle
             if (role === 'user') {
-                navigate('/user/dashboard/panel');
+                navigate('/');
             } else {
                 navigate('/access-denied');
             }

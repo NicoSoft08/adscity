@@ -12,6 +12,7 @@
 
     .display {
         max-width: 800px;
+        margin: auto;
     }
 
     .under_score {
@@ -180,8 +181,8 @@
 
     .content {
         width: 100%;
-        max-width: 1200px;
-        margin: auto;
+        // max-width: 1200px;
+        // margin: auto;
 
         display: flex;
         justify-content: space-between;
@@ -197,7 +198,6 @@
             background: #fff;
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
             .details,
             .description,
@@ -211,7 +211,7 @@
                 display: block;
                 padding: 10px 20px;
                 background-color: #2196F3;
-                color: white;
+                color: $white;
                 text-align: center;
                 font-size: 18px;
                 cursor: pointer;
@@ -245,17 +245,14 @@
 
 
         .owner {
-            width: 100%;
-            // max-width: 250px;
             background: #fff;
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
-            @media (max-width: 576px) {
-                max-width: 400px;
-                width: 100%;
-            }
+            // @media (max-width: 576px) {
+            //     max-width: 400px;
+            //     width: 100%;
+            // }
         }
     }
 }

@@ -9,6 +9,19 @@
     text-align: center;
     font-family: 'Ubuntu', sans-serif;
 
+    .sold-badge {
+        background-color: red;
+        color: $white;
+        padding: 5px 10px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: $font-regular;
+        font-family: 'Ubuntu', sans-serif;
+        text-transform: uppercase;
+        border-radius: 5px;
+        width: 100%;
+    }
+
     .image-gallery {
         display: flex;
         flex-direction: column;
@@ -144,6 +157,38 @@
 
         .restaure {
             background-color: $green;
+            color: $white;
+        }
+    }
+
+    p {
+        font-family: 'Ubuntu',sans-serif;
+        font-weight: $font-light;
+    }
+
+    .ad-details-buttons {
+        margin-top: 20px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+
+        .modal-button {
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-light;
+            font-size: 15px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .approve-button {
+            background-color: $primary-color;
+            color: $white;
+        }
+
+        .reject-button {
+            background-color: $danger;
             color: $white;
         }
     }

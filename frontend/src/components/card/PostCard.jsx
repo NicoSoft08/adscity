@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import '../../styles/PostCard.scss';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
 import { deletePost, markAsSold } from '../../routes/postRoutes';
+import Toast from '../../customs/Toast';
+import '../../styles/PostCard.scss';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -67,7 +68,7 @@ export default function PostCard({ post, currentUser }) {
     const [isLoading, setIsloading] = useState(false);
     const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
 
-    const { adDetails, images, location, views, shares, comments, favorites, posted_at, expiry_date } = post;
+    const { adDetails, images, location, views, shares, comments, favorites, posted_at, expiry_date, isSold } = post;
 
     const formatSpecialFeatures = (features) => {
         if (!features) return '';
@@ -89,8 +90,8 @@ export default function PostCard({ post, currentUser }) {
     const handleEditPost = () => {
     };
 
-    const handleDeletePost = async (postID) => {
-        if (!postID) return;
+    const handleDeletePost = async (PostID) => {
+        if (!PostID) return;
 
         setConfirm({ ...confirm, willDelete: true });
     };
@@ -100,7 +101,7 @@ export default function PostCard({ post, currentUser }) {
         setIsloading(true);
 
         try {
-           
+
 
             // 🔥 Supprimer d'abord les images de Firebase Storage
             await deletePostImagesFromStorage(post);
@@ -122,11 +123,11 @@ export default function PostCard({ post, currentUser }) {
         }
     };
 
-    const handleMarkAsSold = async (post) => {
-        if (!post) return;
+    const handleMarkAsSold = async (PostID) => {
+        if (!PostID) return;
 
         try {
-            const result = await markAsSold(currentUser?.uid, post.id);
+            const result = await markAsSold(currentUser?.uid, PostID);
             if (result.success) {
                 setToast({ show: true, type: 'info', message: result.message });
             } else {
@@ -143,6 +144,8 @@ export default function PostCard({ post, currentUser }) {
 
     return (
         <div className='post-card'>
+
+
             <ImageGallery images={images} />
 
             <div className="ad-details">
@@ -150,6 +153,8 @@ export default function PostCard({ post, currentUser }) {
                 <p className="price">{adDetails.price} RUB • {adDetails.priceType}</p>
                 <p className="description">{adDetails.description}</p>
             </div>
+            
+            {isSold && <span className="sold-badge">VENDU</span>}
 
             <div className="specs">
                 {adDetails.category !== undefined ? <p><strong>Catégorie :</strong> {adDetails.category}</p> : null}
@@ -192,8 +197,8 @@ export default function PostCard({ post, currentUser }) {
 
             <div className="actions">
                 <button disabled={!post.isSold} onClick={() => handleEditPost(post)} className="action-button edit">Modifier</button>
-                <button onClick={() => handleDeletePost(post.id)} className="action-button delete">Supprimer</button>
-                <button disabled={!post.isSold} onClick={() => handleMarkAsSold(post)} className="action-button restaure">Marquer comme vendu</button>
+                <button onClick={() => handleDeletePost(post.PostID)} className="action-button delete">Supprimer</button>
+                <button disabled={post.isSold} onClick={() => handleMarkAsSold(post.PostID)} className="action-button restaure">Marquer comme vendu</button>
             </div>
 
             {confirm.willDelete && (
@@ -209,6 +214,8 @@ export default function PostCard({ post, currentUser }) {
                     </div>
                 </Modal>
             )}
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

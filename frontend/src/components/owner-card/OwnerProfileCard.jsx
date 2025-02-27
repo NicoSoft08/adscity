@@ -59,7 +59,7 @@ const OwnerProfileCard = ({ owner, userID }) => {
                     src={owner?.profilURL === null ? IconAvatar : owner?.profilURL}
                     alt={owner.displayName}
                 />
-                {owner?.isOnline ? <div className="online-bage" /> : null}
+                {owner?.isOnline ? <div className="online-badge" /> : null}
             </div>
             <span className='profile-type'> {owner?.profileType} </span>
             <p className='member-since'>Membre depuis: {formatDate(owner.createdAt)}</p>

@@ -50,6 +50,7 @@ const PostsFilter = ({ onFilterChange }) => {
                 <option value="pending">En attente</option>
                 <option value="refused">Refusée</option>
                 <option value="expired">Expirée</option>
+                <option value="sold">Vendue</option>
             </select>
 
             <select name="category" value={filters.category} onChange={handleChange}>
@@ -262,7 +263,6 @@ export default function ManagePosts({ currentUser }) {
     const handleAction = (post) => {
         const PostID = post.PostID;
         const post_id = PostID.toLowerCase();
-        console.log(post_id);
         navigate(`${post_id}`);
     };
 
@@ -273,7 +273,7 @@ export default function ManagePosts({ currentUser }) {
                 post.adDetails.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                 post.PostID.toLowerCase().includes(filters.search.toLowerCase())
             ) &&
-            (filters.status === "all" || post.status === filters.status) &&
+            (filters.status === "all" || post.status === filters.status || post.isSold === true) &&
             (filters.category === "all" || post.category === filters.category) &&
             (filters.city === "" || post.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
             (filters.date === "" || format(new Date(post.expiry_date), "yyyy-MM-dd") === filters.date) &&

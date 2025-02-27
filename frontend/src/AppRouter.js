@@ -48,7 +48,8 @@ import { AuthContext } from './contexts/AuthContext';
 import MyFavorites from './pages/private/MyFavorites';
 import Settings from './pages/private/Settings';
 // import Messages from './pages/private/Messages';
-import MyPosts from './pages/private/MyPosts';
+import ManagePosts from './pages/private/ManagePosts';
+import ManagePostID from './pages/private/ManagePostID';
 
 export default function AppRouter() {
     const { currentUser } = useContext(AuthContext);
@@ -77,8 +78,8 @@ export default function AppRouter() {
                     <Route path='/business' element={<Business />} />
                     <Route path='/pub' element={<PubCreationForm />} />
                     <Route path='/about' element={<TeamPage />} />
-                    <Route path="/posts/:category/:subcategory/:postID" element={<PostDetailPage />} />
-                    <Route path='/users/user/:userID/profile/show' element={<ShowUserPage />} />
+                    <Route path="/posts/:category/:subcategory/:PostID" element={<PostDetailPage />} />
+                    <Route path='/users/user/:UserID/profile/show' element={<ShowUserPage />} />
                     <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />
 
                     <Route path='/start-guide' element={<QuickStartGuide />} />
@@ -104,7 +105,8 @@ export default function AppRouter() {
                 <Route path='/user/dashboard' element={<UserHome />}>
                     <Route path="panel" element={<DashboardPanel />} />
                     <Route path="favoris" element={<MyFavorites currentUser={currentUser} />} />
-                    <Route path="posts" element={<MyPosts currentUser={currentUser} />} />
+                    <Route path="posts" element={<ManagePosts currentUser={currentUser} />} />
+                    <Route path='posts/:post_id' element={<ManagePostID currentUser={currentUser} />} />
                     <Route path="payments" element={<PaymentIntents userID={currentUser?.uid} />} />
                     {/* <Route path="messages" element={<Messages currentUser={currentUser} />} /> */}
                     <Route path="notifications" element={<MyNotifications />} />

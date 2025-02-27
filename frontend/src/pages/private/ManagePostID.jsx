@@ -3,11 +3,11 @@ import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import Loading from '../../customs/Loading';
-import '../../styles/ManagePostID.scss';
 import { fetchPostById } from '../../routes/postRoutes';
 import PostCard from '../../components/card/PostCard';
+import '../../styles/ManagePostID.scss';
 
-export default function ManagePostID() {
+export default function ManagePostID({ currentUser }) {
     const [loading, setLoading] = useState(true);
     const [post, setPost] = useState(null);
     const { post_id } = useParams();
@@ -41,7 +41,7 @@ export default function ManagePostID() {
                 <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
                 <h2>Annonce: {post_id.toLocaleUpperCase()}</h2>
             </div>
-            <PostCard post={post} />
+            <PostCard currentUser={currentUser} post={post} />
         </div>
     );
 };

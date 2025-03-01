@@ -82,7 +82,7 @@ app.get('/api/test-email', async (req, res) => {
     const nodemailerTransport = createNodemailerTransport();
     const mailOptions = {
         from: 'support@adscity.net',
-        to: 'koffigalloharistide@gmail.com',
+        to: 'n.dahpenielnicolas123@gmail.com',
         subject: 'Test email',
         text: 'This is a test email from AdsCity server',
     };

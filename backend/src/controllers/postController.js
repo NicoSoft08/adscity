@@ -415,10 +415,10 @@ const getRefusedPostsByUserID = async (req, res) => {
 };
 
 const getActivePostsByUserID = async (req, res) => {
-    const { userID } = req.params;
+    const { UserID } = req.params;
 
     try {
-        const activePosts = await collectActivePostsByUserID(userID);
+        const activePosts = await collectActivePostsByUserID(UserID);
         if (!activePosts) {
             return res.status(400).json({
                 success: false,
@@ -590,11 +590,11 @@ const suspendPost = async (req, res) => {
 };
 
 const markPostAsSold = async (req, res) => {
-    const { postID } = req.params;
+    const { PostID } = req.params;
     const { userID } = req.body;
 
     try {
-        const isMarkedAsSold = await markPostSold(postID, userID);
+        const isMarkedAsSold = await markPostSold(userID, PostID);
         if (!isMarkedAsSold) {
             return res.status(404).json({
                 success: false,

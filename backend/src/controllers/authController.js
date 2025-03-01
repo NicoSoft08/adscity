@@ -39,7 +39,7 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { userID } = req.user;
+    const { userID } = req.body;
 
     if (!userID) {
         return res.status(400).json({
@@ -51,12 +51,9 @@ const loginUser = async (req, res) => {
     try {
         const signInResult = await signinUser(userID);
 
-        if (!signInResult || !signInResult.success) {
-            const statusCode = signInResult.status === "pending_verification" ? 403 : 400;
-
-            return res.status(statusCode).json({
+        if (!signInResult.success) {
+            return res.status(400).json({
                 success: false,
-                status: signInResult.status,
                 message: signInResult.message || "Échec de la connexion.",
             });
         }

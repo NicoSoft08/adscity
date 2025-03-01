@@ -13,7 +13,9 @@ const {
     collectAllUsersWithStatus,
     collectInterlocutorProfile,
     collectUserUnreadNotifications,
-    collectUserData
+    collectUserData,
+    searchHistoryUpdate,
+    collectAnyUserData
 } = require("../firebase/user");
 
 const getAllUsersWithStatus = async (req, res) => {
@@ -83,6 +85,39 @@ const getDataFromUserID = async (req, res) => {
     };
 }
 
+const getAnyUserData = async (req, res) => {
+    const { userID } = req.params;
+    console.log(userID)
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: "ID de l'utilisateur manquant"
+        });
+    };
+
+    try {
+        const data = await collectAnyUserData(userID);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur non trouvé"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Données de l'utilisateur récupérées avec succès",
+            data: data
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard",
+        });
+    }
+};
+
 const getUserData = async (req, res) => {
     const { userID } = req.params;
 
@@ -112,7 +147,6 @@ const getUserData = async (req, res) => {
             success: false,
             message: "Erreur lors de la récupération des données utilisateur"
         });
-
     }
 };
 
@@ -418,8 +452,33 @@ const fetchInterlocutorProfile = async (req, res) => {
     };
 };
 
+const updateSearchHistory = async (req, res) => {
+    const { userID } = req.params;
+    const { query } = req.body;
+
+    try {
+        const result = await searchHistoryUpdate(userID, query);
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: "Erreur lors de la mise à jour de l'historique de recherche"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Historique mis à jour.",
+        });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'historique de recherche:", error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    }
+};
 
 module.exports = {
+    getAnyUserData,
     getDataFromUserID,
     fetchInterlocutorProfile,
     getAllUsersWithStatus,
@@ -435,5 +494,6 @@ module.exports = {
     sendUserNotification,
     toggleFavorites,
     updateInteractionByUserID,
-    updateDeviceToken
+    updateDeviceToken,
+    updateSearchHistory
 };

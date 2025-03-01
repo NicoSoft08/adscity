@@ -23,17 +23,16 @@ const getUsers = async () => {
 
 const getUser = async (userID) => {
     try {
-        const userRecord = auth.getUser(userID);
-        const userDoc = await firestore.collection('USERS').doc((await userRecord).uid).get();
+        const userRecord = await auth.getUser(userID);
+        const userRef = firestore.collection('USERS').doc(userRecord.uid);
+        const userDoc = await userRef.get();
 
-        if (userDoc.exists) {
-            return {
-                ...(await userRecord).toJSON(),
-                ...userDoc.data(),
-            };
-        } else {
-            return (await userRecord).toJSON();
+        if (!userDoc.exists){
+            return null;
         }
+
+        const userData = userDoc.data();
+        return userData;
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
         throw error;
@@ -41,8 +40,8 @@ const getUser = async (userID) => {
 };
 
 const collectUserData = async (user_id) => {
+    const UserID = user_id?.toUpperCase();
     try {
-        const UserID = user_id.toUpperCase();
         const userRef = firestore.collection('USERS');
         const userSnap = await userRef
             .where('UserID', '==', UserID)
@@ -50,7 +49,6 @@ const collectUserData = async (user_id) => {
             .get();
 
         if (userSnap.empty) {
-            console.log('Aucun utilisateur trouvé avec cet ID');
             return null;
         };
         const userData = userSnap.docs[0].data();
@@ -313,7 +311,6 @@ const storeDeviceToken = async (deviceToken, userID) => {
     };
 };
 
-
 const collectInterlocutorProfile = async (userID) => {
     try {
         // 📌 Déterminer l'interlocuteur (l'autre utilisateur dans la conversation)
@@ -335,10 +332,59 @@ const collectInterlocutorProfile = async (userID) => {
     }
 };
 
+const searchHistoryUpdate = async (userID, query) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
 
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé.");
+            return null;
+        }
+
+        const userData = userDoc.data();
+        let searchHistory = userData.searchHistory || [];
+
+        // Vérifier si la recherche existe déjà
+        if (!searchHistory.includes(query)) {
+            // Ajouter la nouvelle recherche au début du tableau
+            searchHistory.unshift(query);
+            // Limiter à 10 recherches stockées
+            searchHistory = searchHistory.slice(0, 10);
+
+            // Mettre à jour l'historique dans Firestore
+            await userRef.update({ searchHistory });
+        }
+
+        console.log("Historique mis à jour.");
+        return true;
+    } catch (error) {
+        console.error("❌ Erreur lors de la mise à jour de l'historique de recherche:", error);
+        return null;
+    }
+};
+
+const collectAnyUserData = async (userID) => {
+    console.log(userID)
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            return null;
+        }
+
+        const userData = userDoc.data();
+        return userData;
+    } catch (error) {
+        console.error("❌ Erreur lors de la récupération des données utilisateur :", error);
+        return null;
+    }
+};
 
 module.exports = {
     addRemoveFavorites,
+    collectAnyUserData,
     collectInterlocutorProfile,
     collectUserFavorites,
     getUser,
@@ -353,4 +399,5 @@ module.exports = {
     storeDeviceToken,
     updateUserFields,
     updateUserInteraction,
+    searchHistoryUpdate,
 };

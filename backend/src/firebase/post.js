@@ -16,7 +16,7 @@ const makePost = async (postData, userID) => {
         }
 
         const userData = userDoc.data();
-        const { isActive, plans, adsPostedThisMonth } = userData;
+        const { isActive, plans, adsPostedThisMonth, UserID } = userData;
         const { location } = postData;
 
         // 2️⃣ Vérifier si l'utilisateur est actif
@@ -76,6 +76,7 @@ const makePost = async (postData, userID) => {
 
         await newPostRef.set({
             userID: userID,
+            UserID: UserID,
             ...postData,
             expiry_date: null,
             views: 0,
@@ -85,6 +86,7 @@ const makePost = async (postData, userID) => {
             favorites: 0,
             shares: 0,
             comments: 0,
+            postID: newPostRef.id,
             PostID: newPostID,
             posted_at: admin.firestore.FieldValue.serverTimestamp(),
             updated_at: null,
@@ -532,14 +534,16 @@ const collectRejectedPostsByUserID = async (userID) => {
     };
 };
 
-const collectActivePostsByUserID = async (userID) => {
+const collectActivePostsByUserID = async (UserID) => {
+    console.log(UserID)
     try {
+        const user_id = UserID?.toUpperCase();
         // const userRecord = auth
         const adsCollection = firestore.collection('POSTS');
         const userPostsQuery = adsCollection
             // .where('isActive', '==', true)
             .where('status', '==', 'approved')
-            .where('userID', '==', userID)
+            .where('UserID', '==', user_id)
         const querySnapshot = await userPostsQuery.get();
 
         if (querySnapshot.empty) {
@@ -705,25 +709,31 @@ const suspendPostByID = async (postID, reason) => {
     };
 };
 
-const markPostSold = async (postID, userID) => {
+const markPostSold = async (userID, PostID) => {
+    console.log(PostID);
     try {
-        const postRef = firestore.collection('POSTS').doc(postID);
-        const postDoc = await postRef.get();
-        if (!postDoc.exists) {
-            console.error('Annonce non trouvée.');
-            return false;
-        };
+        const postQuery = firestore.collection('POSTS').where('PostID', '==', PostID).limit(1);
+        const postSnapshot = await postQuery.get();
 
+        if (postSnapshot.empty) {
+            console.log('Annonce introuvable');
+            return false;
+        }
+
+        const postDoc = postSnapshot.docs[0];
         const postData = postDoc.data();
+
         if (postData.userID !== userID) {
-            console.error('Vous n\'êtes pas autorisé à mettre à jour cette annonce.');
+            console.error('Non autorisé à modifier cette annonce.');
             return false;
         };
 
-        await postRef.update({
+        await postDoc.ref.update({
             isSold: true,
             updated_at: admin.firestore.FieldValue.serverTimestamp(),
         });
+
+        console.log('Annonce marquée comme vendue');
 
         return true;
     } catch (error) {

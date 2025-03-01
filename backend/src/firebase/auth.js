@@ -151,49 +151,32 @@ const createUser = async (address, city, country, email, password, firstName, la
 
 const signinUser = async (userID) => {
     try {
-        // 🔹 Vérification de l'utilisateur
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
-            throw new Error("Utilisateur introuvable.");
+            return { success: false, message: "Utilisateur introuvable." };
         }
 
         const userData = userDoc.data();
         const { role, loginCount = 0 } = userData;
 
-        if (loginCount === 0) {
-            // 🔹 Mise à jour de l'utilisateur
-            await userRef.update({
-                loginCount: 1,
-                isOnline: true,
-                lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
-            });
-
-            console.log("✅ Première connexion validée :", userID);
-            return {
-                success: true,
-                message: "Connexion réussie (première connexion).",
-                role,
-            };
-        }
-
-        // 🔹 Mise à jour des informations utilisateur après connexion réussie
+        // 🔹 Mise à jour des informations utilisateur après connexion
         await userRef.update({
+            loginCount: admin.firestore.FieldValue.increment(1),
             isOnline: true,
             lastLoginAt: admin.firestore.FieldValue.serverTimestamp(),
-            loginCount: admin.firestore.FieldValue.increment(1),
         });
 
         console.log("✅ Connexion réussie :", userID);
         return {
             success: true,
-            message: "Connexion réussie.",
+            message: loginCount === 0 ? "Connexion réussie (première connexion)." : "Connexion réussie.",
             role,
         };
     } catch (error) {
         console.error("❌ Erreur dans signinUser :", error.message);
-        return { success: false, message: error.message };
+        return false
     }
 };
 

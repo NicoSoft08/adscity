@@ -45,14 +45,14 @@ router.get('/user/:userID', getPostsByUserID);
 router.get('/user/:userID/pending', getPendingPostsByUserID);
 router.get('/user/:userID/approved', getApprovedPostsByUserID);
 router.get('/user/:userID/refused', getRefusedPostsByUserID);
-router.get('/user/:userID/active', getActivePostsByUserID);
+router.get('/user/:UserID/active', getActivePostsByUserID);
 router.get('/user/:userID/outdated', getOutdatedPostsByUserID);
 router.post('/category', getPostsByCategoryName);
 router.post('/related-category', getRelatedPosts);
 router.put('/:postID/update', updatePost);
 router.delete('/:postID/delete', deletePost);
 router.post('/:postID/suspend', suspendPost);
-router.post('/:postID/mark/sold', markPostAsSold);
+router.post('/:PostID/mark/sold', markPostAsSold);
 router.get('/nearby', fetchNearbyPosts);
 
 

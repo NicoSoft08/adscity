@@ -1,5 +1,22 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const fetchUserData = async (userID) => {
+    console.log(userID)
+    try {
+        const response = await fetch(`${backendUrl}/api/users/user/${userID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const fetchAllUsersWithStatus = async () => {
     try {
         const response = await fetch(`${backendUrl}/api/users/all/status`, {
@@ -56,10 +73,6 @@ const fetchDataByUserID = async (userID) => {
                 'Content-Type': 'application/json',
             }
         });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des données de l\'utilisateur');
-        }
 
         const result = await response.json();
         return result;
@@ -136,6 +149,7 @@ const markNotificationAsRead = async (userID, notificationID) => {
 
 
 export {
+    fetchUserData,
     getUserDevices,
     fetchUserById,
     fetchDataByUserID,

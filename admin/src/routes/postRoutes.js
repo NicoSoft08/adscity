@@ -119,7 +119,6 @@ const onApprovePost = async (postID) => {
     });
 
     const result = await response.json();
-    console.log(result);
     logEvent(analytics, 'advertisment_approved');
     fetchPendingPosts();
 

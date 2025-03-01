@@ -51,6 +51,16 @@ export default function LoginPage() {
 
     const handleChange = (e) => {
         const { name, value, checked, type } = e.target;
+
+        // Autoriser uniquement les lettres latines et les espaces
+        const latinOnlyRegex = /^[A-Za-z\s]*$/;
+
+        // Vérification pour firstName et lastName
+        if ((name === 'firstName' || name === 'lastName') && !latinOnlyRegex.test(value)) {
+            setToast({ show: true, type: 'error', message: 'Ne sont autorisés que des caractères latins' });
+            return; // Ignore l'entrée si elle contient des caractères cyrilliques
+        }
+        
         setFormData({
             ...formData,
             [name]: type === 'checkbox' ? checked : value,
@@ -75,21 +85,16 @@ export default function LoginPage() {
     
             // 🔹 Tentative de connexion
             const result = await signinUser(email, password);
-
-            const { success, message, role } = result;
     
-            if (!success) {
+            if (!result.success) {
                 setToast({
                     show: true,
                     type: 'error',
-                    message: message || "Une erreur est survenue. Veuillez réessayer.",
+                    message: result.message || "Une erreur est survenue. Veuillez réessayer.",
                 });
                 setLoading(false);
                 return;
             }
-
-            // 🔹 Vérification de la sécurité de la connexion
-
     
             setToast({
                 show: true,
@@ -98,21 +103,13 @@ export default function LoginPage() {
             });
     
             // 🔹 Redirection selon le rôle
-            if (role === 'admin') {
+            if (result.role === 'admin') {
                 navigate('/admin/dashboard/panel');
             } else {
                 navigate('/access-denied');
             }
         } catch (error) {
             console.error("❌ Erreur lors de la connexion :", error.message);
-
-            setToast({
-                show: true,
-                type: 'error',
-                message: error.message || "Une erreur est survenue. Veuillez réessayer.",
-            });
-    
-            navigate('/access-denied');
         } finally {
             setLoading(false);
         }

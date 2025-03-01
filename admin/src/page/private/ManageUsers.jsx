@@ -77,7 +77,6 @@ const UsersFilter = ({ onFilterChange }) => {
     );
 };
 
-
 const UserRow = ({ index, user, onAction }) => {
 
     const getProfilePicture = (user) => user.profilURL || IconAvatar;

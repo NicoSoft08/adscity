@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { fr } from "date-fns/locale";
 import { format, formatDistanceToNow } from "date-fns";
 import { formatViewCount } from "../../func";
-import { fetchDataByUserID } from "../../routes/userRoutes";
+import { fetchDataByUserID, fetchUserData } from "../../routes/userRoutes";
 import { fetchAllPosts } from "../../routes/postRoutes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
@@ -150,7 +150,6 @@ export default function ManagePosts() {
     const handleAction = (post) => {
         const PostID = post.PostID;
         const post_id = PostID.toLowerCase();
-        console.log(post_id);
         navigate(`${post_id}`);
     };
 

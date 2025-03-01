@@ -22,8 +22,11 @@ const signinUser = async (email, password) => {
 
         // 🔹 Vérifier si l'utilisateur est vérifié
         if (!user.emailVerified) {
-            throw new Error('Veuillez vérifier votre email avant de continuer.');
-        };
+            return { 
+                success: false, 
+                message: "Votre adresse email n'est pas vérifiée. Veuillez vérifier votre boîte de réception." 
+            };
+        }
 
         // 🔹 Récupérer le jeton Firebase
         const idToken = await user.getIdToken();
@@ -38,6 +41,7 @@ const signinUser = async (email, password) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
+            body: JSON.stringify({ userID: user.uid }),
         });
 
         const result = await response.json();
@@ -66,8 +70,6 @@ const logoutUser = async () => {
 
         // 🔹 Déconnexion locale après validation côté serveur
         await signOut(auth);
-
-        console.log(result);
 
         return { success: true, message: result.message || "Déconnexion réussie." };
 

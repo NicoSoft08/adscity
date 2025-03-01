@@ -3,6 +3,7 @@ import { fetchDataByUserID, setUserOnlineStatus } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
 
+
 // Création du contexte d'authentification
 export const AuthContext = createContext();
 
@@ -51,11 +52,12 @@ export const AuthProvider = ({ children }) => {
             unsubscribe();
         };
     }, [currentUser]);
-    
+
 
     if (loading) {
         return <Loading />
     }
+
 
     // Fournir les valeurs et les fonctions dans le contexte
     const value = {
@@ -69,4 +71,4 @@ export const AuthProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
-}
+};

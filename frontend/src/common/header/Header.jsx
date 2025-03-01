@@ -11,7 +11,6 @@ import './Header.scss';
 
 export default function Header() {
     const { currentUser, userRole } = useContext(AuthContext);
-
     return (
         <header className='header'>
             <div className="content">
@@ -31,7 +30,7 @@ export default function Header() {
                         <AppLogo source={letterBlueBgWhite} />
                     </div>
                     <div className="__middle">
-                        <SearchBar />
+                        <SearchBar currentUser={currentUser} />
                     </div>
                     <div className="__right">
                         <NavLinks />

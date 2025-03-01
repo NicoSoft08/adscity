@@ -13,7 +13,7 @@ export default function PublicProfil({ profile }) {
     const [showPhone, setShowPhone] = useState(false);
     const [message, setMessage] = useState('');
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-
+console.log(profile)
     const handleSubmit = () => {
         setToast({
             show: true,
@@ -74,7 +74,7 @@ export default function PublicProfil({ profile }) {
 
                         {/* Social Media Links */}
                         {/* PERSONNALISATION POUR LES COMPTES  ENTREPRISES ET PROFESSIONNELS */}
-                        {currentUser && (userData.profileType === 'Professionnel' || userData.profileType === 'Entreprise' ) && (
+                        {currentUser && (profile.profileType === 'Professionnel' || userData.profileType === 'Entreprise' ) && (
                             <div className="social-media-links">
                                 <a href={"/"} target="_blank" rel="noreferrer">
                                     <img src={facebook} alt="faceook" />

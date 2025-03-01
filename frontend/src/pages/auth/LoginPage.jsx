@@ -68,21 +68,16 @@ export default function LoginPage() {
     
             // 🔹 Tentative de connexion
             const result = await signinUser(email, password);
-
-            const { success, message, role } = result;
     
-            if (!success) {
+            if (!result.success) {
                 setToast({
                     show: true,
                     type: 'error',
-                    message: message || "Une erreur est survenue. Veuillez réessayer.",
+                    message: result.message || "Une erreur est survenue. Veuillez réessayer.",
                 });
                 setLoading(false);
                 return;
             }
-
-            // 🔹 Vérification de la sécurité de la connexion
-
     
             setToast({
                 show: true,
@@ -91,21 +86,13 @@ export default function LoginPage() {
             });
     
             // 🔹 Redirection selon le rôle
-            if (role === 'user') {
+            if (result.role === 'user') {
                 navigate('/');
             } else {
                 navigate('/access-denied');
             }
         } catch (error) {
             console.error("❌ Erreur lors de la connexion :", error.message);
-
-            setToast({
-                show: true,
-                type: 'error',
-                message: error.message || "Une erreur est survenue. Veuillez réessayer.",
-            });
-    
-            navigate('/access-denied');
         } finally {
             setLoading(false);
         }

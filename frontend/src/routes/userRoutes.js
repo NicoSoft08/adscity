@@ -1,5 +1,22 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const fetchUserData = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/user/${userID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const result = await response.json();
+        console.log(result)
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
 const fetchDataByUserID = async (userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}`, {
@@ -125,8 +142,8 @@ const fetchRefusedPostsByUserID = async (userID) => {
     }
 };
 
-const fetchUserActivePosts = async (userID) => {
-    const response = await fetch(`${backendUrl}/api/posts/user/${userID}/active`, {
+const fetchUserActivePosts = async (UserID) => {
+    const response = await fetch(`${backendUrl}/api/posts/user/${UserID}/active`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -134,6 +151,7 @@ const fetchUserActivePosts = async (userID) => {
     });
 
     const result = await response.json();
+    console.log(result)
     return result;
 };
 
@@ -300,7 +318,26 @@ const fetchInterlocutorProfile = async (userID) => {
     }
 };
 
+const updateSearchHistory = async (userID, query) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/${userID}/update-search-history`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query }),
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de l'historique de recherche:", error);
+    }
+};
+
+
 export {
+    fetchUserData,
     fetchDataByUserID,
     fetchNotifications,
     fetchUnreadNotifications,
@@ -319,4 +356,5 @@ export {
     toggleFavorites,
     updateUserFields,
     updateUserWithDeviceToken,
+    updateSearchHistory,
 };

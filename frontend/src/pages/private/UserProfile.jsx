@@ -26,7 +26,7 @@ export default function UserProfile() {
 
     const validateFile = (file) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        const maxSize = 5 * 1024 * 1024; // 2MB
+        const maxSize = 5 * 1024 * 1024; // 5MB
 
         if (!allowedTypes.includes(file?.type)) {
             setToast({
@@ -41,7 +41,7 @@ export default function UserProfile() {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'La taille du fichier ne doit pas dépasser 2MB.',
+                message: 'La taille du fichier ne doit pas dépasser 5MB.',
             });
             return false;
         }
@@ -193,7 +193,7 @@ export default function UserProfile() {
                 </p>
                 <div className="seperator" />
                 <p>
-                    {userData?.country}, {userData?.city}
+                    {userData?.city}, {userData?.country}
                     <FontAwesomeIcon
                         icon={faLocationDot}
                         className='pen'

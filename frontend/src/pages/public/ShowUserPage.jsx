@@ -18,15 +18,16 @@ import '../../styles/ShowUserPage.scss';
 
 
 export default function ShowUserPage() {
-    const { userID } = useParams();
+    const { UserID } = useParams();
     const textAreaRef = useRef(null);
     const { currentUser } = useContext(AuthContext);
-    const [profileData, setProfileData] = useState([]);
+    const [profileData, setProfileData] = useState({});
     const [profilePostsData, setProfilePostsData] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    console.log(UserID)
 
     useEffect(() => {
         const textArea = textAreaRef.current;
@@ -37,8 +38,8 @@ export default function ShowUserPage() {
     useEffect(() => {
         const fetchData = async () => {
             const [userData, userPostsData] = await Promise.all([
-                fetchDataByUserID(userID),
-                fetchUserActivePosts(userID)
+                fetchDataByUserID(UserID),
+                fetchUserActivePosts(UserID)
             ]);
             if (userData.success) {
                 setProfileData(userData?.data);
@@ -51,7 +52,7 @@ export default function ShowUserPage() {
         fetchData();
         logEvent(analytics, 'view_store');
 
-    }, [userID]);
+    }, [UserID]);
 
     const validateRating = () => {
         if (rating === 0) {
@@ -75,7 +76,7 @@ export default function ShowUserPage() {
         validateRating();
 
         setIsLoading(true);
-        const result = await rateUser(userID, rating, comment);
+        const result = await rateUser(UserID, rating, comment);
         if (result.success) {
             setRating(0);
             setComment('');

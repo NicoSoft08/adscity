@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { fetchPostsByUserID } from '../../routes/userRoutes';
 import { deletePost, markAsSold, updatePost } from '../../routes/postRoutes';
 import { formatViewCount } from '../../func';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
 import Pagination from '../../components/pagination/Pagination';
@@ -102,7 +102,7 @@ const PostRow = ({ index, post, onAction }) => {
             <td>{formatViewCount(post.clicks)}</td>
             <td>{post.views > 0 ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
             <td>{post.reportingCount || 0}</td>
-            <td>{format(new Date(post.expiry_date), 'dd/MM/yyyy HH:mm', { locale: fr })}</td>
+            <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
             <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
             <td>
                 <button className="see-more" onClick={() => onAction(post)}>Voir</button>
@@ -125,7 +125,6 @@ export default function ManagePosts({ currentUser }) {
     const [editData, setEditData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [openFilter, setOpenFilter] = useState(false);
-    const [filter, setFilter] = useState({});
     const [postPerPage] = useState(10);
     const navigate = useNavigate();
 

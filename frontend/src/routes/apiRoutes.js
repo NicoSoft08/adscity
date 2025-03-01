@@ -212,7 +212,6 @@ const fetchPubs = async () => {
     }
 };
 
-
 export {
     advancedSearch,
     collectLocations,

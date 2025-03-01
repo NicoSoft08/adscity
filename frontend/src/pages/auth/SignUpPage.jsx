@@ -50,36 +50,52 @@ export default function SignUpPage() {
             errors.agree = "Vous devez accepter les termes et conditions.";
         } else {
             if (!formData.firstName) {
-                errors.firstName = "Prénoms réquis";
+                errors.firstName = "Prénoms requis";
             }
+
             if (!formData.lastName) {
-                errors.lastName = "Nom de Famille réquis";
+                errors.lastName = "Nom de famille requis";
             }
+
             if (!formData.phoneNumber) {
-                errors.phoneNumber = "Numéro de téléphone réquis";
+                errors.phoneNumber = "Numéro de téléphone requis";
             }
+
             if (!formData.email) {
-                errors.email = "Email réquis";
+                errors.email = "Email requis";
             }
+
             if (!formData.password) {
-                errors.password = "Mot de passe réquis";
+                errors.password = "Mot de passe requis";
             }
+
             if (!formData.country) {
-                errors.country = "Pays réquis";
+                errors.country = "Pays requis";
             }
+
             if (!formData.city) {
-                errors.city = "Ville réquis";
+                errors.city = "Ville requise";
             }
+
             if (!formData.address) {
-                errors.address = "Adresse réquise";
+                errors.address = "Adresse requise";
             }
         }
 
         return errors;
-    }
+    };
 
     const handleChange = (e) => {
         const { name, value, checked, type } = e.target;
+
+        // Autoriser uniquement les lettres latines et les espaces
+        const latinOnlyRegex = /^[A-Za-z\s]*$/;
+
+        // Vérification pour firstName et lastName
+        if ((name === 'firstName' || name === 'lastName') && !latinOnlyRegex.test(value)) {
+            setToast({ show: true, type: 'error', message: 'Ne sont autorisés que des caractères latins' });
+            return; // Ignore l'entrée si elle contient des caractères cyrilliques
+        }
 
         if (name === 'phoneNumber') {
             // Keep only digits for phone numbers
@@ -367,6 +383,7 @@ export default function SignUpPage() {
 
             {toast &&
                 <Toast
+                    show={toast.show}
                     message={toast.message}
                     type={toast.type}
                     onClose={() => setToast({ ...toast, show: false })}

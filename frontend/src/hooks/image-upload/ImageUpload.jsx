@@ -9,8 +9,6 @@ export default function ImageUpload({ onNext, onBack, onChange, formData, curren
     const [selectedImages, setSelectedImages] = useState(formData.images || []);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
-    
-
     const handleImageChange = async (index, e) => {
         const file = e.target.files[0];
         const userID = currentUser?.uid;

@@ -17,7 +17,7 @@ export const allCategories = [
         key: 2,
         categoryId: 2,
         categoryTitles: {
-            fr: "Electronique",
+            fr: "Électronique",
             en: "Electronics"
         },
         categoryName: 'electronique',
@@ -43,6 +43,16 @@ export const allCategories = [
                 sousCategoryName: 'ordinateurs',
                 sousContainer: [],
             },
+            // {
+            //     id: 203,
+            //     sousCategoryId: 203,
+            //     sousCategoryName: "accessoires-electroniques",
+            //     sousCategoryTitles: {
+            //         fr: "Accessoires Électroniques",
+            //         en: "Electronic Accessories",
+            //     },
+            //     sousContainer: [],
+            // },
         ],
     },
     {

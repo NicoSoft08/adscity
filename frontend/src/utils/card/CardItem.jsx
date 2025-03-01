@@ -5,7 +5,7 @@ import {
     faBan, faCalendarDay, faClone, faEllipsisV, faExclamationTriangle,
     faEye, faFlag, faGavel, faQuestionCircle, faShare
 } from '@fortawesome/free-solid-svg-icons';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import { formatViewCount } from '../../func';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -37,7 +37,7 @@ export default function CardItem({ post, onToggleFavorite }) {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (currentUser && userData.adsSaved?.includes(post.id)) {
+        if (currentUser && userData?.adsSaved?.includes(post.id)) {
             setIsFavorite(true);
         }
 
@@ -59,6 +59,7 @@ export default function CardItem({ post, onToggleFavorite }) {
             fetchProfilURL();
         }
     }, [userID, currentUser, userData, post]);
+
 
     const reportReasons = [
         {
@@ -245,15 +246,18 @@ export default function CardItem({ post, onToggleFavorite }) {
 
 
 
-    const handleProfileClick = async () => {
+    const handleProfileClick = async (url) => {
+        navigate(url, { state: { id: userID } });
+
         if (!currentUser) return null;
+
         await updateContactClick(userID);
+
         logEvent(analytics, 'view_profile', {
             userID: userID,
             postID: id,
         });
     }
-
 
     const handleToggleFavorite = async (postID) => {
         if (!currentUser) {
@@ -317,6 +321,7 @@ export default function CardItem({ post, onToggleFavorite }) {
     const profileImage = profilURL ?? IconAvatar;
 
     const post_id = PostID?.toLowerCase();
+    const user_id = UserID?.toLowerCase();
 
     if (!isActive) return null;
 
@@ -345,9 +350,9 @@ export default function CardItem({ post, onToggleFavorite }) {
                 </h2>
                 <p className="card-price">{adDetails.price} RUB</p>
                 <p className="card-city">{location.city}, {location.country}</p>
-                <Link to={`/users/user/${UserID}/profile/show`} onClick={() => handleProfileClick(userID)} className="announcer">
+                <div onClick={() => handleProfileClick(`/users/user/${user_id}/profile/show`)} className="announcer">
                     <img src={profileImage} alt="avatar" className="avatar" />
-                </Link>
+                </div>
                 <div className="card-footer">
                     <span className="card-date">
                         <FontAwesomeIcon icon={faCalendarDay} color={"gray"} />

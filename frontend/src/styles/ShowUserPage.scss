@@ -24,6 +24,15 @@
         }
     }
 
+    .display {
+        width: 80%;
+        margin: auto;
+
+        @media (max-width: 768px) {
+            width: 100%;
+        }
+    }
+
     form {
         border-top: 1px solid $gray;
         display: flex;

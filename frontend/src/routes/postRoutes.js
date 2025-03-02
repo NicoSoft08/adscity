@@ -127,8 +127,8 @@ const fetchRelatedListings = async (postID, category) => {
             body: JSON.stringify({ postID, category }),
         });
 
-        const relatedAds = await response.json();
-        return relatedAds;
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error('Error fetching related ads:', error);
         return [];
@@ -194,7 +194,7 @@ const markAsSold = async (userID, PostID) => {
 
 const fetchNearbyPosts = async (country, city) => {
     try {
-        const response = await fetch(`${backendUrl}/api/posts/nearby?country=${encodeURIComponent(country)}&city=${encodeURIComponent(city)}`, {
+        const response = await fetch(`${backendUrl}/api/posts/collect/nearby?country=${encodeURIComponent(country)}&city=${encodeURIComponent(city)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

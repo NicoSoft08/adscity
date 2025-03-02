@@ -8,6 +8,7 @@ import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import '../../styles/CategoryNamePage.scss';
 
 export default function CategoryNamePage() {
     const { categoryName } = useParams();
@@ -32,30 +33,33 @@ export default function CategoryNamePage() {
     }
 
     return (
-        <div>
+        <div className='category-page'>
             <Hero
                 headerOne={getItems().HeaderOne}
                 paragraph={"Découvrez les annonces relatives à cette catégorie."}
                 backgroundImage={getItems().BackgroundImage}
                 postsLength={adsCategory.length}
             />
-            {adsCategory.length > 0 ? (
-                <CardList>
-                    {adsCategory.map((item) => (
-                        <CardItem post={item} />
-                    ))}
-                </CardList>
-            ) : (
-                <p
-                    style={{
-                        textAlign: 'center',
-                        fontSize: '14px',
-                        fontWeight: 'lighter'
-                    }}
-                >
-                    Aucunes annonces trouvées dans cette catégorie.
-                </p>
-            )}
+
+            <div className="display">
+                {adsCategory.length > 0 ? (
+                    <CardList>
+                        {adsCategory.map((item) => (
+                            <CardItem post={item} />
+                        ))}
+                    </CardList>
+                ) : (
+                    <p
+                        style={{
+                            textAlign: 'center',
+                            fontSize: '14px',
+                            fontWeight: 'lighter'
+                        }}
+                    >
+                        Aucunes annonces trouvées dans cette catégorie.
+                    </p>
+                )}
+            </div>
             <ButtonAdd />
         </div>
     );

@@ -223,7 +223,7 @@ export default function PostDetailPage() {
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
 
-            <RelatedListing adID={id} category={category} />
+            <RelatedListing postID={id} category={category} />
         </div>
     );
 }

@@ -6,9 +6,9 @@ import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
-import { 
+import {
     // collectLocations, 
-    searchItems 
+    searchItems
 } from '../../routes/apiRoutes';
 // import SearchSection from '../../customs/SearchSection';
 import '../../styles/SearchResultPage.scss';
@@ -92,12 +92,12 @@ export default function SearchResultPage() {
     // const handleCountryChange = (e) => {
     //     const selectedCountry = e.target.value;
     //     setSelectedCountry(selectedCountry);
-    
+
     //     // Trouver les villes du pays sélectionné
     //     const selectedLocation = locations.find(
     //         (location) => location.id === selectedCountry
     //     );
-    
+
     //     setAvailableCities(selectedLocation ? selectedLocation?.cities : []);
     //     setFormData((prevData) => ({
     //         ...prevData,
@@ -138,18 +138,21 @@ export default function SearchResultPage() {
                 availableCities={availableCities}
             /> */}
 
-            <div>
-                <h2>Résultats de "{searchQuery}" {searchResults.length}</h2>
+            <div className="display">
+                <div>
+                    <h2>Résultats de "{searchQuery}" {searchResults.length}</h2>
+                </div>
+                {searchResults.length > 0 ? (
+                    searchResults.map((item) => (
+                        <CardList>
+                            <CardItem post={item} />
+                        </CardList>
+                    ))
+                ) : (
+                    <p>Aucun résultat trouvé pour cette recherche pour "{searchQuery}".</p>
+                )}
             </div>
-            {searchResults.length > 0 ? (
-                searchResults.map((item) => (
-                    <CardList>
-                        <CardItem post={item} />
-                    </CardList>
-                ))
-            ) : (
-                <p>Aucun résultat trouvé pour cette recherche pour "{searchQuery}".</p>
-            )}
+
         </div>
     )
 }

@@ -5,8 +5,8 @@ import PublicProfil from '../../common/public-profil/PublicProfil';
 import { analytics } from '../../firebaseConfig';
 import {
     fetchUserActivePosts,
-    fetchDataByUserID,
-    rateUser
+    rateUser,
+    fetchUserData
 } from '../../routes/userRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
@@ -27,7 +27,6 @@ export default function ShowUserPage() {
     const [rating, setRating] = useState(0);
     const [comment, setComment] = useState('');
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    console.log(UserID)
 
     useEffect(() => {
         const textArea = textAreaRef.current;
@@ -38,7 +37,7 @@ export default function ShowUserPage() {
     useEffect(() => {
         const fetchData = async () => {
             const [userData, userPostsData] = await Promise.all([
-                fetchDataByUserID(UserID),
+                fetchUserData(UserID),
                 fetchUserActivePosts(UserID)
             ]);
             if (userData.success) {
@@ -96,37 +95,40 @@ export default function ShowUserPage() {
                 <h3>Publications</h3>
                 <span>{profileData.adsCount > 1 ? `${profileData.adsCount + " Annonces"}` : `${profileData.adsCount + " Annonce"}`}</span>
             </div>
-            <CardList>
-                {profilePostsData.map((item, index) => (
-                    <CardItem
-                        key={index}
-                        post={item}
+
+            <div className="display">
+                <CardList>
+                    {profilePostsData.map((item, index) => (
+                        <CardItem
+                            key={index}
+                            post={item}
+                        />
+                    ))}
+                </CardList>
+
+                <form onSubmit={handleSubmit}>
+                    <h3>Laissez un avis :</h3>
+                    <StarRating
+                        onRatingChange={(value) => setRating(value)}
                     />
-                ))}
-            </CardList>
+                    <br />
+                    <textarea
+                        ref={textAreaRef}
+                        placeholder="Votre commentaire..."
+                        value={comment}
+                        onChange={(e) => setComment(e.target.value)}
+                    // required
+                    />
+                    <br />
+                    <button type="submit">
+                        {isLoading
+                            ? <Spinner />
+                            : "Soumettre l'avis"
+                        }
+                    </button>
+                </form>
 
-            <form onSubmit={handleSubmit}>
-                <h3>Laissez un avis :</h3>
-                <StarRating
-                    onRatingChange={(value) => setRating(value)}
-                />
-                <br />
-                <textarea
-                    ref={textAreaRef}
-                    placeholder="Votre commentaire..."
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                // required
-                />
-                <br />
-                <button type="submit">
-                    {isLoading
-                        ? <Spinner />
-                        : "Soumettre l'avis"
-                    }
-                </button>
-            </form>
-
+            </div>
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>
     );

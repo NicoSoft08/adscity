@@ -617,29 +617,36 @@ const markPostAsSold = async (req, res) => {
 const fetchNearbyPosts = async (req, res) => {
     const { country, city } = req.query;
 
+    if (!country || !city) {
+        return res.status(400).json({
+            success: false,
+            message: 'Pays et ville sont requis pour la recherche.'
+        });
+    }
+
     try {
+        console.log(`📍 Recherche d'annonces proches pour: ${country}, ${city}`);
+
         const nearbyPosts = await fetchNearbyPostsByLocation(country, city);
-        if (!nearbyPosts) {
-            return res.status(400).json({
+        if (nearbyPosts.length === 0) {
+            return res.status(404).json({
                 success: false,
-                message: 'Erreur lors de la récupération des annonces par proximité'
+                message: 'Aucune annonce trouvée à proximité.'
             });
-        };
+        }
         res.status(200).json({
             success: true,
             message: 'Annonces récupérées avec succès',
             nearbyPosts: nearbyPosts,
         });
     } catch (error) {
-        console.error('Erreur pendant la récupération des annonces par proximité:', error);
+        console.error('❌ Erreur pendant la récupération des annonces par proximité:', error);
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plus tard'
         });
-        
-    }
-}
-
+    };
+};
 
 module.exports = {
     approvePost,

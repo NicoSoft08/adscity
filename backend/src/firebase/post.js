@@ -133,7 +133,6 @@ const makePost = async (postData, userID) => {
     }
 };
 
-
 const reportPostID = async (postID, userID, reason) => {
     try {
         const postRef = firestore.collection('POSTS').doc(postID);
@@ -402,7 +401,7 @@ const collectPostBySlug = async (category, subcategory, slug) => {
 
 const collectDataFromPostID = async (post_id) => {
     try {
-        const PostID = post_id.toUpperCase();
+        const PostID = post_id?.toUpperCase();
         const postRef = firestore.collection('POSTS');
         const postSnap = await postRef
             .where('PostID', '==', PostID)
@@ -747,14 +746,14 @@ const fetchNearbyPostsByLocation = async (country, city) => {
         const postsCollection = firestore.collection('POSTS');
         const query = postsCollection
             .where('status', '==', 'approved')
-            .where('isActive', '==', true)
             .where('location.country', '==', country)
             .where('location.city', '==', city)
             .orderBy('posted_at', 'desc');
 
         const querySnapshot = await query.get();
+
         if (querySnapshot.empty) {
-            console.error('Aucune annonce trouvée.');
+            console.warn('⚠️ Aucune annonce trouvée pour cette localisation.');
             return [];
         }
 

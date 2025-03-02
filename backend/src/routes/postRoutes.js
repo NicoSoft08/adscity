@@ -53,7 +53,7 @@ router.put('/:postID/update', updatePost);
 router.delete('/:postID/delete', deletePost);
 router.post('/:postID/suspend', suspendPost);
 router.post('/:PostID/mark/sold', markPostAsSold);
-router.get('/nearby', fetchNearbyPosts);
+router.get('/collect/nearby', fetchNearbyPosts);
 
 
 module.exports = router;

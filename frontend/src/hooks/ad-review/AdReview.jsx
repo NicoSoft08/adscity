@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import './AdReview.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 
 export default function AdReview({ formData, onBack, onSubmit, isLoading }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -97,7 +99,7 @@ export default function AdReview({ formData, onBack, onSubmit, isLoading }) {
                     Retour
                 </button>
                 <button className="next-button" onClick={() => setIsOpen(true)}>
-                    Soumettre
+                    <FontAwesomeIcon icon={faPaperPlane} />
                 </button>
             </div>
 

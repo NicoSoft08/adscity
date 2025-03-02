@@ -12,8 +12,8 @@ export default function RelatedListing({ postID, category }) {
             try {
                 const result = await fetchRelatedListings(postID, category);
                 if (result.success) {
-                    const relatedAds = Array.isArray(result?.relatedAds) ? result?.relatedAds : [];
-                    setRelatedAds(relatedAds);
+                    // const relatedAds = Array.isArray(result?.relatedAds) ? result?.relatedAds : [];
+                    setRelatedAds(result?.relatedPosts || []);
                 }
                 // setRelatedAds(relatedAds);
             } catch (error) {
@@ -32,7 +32,7 @@ export default function RelatedListing({ postID, category }) {
             {relatedAds.length > 0 ?
                 <CardList>
                     {relatedAds.map((item) => (
-                        <CardItem ad={item} />
+                        <CardItem post={item} />
                     ))}
                 </CardList>
                 : (

@@ -13,7 +13,7 @@ export default function PublicProfil({ profile }) {
     const [showPhone, setShowPhone] = useState(false);
     const [message, setMessage] = useState('');
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-console.log(profile)
+
     const handleSubmit = () => {
         setToast({
             show: true,

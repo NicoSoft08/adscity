@@ -19,26 +19,34 @@ function TabFilter({ adsApproved, setFilteredAds, onFilterClick, currentUser, us
             });
             return;
         }
-
+    
         setActiveTab(tab);
-
+    
         if (tab === 'recently-posted') {
             setFilteredAds(adsApproved); // 🔥 Retour aux annonces originales
-        } else if (tab === 'nearby') {
+            return;
+        }
+    
+        if (tab === 'nearby') {
+            if (!userData?.country || !userData?.city) {
+                setToast({ show: true, type: 'error', message: 'Informations de localisation manquantes.' });
+                return;
+            }
+    
             setIsLoading(true);  // ⏳ Active le loader
-            const result = await fetchNearbyPosts(userData.country, userData.city);
+            const result = await fetchNearbyPosts(userData?.country, userData?.city);
             logEvent(analytics, 'filter_nearby_posts');  // 📝 Enregistre l'événement
-
-            if (result.success) {
+    
+            if (result.success && result.nearbyPosts.length > 0) {
                 setFilteredAds(result.nearbyPosts);
                 setToast({ show: true, type: 'info', message: 'Annonces filtrées par proximité.' });
             } else {
-                setToast({ show: true, type: 'error', message: 'Aucune annonce trouvée.' });
+                setToast({ show: true, type: 'error', message: 'Aucune annonce trouvée à proximité.' });
             }
-
+    
             setIsLoading(false);  // ✅ Désactive le loader après la requête
         }
-    };
+    };    
 
     return (
         <div className="filter-header">

@@ -1,0 +1,14 @@
+@import './fonts';
+@import './variables';
+
+.my-favoris {
+    margin-top: 6rem;
+
+    @media (max-width: 768px) {
+        margin-top: 10rem;
+    }
+
+    h2 {
+        color: $dark;
+    }
+}

@@ -6,7 +6,7 @@
     background-color: $white;
 
     .home-container {
-        // display: flex;
+        display: flex;
         
         .main-content {
             width: 80%;
@@ -27,13 +27,13 @@
             }
         }
 
-        // .pubs-sidebar {
-        //     width: 20%;
-        //     // height: 100vh;
+        .pubs-sidebar {
+            width: 20%;
+            // height: 100vh;
 
-        //     @media (max-width: 768px) {
-        //         display: none;
-        //     }
-        // }
+            @media (max-width: 768px) {
+                display: none;
+            }
+        }
     }
 }

@@ -221,7 +221,29 @@ const collectUserFavorites = async (userID) => {
 
         const userData = userDoc.data();
         const postsSaved = userData.adsSaved || [];
-        return postsSaved;
+
+        if (postsSaved.length === 0) {
+            console.log("Aucune annonce enregistrée.");
+            return [];
+        }
+
+        // Récupérer les annonces à partir des IDs stockés
+        const postsCollection = firestore.collection('POSTS');
+        const favoritesQuery = await postsCollection
+            .where(admin.firestore.FieldPath.documentId(), 'in', postsSaved)
+            .get();
+
+        if (favoritesQuery.empty) {
+            console.log("Aucune annonce trouvée.");
+            return [];
+        }
+
+        const favoritePosts = [];
+        favoritesQuery.forEach(doc => {
+            favoritePosts.push({ id: doc.id, ...doc.data() });
+        });
+
+        return favoritePosts;
     } catch (error) {
         console.error("Erreur lors de la récupération des favoris de l'utilisateur", error);
         return false;

@@ -43,16 +43,16 @@ export const allCategories = [
                 sousCategoryName: 'ordinateurs',
                 sousContainer: [],
             },
-            // {
-            //     id: 203,
-            //     sousCategoryId: 203,
-            //     sousCategoryName: "accessoires-electroniques",
-            //     sousCategoryTitles: {
-            //         fr: "Accessoires Électroniques",
-            //         en: "Electronic Accessories",
-            //     },
-            //     sousContainer: [],
-            // },
+            {
+                id: 203,
+                sousCategoryId: 203,
+                sousCategoryName: "accessoires-electroniques",
+                sousCategoryTitles: {
+                    fr: "Accessoires Électroniques",
+                    en: "Electronic Accessories",
+                },
+                sousContainer: [],
+            },
         ],
     },
     {

@@ -5,11 +5,7 @@ import Toast from '../../customs/Toast';
 
 export default function WatcheAndJewelry({ formData, onBack, onChange, onNext }) {
     const [errors, setErrors] = useState({});
-    const [toast, setToast] = useState({
-        show: false,
-        message: '',
-        type: '',
-    });
+    const [toast, setToast] = useState({ show: false, message: '', type: '' });
 
     const fields = [
         { label: 'Titre de l\'annonce', name: 'title', type: 'text', message: 'Le titre est requis.', required: true },

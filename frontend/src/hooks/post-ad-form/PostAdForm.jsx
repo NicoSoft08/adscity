@@ -10,6 +10,7 @@ import HealthyandBeauty from '../subcat-forms/HealthyandBeauty';
 import ElderClothes from '../subcat-forms/ElderClothes';
 import ChildClothes from '../subcat-forms/ChildClothes';
 import '../../styles/main.scss';
+import ElectronicAccessories from '../subcat-forms/ElectronicAccessories';
 
 const SUBCATEGORY_COMPONENTS = {
     'telephones-et-tablettes': PhonesTablets,
@@ -23,6 +24,7 @@ const SUBCATEGORY_COMPONENTS = {
     'produits-locaux': LocalProducts,
     'courses-livraisons': Delivery,
     'services-mode-beaute-et-bien-etre': HealthyandBeauty,
+    'accessoires-electroniques': ElectronicAccessories
     // Add more subcategories here
 };
 

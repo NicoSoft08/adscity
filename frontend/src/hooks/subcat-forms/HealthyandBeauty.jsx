@@ -3,7 +3,7 @@ import InputField from '../input-field/InputField';
 import Toast from '../../customs/Toast';
 import { beautyAdditionalFeatures, beautyServiceOptions, typeOfPrice } from '../../data/database';
 
-export default function HealthyandBeauty({ formData, onBack, onChange, onNext }) {
+export default function  HealthyandBeauty({ formData, onBack, onChange, onNext }) {
     const [errors, setErrors] = useState({});
     const [toast, setToast] = useState({
         show: false,

@@ -5,7 +5,7 @@ export default function InputField({ label, name, value, onChange, disabled, err
     return (
         <div className="wrap" title={title}>
             <label htmlFor={name}>
-                {label} <strong>*</strong>
+                {label}
             </label>
             {type === 'select' ? (
                 <select

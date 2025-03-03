@@ -56,10 +56,19 @@ export default function AdReview({ formData, onBack, onSubmit, isLoading }) {
                 {formData.adDetails.gender !== undefined ? <p>Genre : {formData.adDetails.gender}</p> : null}
                 {formData.adDetails.stoneType !== undefined ? <p>Type de pierre : {formData.adDetails.stoneType}</p> : null}
 
+                {formData.adDetails.availability !== undefined ? <p>Disponibilités : {formData.adDetails.availability}</p> : null}
+
                 {formData.adDetails.volumeWeight !== undefined ? <p>Volume/Poids : {formData.adDetails.volumeWeight}</p> : null}
+                {formData.adDetails.serviceDuration !== undefined ? <p>Durée du service : {formData.adDetails.serviceDuration}</p> : null}
+                {formData.adDetails.additionalFeatures !== undefined ? <p>Caractéristiques supplémentaires : {formatSpecialFeatures(formData.adDetails.additionalFeatures)}</p> : null}
 
-                {formData.adDetails.origin !== undefined ? <p>Origine : {formData.adDetails.origin}</p> : null}
+                {formData.adDetails.origin !== undefined ? <p>Origine du produit : {formData.adDetails.origin}</p> : null}
 
+                {formData.productType !== undefined ? <p>Type de produit : {formData.productType}</p> : null}
+                {formData.quantityAvailable !== undefined ? <p>Quantité disponible : {formData.quantityAvailable}</p> : null}
+                {formData.unitOfMeasure !== undefined ? <p>Unité de mesure : {formData.unitOfMeasure}</p> : null}
+
+                {formData.adDetails.serviceType !== undefined ? <p>Type de service : {formatSpecialFeatures(formData.adDetails.serviceType)}</p> : null}
                 {formData.adDetails.make !== undefined ? <p>Marque : {formData.adDetails.make}</p> : null}
                 {formData.adDetails.model !== undefined ? <p>Modèle : {formData.adDetails.model}</p> : null}
                 {formData.adDetails.color !== undefined ? <p>Couleur : {formData.adDetails.color}</p> : null}
@@ -67,10 +76,12 @@ export default function AdReview({ formData, onBack, onSubmit, isLoading }) {
                 {formData.adDetails.storageCapacity !== undefined ? <p>Capacité de stockage : {formData.adDetails.storageCapacity}</p> : null}
                 {formData.adDetails.operatingSystem !== undefined ? <p>Système d'exploitation : {formData.adDetails.operatingSystem}</p> : null}
                 {formData.adDetails.condition !== undefined ? <p>Condition : {formData.adDetails.condition}</p> : null}
+
+                {formData?.adDetails.accessoryType !== undefined ? <p>Type d'accessoire : {formData?.adDetails.accessoryType}</p> : null}
+                {formData?.adDetails.compatibility !== undefined ? <p>Compatibilité : {formData?.adDetails.compatibility}</p> : null}
+
                 <p>Type de Prix: {formData.adDetails?.priceType}</p>
                 <p>Prix: {formData.adDetails?.price} RUB</p>
-
-
             </div>
 
             <div className="review-section">

@@ -40,7 +40,19 @@ export default function Tab({ pendingAd }) {
 
                         {pendingAd?.adDetails.volumeWeight !== undefined ? <p>Volume/Poids : {pendingAd?.adDetails.volumeWeight}</p> : null}
 
-                        {pendingAd?.adDetails.origin !== undefined ? <p>Origine : {pendingAd?.adDetails.origin}</p> : null}
+                        {pendingAd?.adDetails.origin !== undefined ? <p>Origine du produit : {pendingAd?.adDetails.origin}</p> : null}
+
+                        {pendingAd.adDetails.serviceDuration !== undefined ? <p>Durée du service : {pendingAd.adDetails.serviceDuration}</p> : null}
+                        {pendingAd.adDetails.additionalFeatures !== undefined ? <p>Caractéristiques supplémentaires : {formatSpecialFeatures(pendingAd.adDetails.additionalFeatures)}</p> : null}
+                        {pendingAd.adDetails.availability !== undefined ? <p>Disponibilités : {pendingAd.adDetails.availability}</p> : null}
+                        {pendingAd.adDetails.serviceType !== undefined ? <p>Type de service : {formatSpecialFeatures(pendingAd.adDetails.serviceType)}</p> : null}
+
+                        {pendingAd?.adDetails.accessoryType !== undefined ? <p>Type d'accessoire : {pendingAd?.adDetails.accessoryType}</p> : null}
+                        {pendingAd?.adDetails.compatibility !== undefined ? <p>Compatibilité : {pendingAd?.adDetails.compatibility}</p> : null}
+
+                        {pendingAd.productType !== undefined ? <p>Type de produit : {pendingAd.productType}</p> : null}
+                        {pendingAd.quantityAvailable !== undefined ? <p>Quantité disponible : {pendingAd.quantityAvailable}</p> : null}
+                        {pendingAd.unitOfMeasure !== undefined ? <p>Unité de mesure : {pendingAd.unitOfMeasure}</p> : null}
 
                         {pendingAd?.adDetails.make !== undefined ? <p>Marque : {pendingAd?.adDetails.make}</p> : null}
                         {pendingAd?.adDetails.model !== undefined ? <p>Modèle : {pendingAd?.adDetails.model}</p> : null}

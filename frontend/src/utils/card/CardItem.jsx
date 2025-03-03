@@ -109,7 +109,7 @@ export default function CardItem({ post, onToggleFavorite }) {
         {
             label: 'Partager',
             icon: faShare,
-            action: () => handleShareAd(post.id)
+            action: () => handleShareAd(post.PostID)
         },
         // {
         //     label: 'Masquer',
@@ -163,9 +163,8 @@ export default function CardItem({ post, onToggleFavorite }) {
         console.log(`Signaler l'annonce avec l'ID : ${postID}`);
     };
 
-    const handleShareAd = async (postID) => {
-        const postUrl = `${window.location.origin}/post/${postID}`;
-
+    const handleShareAd = async (PostID) => {
+        const postUrl = `${window.location.origin}/posts/${category}/${subcategory}/${PostID}`;
         if (navigator.share) {
             try {
                 await navigator.share({
@@ -244,8 +243,6 @@ export default function CardItem({ post, onToggleFavorite }) {
         setShowMenu(!showMenu);
     };
 
-
-
     const handleProfileClick = async (url) => {
         navigate(url, { state: { id: userID } });
 
@@ -278,7 +275,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                 isFavorite: result.isFavorite,
             });
             if (result.success) {
-                setIsFavorite(result.isFavorite);
+                setIsFavorite(true);
                 setToast({
                     show: true,
                     type: result.isFavorite ? 'success' : 'info',
@@ -307,8 +304,6 @@ export default function CardItem({ post, onToggleFavorite }) {
             });
         }
     }
-
-
 
     // Vérifier si l'annonce a expiré
     function parseTimestamp(timestamp) {

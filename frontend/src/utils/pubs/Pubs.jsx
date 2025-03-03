@@ -3,26 +3,39 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBalanceScale, faBan, faBullhorn, faClone, faCopy, faEllipsisV, faExclamationTriangle, faFlag, faGavel, faQuestionCircle, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { useBusinessPostActions } from '../../helpers/useHooks';
 import Menu from '../../customs/Menu';
+import { fetchPubs } from '../../routes/apiRoutes';
 import './Pubs.scss';
 
-export const MastheadSlider = ({ pubs, interval = 5000 }) => {
+export const MastheadSlider = ({ interval = 5000 }) => {
+    const [businessPosts, setBusinessPosts] = useState([]);
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
+        const getApprovedAds = async () => {
+            const result = await fetchPubs();
+            if (result.success) {
+                setBusinessPosts(result.pubs);
+            }
+        };
+
+        getApprovedAds();
+    }, []);
+
+    useEffect(() => {
         const timer = setInterval(() => {
-            setIndex((prevIndex) => (prevIndex + 1) % pubs.length);
+            setIndex((prevIndex) => (prevIndex + 1) % businessPosts.length);
         }, interval);
 
         return () => clearInterval(timer);
-    }, [pubs.length, interval]);
+    }, [businessPosts.length, interval]);
 
-    const nextSlide = () => setIndex((prev) => (prev + 1) % pubs.length);
-    const prevSlide = () => setIndex((prev) => (prev - 1 + pubs.length) % pubs.length);
+    const nextSlide = () => setIndex((prev) => (prev + 1) % businessPosts.length);
+    const prevSlide = () => setIndex((prev) => (prev - 1 + businessPosts.length) % businessPosts.length);
 
     return (
         <div className="masthead-slider">
             <div className="masthead-slider__container">
-                <MastheadPub pub={pubs[index]} />
+                <MastheadPub pub={businessPosts[index]} />
             </div>
 
             {/* Boutons de navigation */}
@@ -31,7 +44,7 @@ export const MastheadSlider = ({ pubs, interval = 5000 }) => {
 
             {/* Indicateurs de position */}
             <div className="masthead-slider__dots">
-                {pubs.map((_, i) => (
+                {businessPosts.map((_, i) => (
                     <span key={i} className={`dot ${i === index ? "active" : ""}`} onClick={() => setIndex(i)}></span>
                 ))}
             </div>
@@ -43,17 +56,17 @@ export const MastheadPub = ({ pub }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
-    
+
     const { id, endDate, startDate, pubType, mediaFiles, domainName, targetURL } = pub;
-    
+
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % mediaFiles.length);
         }, 5000); // 🔄 Change de bannière toutes les 5 secondes
-        
+
         return () => clearInterval(interval);
     }, [mediaFiles]);
-    
+
     const {
         handleClosePost,
         handleReportPost,
@@ -61,7 +74,7 @@ export const MastheadPub = ({ pub }) => {
         handleCopyLink,
         handleReportWithReason
     } = useBusinessPostActions(pub, setShowMenu, setShowReportModal);
-    
+
     // Gestion du menu
     const toggleMenu = (e) => {
         e.stopPropagation();

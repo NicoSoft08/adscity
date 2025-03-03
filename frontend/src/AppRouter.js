@@ -1,12 +1,10 @@
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-
 // layouts
 import AuthLayout from './layouts/AuthLayout';
 import HelpLayout from './layouts/HelpLayout';
 import HomeLayout from './layouts/HomeLayout';
-
 
 // pages
 import AccessDenied from './pages/public/AccessDenied';
@@ -50,6 +48,7 @@ import Settings from './pages/private/Settings';
 // import Messages from './pages/private/Messages';
 import ManagePosts from './pages/private/ManagePosts';
 import ManagePostID from './pages/private/ManagePostID';
+import PostIDPage from './pages/public/PostIDPage';
 
 export default function AppRouter() {
     const { currentUser } = useContext(AuthContext);
@@ -78,6 +77,7 @@ export default function AppRouter() {
                     <Route path='/business' element={<Business />} />
                     <Route path='/pub' element={<PubCreationForm />} />
                     <Route path='/about' element={<TeamPage />} />
+                    <Route path="/posts/:category/:subcategory/:postID" element={<PostIDPage />} />
                     <Route path="/posts/:category/:subcategory/:PostID" element={<PostDetailPage />} />
                     <Route path='/users/user/:UserID/profile/show' element={<ShowUserPage />} />
                     <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />

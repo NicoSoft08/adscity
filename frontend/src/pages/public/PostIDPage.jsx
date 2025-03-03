@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { fetchPostById } from '../../routes/postRoutes';
 import { fetchDataByUserID } from '../../routes/userRoutes';
 import OwnerProfileCard from '../../components/owner-card/OwnerProfileCard';
@@ -8,10 +8,7 @@ import { FaEye, FaRegCalendarAlt } from "react-icons/fa";
 import { formatPostedAt, formatViewCount, parseTimestamp } from '../../func';
 import RelatedListing from '../../components/related-listing/RelatedListing';
 import { AuthContext } from '../../contexts/AuthContext';
-// import MessageToAnnouncer from '../../components/contact-announcer/MessageToAnnouncer';
-// import { sendMessage } from '../../routes/chatRoutes';
 import Toast from '../../customs/Toast';
-import '../../styles/PostDetailPage.scss';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -70,14 +67,13 @@ const ImageGallery = ({ images = [] }) => {
     );
 }
 
-export default function PostDetailPage() {
+export default function PostIDPage() {
     const { postID } = useParams();
-    const { state: { id } } = useLocation();
     const { currentUser } = useContext(AuthContext);
     const [post, setPost] = useState(null);
     const [profilData, setProfilData] = useState({});
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-
+    
     useEffect(() => {
         const fetchAdsData = async () => {
             const result = await fetchPostById(postID);
@@ -122,15 +118,6 @@ export default function PostDetailPage() {
 
         return features;
     };
-
-    // const handleSendMessage = async ({ senderID, receiverID, text }) => {
-    //     const result = await sendMessage(senderID, receiverID, text);
-    //     if (result.success) {
-    //         setToast({ show: true, type: 'info', message: result.message });
-    //     } else {
-    //         setToast({ show: true, type: 'error', message: result.message });
-    //     }
-    // };
 
     return (
         <div className="ad-details">
@@ -245,7 +232,7 @@ export default function PostDetailPage() {
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
 
-            <RelatedListing postID={id} category={category} />
+            <RelatedListing postID={postID} category={category} />
         </div>
     );
-}
+};

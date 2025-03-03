@@ -77,8 +77,10 @@ export default function HomePage() {
 
     return (
         <div className="home-page">
+
             <div style={{ marginTop: '1rem' }}></div>
-            {/* <MastheadSlider pubs={businessPosts} interval={6000} /> */}
+
+            {/* <MastheadSlider interval={5000} /> */}
 
             <div style={{ marginBottom: '1rem' }}></div>
 

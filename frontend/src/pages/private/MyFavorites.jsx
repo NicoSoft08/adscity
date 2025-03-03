@@ -3,6 +3,7 @@ import { getUserFavorites } from '../../routes/userRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import { useNavigate } from 'react-router-dom';
+import '../../styles/MyFavorites.scss';
 
 export default function MyFavorites({ currentUser }) {
     const navigate = useNavigate();
@@ -17,16 +18,16 @@ export default function MyFavorites({ currentUser }) {
             const userID = currentUser?.uid;
             const result = await getUserFavorites(userID);
             if (result.success) {
-                setFavoris(result?.favorisData);
+                setFavoris(result?.postsSaved);
             }
         }
 
         fetchFavoris();
     }, [currentUser, navigate]);
 
-    const handleRemoveFromFavorites = (adID) => {
+    const handleRemoveFromFavorites = (postID) => {
         // Mettre à jour l'état pour retirer l'annonce supprimée
-        setFavoris((prevFavoris) => prevFavoris.filter((ad) => ad.id !== adID));
+        setFavoris((prevFavoris) => prevFavoris.filter((post) => post.postID !== postID));
     };
 
     return (
@@ -38,7 +39,7 @@ export default function MyFavorites({ currentUser }) {
                         <CardItem
                             key={index}
                             post={item}
-                            onToggleFavorite={handleRemoveFromFavorites}
+                            onToggleFavorite={() => handleRemoveFromFavorites(item.postID)}
                         />
                     ))}
                 </CardList>

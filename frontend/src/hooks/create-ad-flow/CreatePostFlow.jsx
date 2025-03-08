@@ -17,9 +17,24 @@ import AdCreatedSuccess from '../../components/ad-created-success/AdCreatedSucce
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 
-const createSearchableItem = (item) => {
-    if (!item) return [];
-    return item.toLowerCase().split(' ').filter(term => term.length > 2);
+const createSearchableItem = (text) => {
+    if (!text) return [];
+    text = text.toLowerCase().trim();
+    const words = text.split(/\s+/);
+
+    const variations = words.flatMap(word => {
+        const cleanWord = word.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Supprimer accents
+        const prefixes = [];
+
+        // Générer des préfixes (ex: "ordinateur" => "o", "or", "ord", ...)
+        for (let i = 1; i <= cleanWord.length; i++) {
+            prefixes.push(cleanWord.slice(0, i));
+        }
+
+        return [cleanWord, ...prefixes];
+    });
+
+    return [...new Set(variations)];
 };
 
 export default function CreatePostFlow() {
@@ -78,6 +93,7 @@ export default function CreatePostFlow() {
         ...createSearchableItem(category),
         ...createSearchableItem(subcategory),
     ];
+
     const postData = { 
         adDetails, 
         images, 

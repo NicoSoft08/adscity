@@ -151,10 +151,10 @@ export const allCategories = [
                 id: 8,
                 sousCategoryId: 807,
                 sousCategoryTitles: {
-                    fr: "Services Mode, Beauté & Bien-être",
-                    en: "Fashion, Beauty & Wellness Services",
+                    fr: "Esthétique",
+                    en: "Aesthetic",
                 },
-                sousCategoryName: 'services-mode-beaute-et-bien-etre',
+                sousCategoryName: 'aesthetic',
                 sousContainer: [],
             },
         ],

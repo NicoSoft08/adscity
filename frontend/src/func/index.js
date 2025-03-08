@@ -155,7 +155,50 @@ const formatTimeDistance = (timestamp) => {
     return `${seconds} sec`;
 }
 
+const interpolationSearch = (arr, target) => {
+    let low = 0, high = arr.length - 1;
 
+    while (low <= high && target >= arr[low] && target <= arr[high]) {
+        // Calcul de la position estimée
+        let pos = low + Math.floor(((target - arr[low]) * (high - low)) / (arr[high] - arr[low]));
+
+        // Si on trouve l'élément
+        if (arr[pos] === target) return pos;
+
+        // Ajustement des bornes
+        if (arr[pos] < target) low = pos + 1;
+        else high = pos - 1;
+    }
+    return -1; // Élément non trouvé
+};
+
+const extractSuggestions = (categories, lang = "fr") => {
+    let suggestions = [];
+
+    categories.forEach(category => {
+        const categoryName = category.categoryTitles[lang];
+
+        // Ajouter chaque sous-catégorie avec sa catégorie principale
+        category.container.forEach(sub => {
+            suggestions.push({
+                id: sub.sousCategoryId,
+                name: sub.sousCategoryTitles[lang], // Nom de la sous-catégorie
+                category: categoryName, // Catégorie principale
+                type: "subCategory",
+            });
+        });
+
+        // Ajouter la catégorie principale comme suggestion aussi
+        suggestions.push({
+            id: category.categoryId,
+            name: categoryName,
+            category: null, // Pas de catégorie parent pour une catégorie principale
+            type: "category",
+        });
+    });
+
+    return suggestions;
+};
 
 export {
     calculateExpiryDate,
@@ -167,4 +210,6 @@ export {
     calculateEndDate,
     formatTimeDistance,
     formatSpecialFeatures,
+    interpolationSearch,
+    extractSuggestions,
 };

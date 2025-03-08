@@ -106,7 +106,7 @@ export default function HomePage() {
                                 <CardItem key={index} post={item} />
                             ))
                         ) : (
-                            <p>Aucune annonce trouvée.</p>
+                            <p className='no-ads'>Aucune annonce trouvée.</p>
                         )}
                     </CardList>
 

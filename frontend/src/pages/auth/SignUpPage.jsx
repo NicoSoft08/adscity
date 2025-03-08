@@ -89,7 +89,7 @@ export default function SignUpPage() {
         const { name, value, checked, type } = e.target;
 
         // Autoriser uniquement les lettres latines et les espaces
-        const latinOnlyRegex = /^[A-Za-z\s]*$/;
+        const latinOnlyRegex = /^[A-Za-z\s']*$/;
 
         // Vérification pour firstName et lastName
         if ((name === 'firstName' || name === 'lastName') && !latinOnlyRegex.test(value)) {

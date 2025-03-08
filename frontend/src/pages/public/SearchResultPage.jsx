@@ -63,7 +63,7 @@ export default function SearchResultPage() {
             try {
                 const result = await searchItems(searchQuery);
                 if (result.success) {
-                    setSearchResults(result?.searchResults);
+                    setSearchResults(result?.searchResults.results);
                 } else {
                     setSearchResults([]);
                 }
@@ -142,15 +142,15 @@ export default function SearchResultPage() {
                 <div>
                     <h2>Résultats de "{searchQuery}" {searchResults.length}</h2>
                 </div>
-                {searchResults.length > 0 ? (
-                    searchResults.map((item) => (
-                        <CardList>
-                            <CardItem post={item} />
-                        </CardList>
-                    ))
-                ) : (
-                    <p>Aucun résultat trouvé pour cette recherche pour "{searchQuery}".</p>
-                )}
+                <CardList>
+                    {searchResults.length > 0 ? (
+                        searchResults.map((item, index) => (
+                            <CardItem key={index} post={item} />
+                        ))
+                    ) : (
+                        <p>Aucun résultat trouvé pour cette recherche pour "{searchQuery}".</p>
+                    )}
+                </CardList>
             </div>
 
         </div>

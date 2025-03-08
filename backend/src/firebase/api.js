@@ -1,30 +1,97 @@
 const { firestore, admin, auth } = require('../config/firebase-admin');
 const { sendSupportEmail, sendUserEmailWithTicket } = require('../controllers/emailController');
-const { generateTicketID } = require('../func');
+const { generateTicketID, allCategories } = require('../func');
 
 const searchQuery = async (query) => {
-    const searchItem = query.toLowerCase().split(' ');
+    if (!query || query.trim().length === 0) return [];
+
+    const searchItem = query.toLowerCase().split(' ').slice(0, 10); // 🔹 Limite Firestore
+    let matchedCategory = null; // 🔍 Stocke la catégorie ou sous-catégorie trouvée
 
     try {
-        const searchResults = await firestore
+        const searchResults = new Map(); // Evite les doublons
+
+        // 🔹 Vérifier si `query` correspond à une catégorie ou sous-catégorie
+        allCategories.forEach(category => {
+            if (
+                category.categoryName.includes(query.toLowerCase()) ||
+                Object.values(category.categoryTitles.fr).some(title => title.toLowerCase().includes(query.toLowerCase()))
+            ) {
+                matchedCategory = category; // 🎯 Match trouvé avec une catégorie
+            } else {
+                category.container.forEach(subCategory => {
+                    if (
+                        subCategory.sousCategoryName.includes(query.toLowerCase()) ||
+                        Object.values(subCategory.sousCategoryTitles).some(title => title.toLowerCase().includes(query.toLowerCase()))
+                    ) {
+                        matchedCategory = subCategory; // 🎯 Match trouvé avec une sous-catégorie
+                    }
+                });
+            }
+        });
+
+        // 1️⃣ Requête sur les titres
+        const titleResults = await firestore
             .collection('POSTS')
-            .where('searchableTerms', 'array-contains-any', searchItem)
+            .where('title', '>=', query.toLowerCase())
+            .where('title', '<=', query.toLowerCase() + '\uf8ff')
             .limit(20)
             .get();
 
-        const results = [];
-        for (const doc of searchResults.docs) {
+        titleResults.forEach(doc => {
             const data = doc.data();
-            results.push({
-                id: doc.id,
-                ...data
+            searchResults.set(doc.id, { id: doc.id, matchCount: 10, ...data });
+        });
+
+        // 2️⃣ Requête sur searchableTerms
+        const termResults = await firestore
+            .collection('POSTS')
+            .where('searchableTerms', 'array-contains-any', searchItem)
+            .limit(50)
+            .get();
+
+        termResults.forEach(doc => {
+            if (!searchResults.has(doc.id)) {
+                const data = doc.data();
+                const matchCount = data.searchableTerms.filter(term => searchItem.includes(term)).length;
+                searchResults.set(doc.id, { id: doc.id, matchCount, ...data });
+            }
+        });
+
+        // 3️⃣ Si une catégorie est trouvée, récupérer ses annonces
+        if (matchedCategory) {
+            const categoryField = matchedCategory.sousCategoryId ? "subcategory" : "category";
+            const categoryValue = matchedCategory.sousCategoryId ? matchedCategory.sousCategoryName : matchedCategory.categoryName;
+
+            const categoryResults = await firestore
+                .collection('POSTS')
+                .where(categoryField, '==', categoryValue)
+                .limit(20)
+                .get();
+
+            categoryResults.forEach(doc => {
+                if (!searchResults.has(doc.id)) {
+                    const data = doc.data();
+                    searchResults.set(doc.id, { id: doc.id, matchCount: 5, ...data }); // 🔥 Moins de priorité que les titres directs
+                }
             });
         }
-        return results;
+
+        // 4️⃣ Trier et renvoyer les résultats
+        const results = Array.from(searchResults.values()).sort((a, b) => b.matchCount - a.matchCount).slice(0, 20);
+
+        return {
+            results,
+            suggestedCategory: matchedCategory ? {
+                name: matchedCategory.categoryTitles?.fr || matchedCategory.sousCategoryTitles?.fr,
+                link: `/category/${matchedCategory.categoryName || matchedCategory.sousCategoryName}`
+            } : null
+        };
+
     } catch (error) {
-        console.error('Erreur lors de la recherche:', error);
-        return [];
-    };
+        console.error('❌ Erreur lors de la recherche:', error);
+        return { results: [], suggestedCategory: null };
+    }
 };
 
 const updateInteraction = async (postID, userID, category) => {

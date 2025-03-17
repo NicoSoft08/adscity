@@ -10,7 +10,7 @@ import { analytics } from '../../firebaseConfig';
 import './OwnerProfileCard.scss';
 
 
-const OwnerProfileCard = ({ owner, userID }) => {
+const OwnerProfileCard = ({ owner, userID, city }) => {
     const navigate = useNavigate();
     const [showPhone, setShowPhone] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -35,7 +35,7 @@ const OwnerProfileCard = ({ owner, userID }) => {
 
         if (!userID) return null;
 
-        await updateContactClick(owner.userID);
+        await updateContactClick(owner.userID, city);
     }
 
     const formatDate = (timestamp) => {

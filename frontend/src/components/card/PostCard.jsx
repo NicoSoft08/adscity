@@ -1,9 +1,4 @@
-import React, { useState } from 'react';
-import Modal from '../../customs/Modal';
-import Spinner from '../../customs/Spinner';
-import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
-import { deletePost, markAsSold } from '../../routes/postRoutes';
-import Toast from '../../customs/Toast';
+import React, { useEffect, useState } from 'react';
 import '../../styles/PostCard.scss';
 
 const ImageGallery = ({ images = [] }) => {
@@ -63,12 +58,74 @@ const ImageGallery = ({ images = [] }) => {
     );
 }
 
-export default function PostCard({ post, currentUser }) {
-    const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    const [isLoading, setIsloading] = useState(false);
-    const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
+const ProgressBar = ({ publishedAt, expiresAt }) => {
+    const [progress, setProgress] = useState(0);
+    const [todayPosition, setTodayPosition] = useState(0);
 
-    const { adDetails, images, location, views, shares, comments, favorites, posted_at, expiry_date, isSold } = post;
+    useEffect(() => {
+        const startDate = new Date(publishedAt).getTime();
+        const endDate = new Date(expiresAt).getTime();
+        const now = Date.now();
+
+        if (now < startDate) {
+            setProgress(0);
+            setTodayPosition(0);
+        } else if (now > endDate) {
+            setProgress(100);
+            setTodayPosition(100);
+        } else {
+            const totalDuration = endDate - startDate;
+            const elapsedTime = now - startDate;
+            const progressPercentage = (elapsedTime / totalDuration) * 100;
+            setProgress(progressPercentage);
+            setTodayPosition(progressPercentage);
+        }
+    }, [publishedAt, expiresAt]);
+
+    // Fonction pour formater la date en "14 mars"
+    const formatDate = (dateString) => {
+        const options = { day: "numeric", month: "short" };
+        return new Date(dateString).toLocaleDateString("fr-FR", options);
+    };
+
+    return (
+        <div className='progress-bar'>
+            {/* Dates avec "Auj." au centre */}
+            <div className='dates'>
+                <span className='start'>{formatDate(publishedAt)}</span>
+                <span className='today' style={{
+                    left: `${todayPosition}%`,
+                }}>
+                    Auj.
+                </span>
+                <span className='end'>{formatDate(expiresAt)}</span>
+            </div>
+
+            {/* Barre de progression */}
+            <div className='bar-line'>
+                {/* Remplissage */}
+                <div className='bar-fill'
+                    style={{
+                        width: `${progress}%`,
+                    }}
+                ></div>
+
+                {/* Marqueur pour aujourd'hui */}
+                <div
+                    className='today-marker'
+                    style={{
+                        left: `${todayPosition}%`,
+                    }}
+                ></div>
+            </div>
+        </div>
+    );
+};
+
+
+export default function PostCard({ post }) {
+
+    const { adDetails, images, location, shares, comments, favorites, posted_at, expiry_date, isSold, stats } = post;
 
     const formatSpecialFeatures = (features) => {
         if (!features) return '';
@@ -87,64 +144,8 @@ export default function PostCard({ post, currentUser }) {
         return features;
     };
 
-    const handleEditPost = () => {
-    };
-
-    const handleDeletePost = async (PostID) => {
-        if (!PostID) return;
-
-        setConfirm({ ...confirm, willDelete: true });
-    };
-
-    const confirmDeletePost = async () => {
-        if (!post) return;
-        setIsloading(true);
-
-        try {
-
-
-            // 🔥 Supprimer d'abord les images de Firebase Storage
-            await deletePostImagesFromStorage(post);
-
-            // 🔥 Ensuite, supprimer l'annonce de Firestore
-            const result = await deletePost(post, currentUser?.uid);
-            if (result.success) {
-                setToast({ show: true, type: 'info', message: result.message });
-            } else {
-                setToast({ show: true, type: 'error', message: result.message });
-            }
-        } catch (error) {
-            // console.error("Erreur lors de la suppression de l'annonce :", error);
-            setToast({ show: true, type: 'error', message: "Erreur lors de la suppression." });
-        } finally {
-            // Réinitialise le modal
-            setConfirm({ ...confirm, willDelete: false });
-            setIsloading(false);
-        }
-    };
-
-    const handleMarkAsSold = async (PostID) => {
-        if (!PostID) return;
-
-        try {
-            const result = await markAsSold(currentUser?.uid, PostID);
-            if (result.success) {
-                setToast({ show: true, type: 'info', message: result.message });
-            } else {
-                setToast({ show: true, type: 'error', message: result.message });
-            }
-        } catch (error) {
-            // console.error("Erreur :", error);
-            setToast({ show: true, type: 'error', message: "Une erreur est survenue." });
-        } finally {
-            setConfirm({ ...confirm, willMarkAsSold: false });
-            setIsloading(false);
-        }
-    };
-
     return (
         <div className='post-card'>
-
 
             <ImageGallery images={images} />
 
@@ -153,7 +154,7 @@ export default function PostCard({ post, currentUser }) {
                 <p className="price">{adDetails.price} RUB • {adDetails.priceType}</p>
                 <p className="description">{adDetails.description}</p>
             </div>
-            
+
             {isSold && <span className="sold-badge">VENDU</span>}
 
             <div className="specs">
@@ -182,40 +183,7 @@ export default function PostCard({ post, currentUser }) {
             <div className="location">
                 <p><strong>Localisation:</strong> {location.address}, {location.city}, {location.country}</p>
             </div>
-
-            <div className="engagement">
-                <p>👁️ {views} vues</p>
-                <p>⭐ {favorites} favoris</p>
-                <p>🔄 {shares} partages</p>
-                <p>💬 {comments} commentaires</p>
-            </div>
-
-            <div className="dates">
-                <p>🕒 Publié le: {new Date(posted_at._seconds * 1000).toLocaleDateString()}</p>
-                <p>⏳ Expire le: {new Date(expiry_date).toLocaleDateString()}</p>
-            </div>
-
-            <div className="actions">
-                <button disabled={!post.isSold} onClick={() => handleEditPost(post)} className="action-button edit">Modifier</button>
-                <button onClick={() => handleDeletePost(post.PostID)} className="action-button delete">Supprimer</button>
-                <button disabled={post.isSold} onClick={() => handleMarkAsSold(post.PostID)} className="action-button restaure">Marquer comme vendu</button>
-            </div>
-
-            {confirm.willDelete && (
-                <Modal title={"Suppression d'annonce"} onShow={confirm.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>
-                    <p>Êtes-vous sûr de vouloir supprimer cette annonce ?</p>
-                    <div className="ad-details-buttons">
-                        <button className="modal-button approve-button" onClick={confirmDeletePost}>
-                            {isLoading ? <Spinner /> : 'Confirmer'}
-                        </button>
-                        <button className="modal-button reject-button" onClick={() => setConfirm({ ...confirm, willDelete: false })}>
-                            Annuler
-                        </button>
-                    </div>
-                </Modal>
-            )}
-
-            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
+            <ProgressBar publishedAt={posted_at._seconds * 1000} expiresAt={expiry_date} />
         </div>
     );
 };

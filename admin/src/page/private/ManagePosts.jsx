@@ -1,15 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { fr } from "date-fns/locale";
 import { format, formatDistanceToNow } from "date-fns";
-import { formatViewCount } from "../../func";
-import { fetchDataByUserID, fetchUserData } from "../../routes/userRoutes";
-import { fetchAllPosts } from "../../routes/postRoutes";
+import { fetchDataByUserID } from "../../routes/userRoutes";
+import { fetchPosts } from "../../routes/postRoutes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { faChartPie, faEye, faFilter } from "@fortawesome/free-solid-svg-icons";
 import { allCategories } from "../../data/database";
 import { useNavigate } from 'react-router-dom';
 import Pagination from "../../components/pagination/Pagination";
+import Loading from "../../customs/Loading";
 import "../../styles/ManagePosts.scss";
+
+const STATUS_ICONS = {
+    pending: "🟠 En attente",
+    approved: "🟢 Accepté",
+    refused: "🔴 Rejetée",
+    expired: "⚫ Expirée",
+    sold: "✅ Vendue"
+};
 
 const PostsFilter = ({ onFilterChange }) => {
     const [filters, setFilters] = useState({
@@ -84,42 +92,56 @@ const PostsFilter = ({ onFilterChange }) => {
     );
 };
 
-const PostRow = ({ index, post, onAction }) => {
+const PostRow = ({ index, post, onAction, isSelected, onSelect }) => {
     const [postOwner, setPostOwner] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!post) return;
             const result = await fetchDataByUserID(post.userID);
             if (result.success) setPostOwner(result.data);
         };
-        fetchData();
+
+        if (post) {
+            fetchData();
+        }
     }, [post]);
 
 
 
     return (
-        <tr>
+        <tr className={isSelected ? 'selected' : ''}>
+            <td>
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onSelect(post.PostID)}
+                />
+            </td>
             <td>{index + 1}</td>
             <td>{post.PostID}</td>
             <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
             <td>{post.adDetails.title}</td>
             <td>{post.adDetails.price} RUB</td>
-            <td>{formatViewCount(post.views)}</td>
-            <td>{formatViewCount(post.clicks)}</td>
-            <td>{post.views ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
             <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
-            <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
+            <td>{STATUS_ICONS[post.status] || "⚪ Inconnu"}</td>
             <td>{postOwner?.displayName || "Inconnu"}</td>
-            <td>{post.reportingCount || 0}</td>
-            <td>
-                <button className="see-more" onClick={() => onAction(post)}>Voir</button>
-            </td>
+            {/* 📌 Div flottante affichée si l'annonce est sélectionnée */}
+            {isSelected && (
+                <div className="floating-menu">
+                    <button title="Voir l'annonce" onClick={() => onAction('view', post.PostID)}>
+                        <FontAwesomeIcon icon={faEye} />
+                    </button>
+                    <button title='Statistiques' onClick={() => onAction('stats', post.PostID)}>
+                        <FontAwesomeIcon icon={faChartPie} />
+                    </button>
+                </div>
+            )}
         </tr>
     );
 };
 
 export default function ManagePosts() {
+    const [selectedPosts, setSelectedPosts] = useState([]);
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -129,17 +151,29 @@ export default function ManagePosts() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            const result = await fetchAllPosts();
-            if (result.success) {
-                setPosts(result.postsData || []);
-                setFilteredPosts(result.postsData || []);
+        let isMounted = true;
+        setLoading(true);
+
+        const fetchAllData = async () => {
+            try {
+                const data = await fetchPosts();
+
+                if (isMounted && data) {
+                    setPosts(data.posts?.allAds || []);
+                    setFilteredPosts(data.posts?.allAds || []);
+                    setLoading(false);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des annonces:', error);
+                setLoading(false);
             }
-            setLoading(false);
         };
-        fetchData();
+
+        fetchAllData();
+
+        return () => { isMounted = false; };
     }, []);
+
 
     const indexOfLastPost = currentPage * postPerPage;
     const indexOfFirstPost = indexOfLastPost - postPerPage;
@@ -147,10 +181,19 @@ export default function ManagePosts() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const handleAction = (post) => {
-        const PostID = post.PostID;
-        const post_id = PostID.toLowerCase();
-        navigate(`${post_id}`);
+    const handleAction = (action, PostID) => {
+        const post_id = PostID?.toLowerCase();
+
+        switch (action) {
+            case 'view':
+                navigate(`${post_id}`);
+                break;
+            case 'stats':
+                navigate(`${post_id}/statistics`);
+                break;
+            default:
+                break;
+        }
     };
 
     // Fonction pour appliquer les filtres
@@ -169,6 +212,32 @@ export default function ManagePosts() {
         setFilteredPosts(filtered);
     };
 
+    // Vérifier si tous les posts sont sélectionnés
+    const allSelected = useMemo(() => selectedPosts.length === posts.length, [selectedPosts, posts]);
+
+    // Sélectionner/Désélectionner tout
+    const toggleSelectAll = () => {
+        setSelectedPosts(allSelected ? [] : posts.map(post => post.PostID));
+    };
+
+    // Gérer la sélection d'une annonce
+    const handleSelect = (postID) => {
+        setSelectedPosts(prev => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(postID)) {
+                newSelection.delete(postID);
+            } else {
+                newSelection.add(postID);
+            }
+            return Array.from(newSelection);
+        });
+    };
+
+
+    if (loading) {
+        return <Loading />
+    }
+
     return (
         <div className="ads-section">
             <div className="head">
@@ -184,49 +253,56 @@ export default function ManagePosts() {
             )}
 
             <div className="ads-list">
-                <div className="card-list">
+                <div className="table-container">
                     <table>
                         <thead>
                             <tr>
+                                <th>
+                                    <input
+                                        type="checkbox"
+                                        checked={allSelected}
+                                        onChange={toggleSelectAll}
+                                    />
+                                </th>
                                 <th>#</th>
                                 <th>Post ID</th>
-                                <th>📸 Image</th>
-                                <th>🏷️ Titre</th>
-                                <th>💰 Prix</th>
-                                <th>👀 Vues</th>
-                                <th>📌 Clics</th>
-                                <th>📊 Conversion (%)</th>
-                                <th>📅 Expiration</th>
-                                <th>⚡ Statut</th>
-                                <th>👤 Annonceur</th>
-                                <th>🚨 Signalements</th>
-                                <th>🛠️ Actions</th>
+                                <th>Image</th>
+                                <th>Titre</th>
+                                <th>Prix</th>
+                                <th>Expiration</th>
+                                <th>Statut</th>
+                                <th>Annonceur</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {currentPosts.length === 0 ? (
+                            {currentPosts.length > 0 ? (
+                                currentPosts.map((post, index) => (
+                                    <PostRow
+                                        key={post.id}
+                                        index={index}
+                                        post={post}
+                                        onAction={handleAction}
+                                        isSelected={selectedPosts.includes(post.PostID)}
+                                        onSelect={handleSelect}
+                                    />
+                                ))
+                            ) : (
                                 <tr>
                                     <td colSpan="12">Aucune annonce trouvée.</td>
                                 </tr>
-                            ) : null}
-                            {currentPosts.map((post, index) => (
-                                <PostRow
-                                    key={post.id}
-                                    index={index}
-                                    post={post}
-                                    onAction={(post) => handleAction(post)}
-                                />
-                            ))}
+                            )}
                         </tbody>
                     </table>
                 </div>
 
-                <Pagination
-                    currentPage={currentPage}
-                    elements={posts}
-                    elementsPerPage={postPerPage}
-                    paginate={paginate}
-                />
+                {posts.length > postPerPage && (
+                    <Pagination
+                        currentPage={currentPage}
+                        elements={posts}
+                        elementsPerPage={postPerPage}
+                        paginate={paginate}
+                    />
+                )}
             </div>
         </div>
     );

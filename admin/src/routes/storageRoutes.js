@@ -1,5 +1,22 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const deletePostImagesFromStorage = async (postID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/storage/delete/post-images/${postID}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la suppression des images :', error);
+        throw error;
+    }
+};
+
 const deleteProfilURLByUserID = async (userID) => {
     try {
         const response = await fetch(`${process.env.BACKEND_URL}/api/delete-profile/${userID}`, {
@@ -99,6 +116,7 @@ const uploadMedia = async (file) => {
 
 
 export {
+    deletePostImagesFromStorage,
     uploadImage,
     deleteProfilURLByUserID,
     fetchProfileByUserID,

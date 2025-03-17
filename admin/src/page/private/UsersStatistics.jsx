@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { faUsers } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { 
-    fetchAllUsersWithStatus, 
+import {
+    fetchUsers,
 } from '../../routes/userRoutes';
 import '../../styles/UsersStatistics.scss';
+import { Bar } from 'react-chartjs-2';
 
 export default function UsersStatistics() {
     const [users, setUsers] = useState([]);
@@ -13,63 +12,45 @@ export default function UsersStatistics() {
 
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchData = async () => {
             try {
-                const data = await fetchAllUsersWithStatus();
-                setUsers(data.allUsers);
-                setOnline(data.onlineUsers);
-                setOffline(data.offlineUsers);
+                const data = await fetchUsers();
+                if (isMounted && data) {
+                    setUsers(data.users?.allUsers);
+                    setOnline(data.users?.onlineUsers);
+                    setOffline(data.users?.offlineUsers);
+                }
             } catch (err) {
                 console.error('Erreur technique:', err);
             }
         };
-    
+
         fetchData();
+
+        return () => { isMounted = false; };
     }, []);
+
+    const data = {
+        labels: ["Tous", "Online", "Offline"],
+        datasets: [
+            {
+                label: "Statut des utilisateurs",
+                data: [users.length, online.length, offline.length],
+                backgroundColor: ["#00aaff", "#4CAF50", "#FF0000"],
+            },
+        ],
+    };
 
     return (
         <div className='users-stats'>
-            <div className="body">
 
-                <div className="box-detail">
-                    <div className="_header">
-                        <div className="dot-detail all">
-                            <FontAwesomeIcon icon={faUsers} />
-                        </div>
-                        <h3 className='title'>Tous</h3>
-                    </div>
-                    <div className="detail">
-                        <p>{users.length}</p>
-                        <sub>{"pers."}</sub>
-                    </div>
-                </div>
-
-                <div className="box-detail">
-                    <div className="_header">
-                        <div className="dot-detail online">
-                            <FontAwesomeIcon icon={faUsers} />
-                        </div>
-                        <h3 className='title'>Online</h3>
-                    </div>
-                    <div className="detail">
-                        <p>{online.length}</p>
-                        <sub>{"pers."}</sub>
-                    </div>
-                </div>
-
-                <div className="box-detail">
-                    <div className="_header">
-                        <div className="dot-detail offline">
-                            <FontAwesomeIcon icon={faUsers} />
-                        </div>
-                        <h3 className='title'>Offline</h3>
-                    </div>
-                    <div className="detail">
-                        <p>{offline.length}</p>
-                        <sub>{"pers."}</sub>
-                    </div>
-                </div>
+            <div className="chart-container">
+                <h4>État des annonces</h4>
+                <Bar data={data} />
             </div>
+
         </div>
     );
 };

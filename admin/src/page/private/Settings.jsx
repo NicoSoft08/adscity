@@ -7,9 +7,7 @@ import { updateUserFields } from '../../routes/userRoutes';
 import { useNavigate } from 'react-router-dom';
 import {
     logoutUser,
-    sendVerificationCode,
     updateUserPassword,
-    verifyCodeAndUpdateEmail
 } from '../../routes/authRoutes';
 import '../../styles/Settings.scss';
 
@@ -33,7 +31,6 @@ export default function Settings() {
         verificationCode: "",
         password: "",
     });
-    const [step, setStep] = useState("form"); // "form" | "verification"
     const navigate = useNavigate();
 
     const handleInputChange = (e) => {
@@ -113,71 +110,6 @@ export default function Settings() {
                 message: result.message,
                 type: 'success',
             });
-        }
-    }
-
-
-    const handleSendVerificationCode = async () => {
-        const userID = currentUser?.uid;
-        const newEmail = securityInfo.newEmail;
-
-        if (!newEmail) {
-            setToast({
-                show: true,
-                message: "Veuillez renseigner votre nouvel email !",
-                type: 'error',
-            });
-            return;
-        }
-
-        if (newEmail === userData?.email) {
-            setToast({
-                show: true,
-                message: "L'email actuel et le nouvel email sont identiques !",
-                type: 'error',
-            });
-            setTimeout(() => { setSecurityInfo({ newEmail: '' }) }, 2000);
-            return;
-        }
-
-        setIsLoading(true);
-
-        const result = await sendVerificationCode(userID, newEmail);
-        if (result.error) {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'error',
-            });
-        } else {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'success',
-            });
-            setStep("verification");
-        }
-    }
-
-    const handleVerifyCodeAndUpdateEmail = async () => {
-        const userID = currentUser?.uid;
-        const email = securityInfo.email;
-        const verificationCode = securityInfo.verificationCode;
-
-        const result = await verifyCodeAndUpdateEmail(userID, email, verificationCode);
-        if (result.error) {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'error',
-            });
-        } else {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'success',
-            });
-            setStep("form");
         }
     }
 
@@ -276,37 +208,6 @@ export default function Settings() {
 
             <section className="security-info">
                 <h2>Sécurité</h2>
-                {step === "form" && (
-                    <form onSubmit={(e) => e.preventDefault()}>
-                        <input
-                            type="email"
-                            value={securityInfo.newEmail}
-                            onChange={(e) =>
-                                setSecurityInfo({ ...securityInfo, newEmail: e.target.value })
-                            }
-                            placeholder="Nouvel email"
-                        />
-                        <button onClick={handleSendVerificationCode}>
-                            {isLoading ? <Spinner /> : "Envoyer un code"}
-                        </button>
-                    </form>
-                )}
-
-                {step === "verification" && (
-                    <form onSubmit={(e) => e.preventDefault()}>
-                        <input
-                            type="text"
-                            value={securityInfo.verificationCode}
-                            onChange={(e) =>
-                                setSecurityInfo({ ...securityInfo, verificationCode: e.target.value })
-                            }
-                            placeholder="Code de vérification"
-                        />
-                        <button onClick={handleVerifyCodeAndUpdateEmail}>
-                            {isLoading ? <Spinner /> : "Vérifier et Mettre à jour"}
-                        </button>
-                    </form>
-                )}
 
                 <form onSubmit={(e) => e.preventDefault()}>
                     <input

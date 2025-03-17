@@ -3,6 +3,27 @@ import { logEvent } from "firebase/analytics";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const fetchPosts = async () => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des annonces.');
+        }
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur:', error);
+        return [];
+    }
+};
+
+
 // Fetch all Ads
 const fetchAllPosts = async () => {
     try {
@@ -186,6 +207,7 @@ const fetchPostById = async (post_id) => {
 
 
 export {
+    fetchPosts,
     fetchAllPosts,
     fetchPendingPosts,
     fetchPostById,

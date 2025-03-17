@@ -1,189 +1,206 @@
-import React, { useContext, useState } from 'react';
-import { onApprovePost, onRefusePost } from '../../routes/postRoutes';
+import React, { useContext, useEffect, useMemo, useState, useCallback } from 'react';
+import { fetchPosts, onApprovePost, onRefusePost } from '../../routes/postRoutes';
 import { formateDateTimestamp } from '../../func';
 import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
 import { AuthContext } from '../../contexts/AuthContext';
+import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Pagination from '../../components/pagination/Pagination';
 import '../../styles/PendingPosts.scss';
 
-export default function PendingPosts({ pendingPosts }) {
+const PostRow = ({ index, post, isSelected, onSelect, onView }) => (
+    <tr className={isSelected ? 'selected' : ''}>
+        <td>
+            <input type="checkbox" checked={isSelected} onChange={() => onSelect(post.PostID)} />
+        </td>
+        <td>{index + 1}</td>
+        <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
+        <td>{post.adDetails.title}</td>
+        <td>{post.adDetails.price} RUB</td>
+        <td>{formateDateTimestamp(post.posted_at._seconds)}</td>
+        {isSelected && (
+            <div className="floating-menu">
+                <button title="Voir l'annonce" onClick={() => onView(post.PostID)}>
+                    <FontAwesomeIcon icon={faEye} />
+                </button>
+            </div>
+        )}
+    </tr>
+);
+
+export default function PendingPosts() {
+    const [postsPending, setPostsPending] = useState([]);
+    const [selectedPosts, setSelectedPosts] = useState([]);
     const { currentUser, userData } = useContext(AuthContext);
+    const [isLoading, setIsLoading] = useState(false);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [isOpen, setIsOpen] = useState(false);
-    const [detailOpen, setDetailOpen] = useState(false);
-    const [isLoading, setIsloading] = useState(false);
     const [confirm, setConfirm] = useState(false);
-    const [toast, setToast] = useState({ show: false, type: '', message: '' })
-    const [message, setMessage] = useState({ type: '', text: '' });
     const [refusalReason, setRefusalReason] = useState('');
     const [selectedPostID, setSelectedPostID] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pendingPostPerPage = 10;
 
-    // const defaultReason = "En vertu des Règles De Publication qui régissent le fonctionnement d'AdsCity et au regard des photos sélectionnées pour votre annonce, il est à noter que les photos ne sont pas en adéquation avec le titre de l'annonce.";
+    useEffect(() => {
+        let isMounted = true;
 
-
-    const handleDetailClick = (postID) => {
-        setSelectedPostID(postID);
-        setDetailOpen(true);
-    }
-
-    const handleOpenModal = (postID) => {
-        setSelectedPostID(postID);
-        setIsOpen(true);
-    }
-
-    const handleCloseModal = () => {
-        setIsOpen(false);
-        setConfirm(false);
-    }
-
-
-    const handleApprove = async (postID) => {
-        if (currentUser && userData.permissions.includes('SUPER_ADMIN')) {
-            setIsloading(true);
-            const result = await onApprovePost(postID);
-
-            if (result.success) {
-                setToast({
-                    show: true,
-                    type: 'success',
-                    message: result.message,
-                });
-                setIsloading(false);
-                setDetailOpen(false);
-            } else {
-                setToast({
-                    show: true,
-                    type: 'error',
-                    message: result.message,
-                });
-                setIsloading(false);
-                setDetailOpen(false);
+        const fetchAllData = async () => {
+            try {
+                const data = await fetchPosts();
+                if (isMounted && data) {
+                    setPostsPending(data.posts?.pendingAds || []);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des annonces:', error);
             }
+        };
+
+        fetchAllData();
+        return () => { isMounted = false; };
+    }, []);
+
+    const allSelected = useMemo(() => selectedPosts.length === postsPending.length, [selectedPosts, postsPending]);
+
+    const toggleSelectAll = () => {
+        setSelectedPosts(allSelected ? [] : postsPending.map(post => post.PostID));
+    };
+
+    const handleSelect = (postID) => {
+        setSelectedPosts(prev => prev.includes(postID) ? prev.filter(id => id !== postID) : [...prev, postID]);
+    };
+
+    const handleApprove = useCallback(async (id) => {
+        if (!currentUser || !userData.permissions.includes('SUPER_ADMIN')) {
+            setToast({ show: true, type: 'error', message: "Vous n'avez pas les autorisations nécessaires." });
+            return;
+        }
+
+        setIsLoading(true);
+        const result = await onApprovePost(id);
+        setIsLoading(false);
+
+        if (result.success) {
+            setToast({ show: true, type: 'success', message: result.message });
+            setPostsPending(postsPending.filter(post => post.id !== id));
+            handleCloseModal();
+        } else {
+            setToast({ show: true, type: 'error', message: result.message });
+        }
+    }, [currentUser, userData, postsPending]);
+
+    const handleReject = async () => {
+        // if (!selectedPostID) return;
+
+        if (refusalReason.trim() === '') {
+            setToast({ type: 'error', message: 'Veuillez fournir un motif avant de refuser l\'annonce.' });
+            return;
+        }
+
+        handleCloseModal(); // Fermer le modal avant d'envoyer la requête
+
+        const result = await onRefusePost(selectedPostID, refusalReason);
+
+        if (result?.success) {
+            setToast({
+                show: true,
+                type: 'success',
+                message: 'Annonce refusée avec succès.',
+            });
         } else {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Vous n\'avez pas les autorisations nécessaires pour approuver cette annonce.',
+                message: result?.error || 'Erreur lors du refus de l\'annonce.',
             });
         }
     };
 
-
-    const handleReject = async () => {
-        if (!selectedPostID) return;
-
-        if (refusalReason.trim() === '') {
-            setMessage({ type: 'error', text: 'Veuillez fournir un motif avant de refuser l\'annonce.' });
-            return;
-        }
-
-        handleCloseModal();
-
-        const result = await onRefusePost(selectedPostID, refusalReason);
-
-        if (result) {
-            setMessage({ type: 'success', text: 'Annonce refusée avec succès.' });
-            console.log('Annonce refusée avec succès', result.message);
-        } else {
-            setMessage({ type: 'error', text: result.error || 'Erreur lors du refus de l\'annonce.' });
-            console.error('Erreur lors du refus de l\'annonce', result.error);
-        }
+    const handleOpenModal = (postID) => {
+        setSelectedPostID(postID);
+        setRefusalReason("En vertu des règles de publication, votre annonce a été refusée car les images ne correspondent pas au titre."); // Texte par défaut
+        setToast({ show: false, type: '', message: '' }); // Réinitialiser les messages d'erreur
+        setIsOpen(true);
     };
+
+    const handleCloseModal = () => {
+        setIsOpen(false);
+        setConfirm(false);
+        setRefusalReason(''); // Réinitialisation du champ motif
+    };
+
+    const currentPendingPosts = postsPending.slice((currentPage - 1) * pendingPostPerPage, currentPage * pendingPostPerPage);
 
     return (
         <div className='pending-ads'>
             <h3>Annonces en attente</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Photo</th>
-                        <th>Titre</th>
-                        {/* <th>Description</th>
-                        <th>Catégorie</th>
-                        <th>Ville</th>
-                        <th>Région</th> */}
-                        <th>Date de Publication</th>
-                        <th>Prix</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        pendingPosts.length > 0 ? (
-                            pendingPosts.map((ad, index) => (
-                                <tr key={ad.id}>
-                                    <td>{index + 1}</td>
-                                    <td>
-                                        <img src={ad.images[0]} alt='' width={50} height={50} />
-                                    </td>
-                                    <td>{ad.adDetails.title}</td>
-                                    {/* <td>{ad.adDetails.description}</td>
-                                    <td>{ad.category}</td>
-                                    <td>{ad.location.city}</td>
-                                    <td>{ad.location.country}</td> */}
-                                    <td>{formateDateTimestamp(ad.posted_at._seconds)}</td>
-                                    <td>{ad.adDetails.price} RUB </td>
-                                    <td>
-                                        <button
-                                            className='see-more'
-                                            onClick={() => handleDetailClick(ad.id)}
-                                        >
-                                            Détails
-                                        </button>
-                                    </td>
-                                    {/* <td>
-                                        <button
-                                            onClick={() => handleApprove(ad.id)}
-                                            className="approve-button"
-                                            title='Approuver'
-                                        >
-                                            <FontAwesomeIcon icon={faCheck} />
-                                        </button>
-                                        <button
-                                            onClick={() => handleOpenModal((ad.id))}
-                                            className="reject-button"
-                                            title='Refuser'
-                                        >
-                                            <FontAwesomeIcon icon={faTimes} />
-                                        </button>
-                                    </td> */}
-                                </tr>
+            <div className="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" checked={allSelected} onChange={toggleSelectAll} /></th>
+                            <th>#</th>
+                            <th>Photo</th>
+                            <th>Titre</th>
+                            <th>Prix</th>
+                            <th>Date de Publication</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentPendingPosts.length > 0 ? (
+                            currentPendingPosts.map((post, index) => (
+                                <PostRow
+                                    key={post.PostID}
+                                    index={index}
+                                    post={post}
+                                    isSelected={selectedPosts.includes(post.PostID)}
+                                    onSelect={handleSelect}
+                                    onView={setSelectedPostID}
+                                />
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="10" align='center'>Aucunes annonces en attente de vérification.</td>
+                                <td colSpan="6" align='center'>Aucune annonce en attente.</td>
                             </tr>
-                        )
-                    }
-                </tbody>
-            </table>
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {selectedPostID && (
+                <Modal title="Détails de l'annonce" onShow={!!selectedPostID} onHide={() => setSelectedPostID(null)} isNext={false}>
+                    <div className='ad-details'>
+                        {postsPending.filter(ad => ad.PostID === selectedPostID).map(pendingAd => (
+                            <React.Fragment key={pendingAd.PostID}>
+                                <Tab pendingAd={pendingAd} />
+                                <div className="ad-details-buttons">
+                                    <button className="modal-button approve-button" onClick={() => handleApprove(pendingAd.id)}>
+                                        {isLoading ? <Spinner /> : 'Approuver'}
+                                    </button>
+                                    <button className="modal-button reject-button" onClick={() => handleOpenModal(pendingAd.id)}>
+                                        Refuser
+                                    </button>
+                                </div>
+                            </React.Fragment>
+                        ))}
+                    </div>
+                </Modal>
+            )}
 
             {isOpen && (
                 <Modal
                     title={"Confirmation requise"}
                     onShow={isOpen}
                     onHide={handleCloseModal}
-                    isNext={true}
-                    nextText={'Confirmer'}
-                    hideText={"Annuler"}
-                    onNext={() => {
-                        if (confirm) {
-                            handleReject();
-                        } else {
-                            setConfirm(true);  // Passer à la phase de confirmation
-                        }
-                    }}
                 >
                     {confirm ? (
                         <>
                             <p>
-                                Êtes-vous certain de vouloir refuser cette annonce ?
-                                Cette action est définitive et ne pourra pas être annulée.
-                                Une fois refusée, l'annonce ne pourra plus être modifiée ou restaurée.
+                                Êtes-vous certain de vouloir refuser cette annonce ? Cette action est définitive et ne pourra pas être annulée.
+
                             </p>
-                            {message.type === 'error' && <p className='error-text'>{message.text}</p>}
                         </>
                     ) : (
                         <>
@@ -198,51 +215,29 @@ export default function PendingPosts({ pendingPosts }) {
                             </label>
                         </>
                     )}
+                    <div className="ad-details-buttons">
+                        <button className="modal-button approve-button" onClick={() => {
+                            if (confirm) {
+                                handleReject();
+                            } else {
+                                setConfirm(true);
+                            }
+                        }}
+                        >
+                            {isLoading ? <Spinner /> : 'Approuver'}
+                        </button>
+                        <button className="modal-button reject-button" onClick={handleCloseModal}>
+                            Refuser
+                        </button>
+                    </div>
                 </Modal>
             )}
 
-            {detailOpen && selectedPostID && (
-                <Modal
-                    title={"Détails de l'annonce"}
-                    onShow={detailOpen}
-                    onHide={() => setDetailOpen(false)}
-                    isNext={false}
-                    isHide={false}
-                >
-                    <div className='ad-details'>
-                        {pendingPosts
-                            .filter((ad) => ad.id === selectedPostID)
-                            .map(pendingAd => (
-                                <>
-                                    <Tab
-                                        pendingAd={pendingAd}
-                                        key={pendingAd.id}
-                                    />
-                                    <div className="ad-details-buttons">
-                                        <button
-                                            className="modal-button approve-button"
-                                            onClick={() => handleApprove(pendingAd.id)}
-                                        >
-                                            {isLoading ? <Spinner /> : 'Approuver'}
-                                        </button>
-                                        <button
-                                            className="modal-button reject-button"
-                                            onClick={() => {
-                                                setDetailOpen(false);
-                                                handleOpenModal((pendingAd.id))
-                                            }}
-                                        >
-                                            Refuser
-                                        </button>
-                                    </div>
-                                </>
-                            ))
-                        }
-                    </div>
-                </Modal>
+            {postsPending.length > pendingPostPerPage && (
+                <Pagination currentPage={currentPage} elements={postsPending} elementsPerPage={pendingPostPerPage} paginate={setCurrentPage} />
             )}
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
-};
+}

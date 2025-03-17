@@ -1,12 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { fetchAllUsers } from '../../routes/userRoutes';
-import { deleteUser } from '../../routes/authRoutes';
-import { AuthContext } from '../../contexts/AuthContext';
+import React, { useEffect, useMemo, useState } from 'react'
+import { fetchUsers } from '../../routes/userRoutes';
 import Toast from '../../customs/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faChartSimple, faCircleCheck, faCircleExclamation, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { IconAvatar } from '../../config/images';
-import Modal from '../../customs/Modal';
 import Pagination from '../../components/pagination/Pagination';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/ManageUsers.scss';
@@ -77,131 +74,124 @@ const UsersFilter = ({ onFilterChange }) => {
     );
 };
 
-const UserRow = ({ index, user, onAction }) => {
+const UserRow = ({ index, user, onAction, isSelected, onSelect }) => {
 
     const getProfilePicture = (user) => user.profilURL || IconAvatar;
 
     const formatUserStatut = (isOnline) => (isOnline ? "🟢 En ligne" : "🔴 Hors ligne");
 
     return (
-        <tr>
+        <tr className={isSelected ? 'selected' : ''}>
+            <td>
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onSelect(user.UserID)}
+                />
+            </td>
             <td>{index + 1}</td>
             <td>{user.UserID}</td>
             <td><img src={getProfilePicture(user)} alt={user.displayName} width="50" height="50" className="profile-img" /></td>
             <td>{user.displayName}</td>
-            <td>{user.email}</td>
-            <td>{user.profileNumber}</td>
             <td>{user.phoneNumber}</td>
+            <td>{user.email}</td>
+            <td><FontAwesomeIcon icon={user.emailVerified ? faCircleCheck : faCircleExclamation} color={user.emailVerified ? '#28a745' : '#00aaff'} /> Email</td>
             <td>{formatUserStatut(user.isOnline)}</td>
-            <td>{user.reportingCount || 0}</td>
-            <td><button className="see-more" onClick={() => onAction(user)}>Voir</button></td>
+            {/* 📌 Div flottante affichée si l'annonce est sélectionnée */}
+            {isSelected && (
+                <div className="floating-menu">
+                    <button title="Voir l'utilisateur" onClick={() => onAction('view', user.UserID)}>
+                        <FontAwesomeIcon icon={faEye} />
+                    </button>
+                    <button title='Activités' onClick={() => onAction('activity', user.UserID)}>
+                        <FontAwesomeIcon icon={faChartSimple} />
+                    </button>
+                </div>
+            )}
         </tr>
     );
 }
 
 export default function ManageUsers() {
-    const { currentUser, userData } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [userPerPage] = useState(10);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [openFilter, setOpenFilter] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
-    const [modalType, setModalType] = useState(null); // "desable" | "delete" | null
-    const [reason, setReason] = useState("");
+    const [selectedUsers, setSelectedUsers] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            const all = await fetchAllUsers();
-            if (all.success) {
-                setUsers(all.allUsers);
-                setFilteredUsers(all.allUsers);
+        const fetchData = async () => {
+            try {
+                const data = await fetchUsers();
+                if (data) setUsers(data.users?.allUsers || []);
+            } catch (err) {
+                console.error('Erreur technique:', err);
             }
         };
-
-        fetchUsers();
+        fetchData();
     }, []);
 
+    useEffect(() => {
+        setFilteredUsers(users);
+    }, [users]);
+
+    // Pagination
     const indexOfLastUser = currentPage * userPerPage;
     const indexOfFirstUser = indexOfLastUser - userPerPage;
     const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-
-    // Fonction pour appliquer les filtres
+    // Application des filtres
     const handleFilterChange = (filters) => {
-        let filtered = users.filter(user => {
-            return (
-                (filters.role === "all" || user.role === filters.role) &&
-                (filters.status === "all" || user.isActive === (filters.status === "active")) &&
-                (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
-                (filters.subscription === "all" || user.subscription === filters.subscription) &&
-                (filters.search === "" ||
-                    user.displayName.toLowerCase().includes(filters.search.toLowerCase()) ||
-                    user.email.toLowerCase().includes(filters.search.toLowerCase())
-                )
-            );
-        });
+        let filtered = users.filter(user => (
+            (filters.role === "all" || user.role === filters.role) &&
+            (filters.status === "all" || user.isActive === (filters.status === "active")) &&
+            (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
+            (filters.subscription === "all" || user.subscription === filters.subscription) &&
+            (filters.search === "" || user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || user.email.toLowerCase().includes(filters.search.toLowerCase()))
+        ));
         setFilteredUsers(filtered);
     };
 
-
-
-    const handleToggleActive = (id, newStatus) => {
-        setUsers(users.map(user => (user.id === id ? { ...user, isActive: newStatus } : user)));
-        console.log(`User ${id} is now ${newStatus ? 'active' : 'inactive'}`);
-    };
-
-
-    const handleDelete = async (id) => {
-        setUsers(users.filter(user => user.id !== id));
-        if (!currentUser && userData.permissions.includes('SUPER_ADMIN')) {
-            await deleteUser(id);
-            setToast({ show: true, type: 'success', message: 'Utilisateur supprimé avec succès.' });
-            console.log(`User ${id} deleted`);
-        } else {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les permissions pour supprimer des utilisateurs.' });
-            console.log(`User ${id} couldn't be deleted`);
-        }
-    };
-
-    const handleAction = (user) => {
-        const UserID = user.UserID;
+    const handleAction = (action, UserID) => {
         const user_id = UserID.toLowerCase();
-        navigate(`${user_id}`);
-    };
 
-    const handleDesableUser = () => {
-        setModalType('desable');
-    };
-
-    const handleDeleteUser = () => {
-        setModalType('delete');
-    };
-
-    const handleConfirmAction = async () => {
-        if (modalType === "delete" && selectedUser) {
-            await deleteUser(selectedUser.id);
-            setUsers(users.filter(u => u.id !== selectedUser.id));
+        switch (action) {
+            case 'view':
+                navigate(`${user_id}`)
+                break;
+            case 'activity':
+                navigate(`${user_id}/activity`)
+                break;
+            default:
+                return null;
         }
-        setModalType(null);
     };
 
-    const options = [
-        {
-            label: 'Désactiver',
-            icon: '⏸️',
-            action: () => handleDesableUser(),
-        },
-        {
-            label: 'Supprimer',
-            icon: '🗑️',
-            action: () => handleDeleteUser(),
-        },
-    ];
+    // Gérer la sélection d'une annonce
+    const handleSelect = (userID) => {
+        setSelectedUsers(prev => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(userID)) {
+                newSelection.delete(userID);
+            } else {
+                newSelection.add(userID);
+            }
+            return Array.from(newSelection);
+        });
+    };
+
+    // Vérifier si tous les posts sont sélectionnés
+    const allSelected = useMemo(() => selectedUsers.length === users.length, [selectedUsers, users]);
+
+    // Sélectionner/Désélectionner tout
+    const toggleSelectAll = () => {
+        setSelectedUsers(allSelected ? [] : users.map(user => user.UserID));
+    };
 
     return (
         <div className='manage-users'>
@@ -217,67 +207,48 @@ export default function ManageUsers() {
                 <UsersFilter onFilterChange={handleFilterChange} />
             )}
 
-            <div className="ads-list">
-                <div className="card-list">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>User ID</th>
-                                <th>📸 Profile</th>
-                                <th>👤 Nom Complet</th>
-                                <th>✉️ Email</th>
-                                <th>🏷️ No. Profile</th>
-                                <th>📲 Téléphone</th>
-                                <th>⚡ Status</th>
-                                <th>🚨 Signalements</th>
-                                <th>🛠️ Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {currentUsers.map((user, index) => (
-                                <UserRow
-                                    key={user.id}
-                                    user={user}
-                                    index={index}
-                                    options={options}
-                                    onAction={(user) => handleAction(user)}
+            <div className='table-container'>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>
+                                <input
+                                    type="checkbox"
+                                    checked={allSelected}
+                                    onChange={toggleSelectAll}
                                 />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
+                            </th>
+                            <th>#</th>
+                            <th>User ID</th>
+                            <th>Profile</th>
+                            <th>Nom Complet</th>
+                            <th>Téléphone</th>
+                            <th>Email</th>
+                            <th>Vérifié</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentUsers.map((user, index) => (
+                            <UserRow
+                                key={user.id}
+                                user={user}
+                                index={index}
+                                isSelected={selectedUsers.includes(user.UserID)}
+                                onAction={handleAction}
+                                onSelect={handleSelect}
+                            />
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {users.length > userPerPage && (
                 <Pagination
                     currentPage={currentPage}
                     elements={users}
                     elementsPerPage={userPerPage}
                     paginate={paginate}
                 />
-            </div>
-
-            {/* MODALE D'ACTION */}
-            {modalType && (
-                <Modal
-                    title={modalType === "desable" ? "Désactiver l'utilisateur" : "Supprimer l'utilisateur"}
-                    onShow={!!modalType}
-                    onHide={() => setModalType(null)}
-                >
-                    <div className="action-menu">
-                        <p><strong>Utilisateur :</strong> {selectedUser?.displayName}</p>
-                        <label>Motif de l'action :</label>
-                        <textarea
-                            value={reason}
-                            onChange={(e) => setReason(e.target.value)}
-                            placeholder="Expliquez pourquoi cette action est nécessaire..."
-                            rows="4"
-                        />
-                        <div className="modal-actions">
-                            <button onClick={handleConfirmAction} className="confirm-btn">Confirmer</button>
-                            <button onClick={() => setModalType(null)} className="cancel-btn">Annuler</button>
-                        </div>
-                    </div>
-                </Modal>
             )}
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />

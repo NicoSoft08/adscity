@@ -1,6 +1,6 @@
 const { auth, firestore, admin } = require("../config/firebase-admin");
 
-const getUsers = async () => {
+const getUsersData = async () => {
     try {
         const adsCollection = firestore.collection('USERS').orderBy('createdAt', 'desc');
 
@@ -10,11 +10,22 @@ const getUsers = async () => {
             return [];
         };
 
-        const allUsers = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
-        return allUsers
+        const users = [];
+        const onlineUsers = [];
+        const offlineUsers = [];
+
+        querySnapshot.forEach(doc => {
+            const user = { id: doc.id, ...doc.data() };
+            users.push(user);
+            if (user.isOnline === true) onlineUsers.push(user);
+            if (user.isOnline === false) offlineUsers.push(user);
+        });
+
+        return {
+            allUsers: users,
+            onlineUsers,
+            offlineUsers
+        };
     } catch (error) {
         console.error('Erreur lors de la récupération des utilisateurs:', error);
         throw error;
@@ -27,7 +38,7 @@ const getUser = async (userID) => {
         const userRef = firestore.collection('USERS').doc(userRecord.uid);
         const userDoc = await userRef.get();
 
-        if (!userDoc.exists){
+        if (!userDoc.exists) {
             return null;
         }
 
@@ -250,6 +261,35 @@ const collectUserFavorites = async (userID) => {
     };
 };
 
+const collectAdminNotifications = async () => {
+    try {
+        const notificationRef = firestore.collection('ADMIN_NOTIFICATIONS').orderBy('timestamp', 'desc');
+        const snapshot = await notificationRef.get();
+
+        if (snapshot.empty) {
+            console.log("Aucune notification trouvée.");
+            return [];
+        }
+        const notifs = [];
+        const unReadNotifs = [];
+
+        snapshot.docs.forEach(doc => {
+            const notification = { id: doc.id, ...doc.data() };
+            notifs.push(notification);
+
+            if (notification.isRead === false) unReadNotifs.push(notification);
+        });
+
+        return {
+            notifications: notifs,
+            unReadNotifs
+        };
+    } catch (error) {
+        console.error("Erreur lors de la récupération des notifications", error);
+        return [];
+    }
+};
+
 const collectUserNotifications = async (userID) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
@@ -258,11 +298,20 @@ const collectUserNotifications = async (userID) => {
             console.log("Utilisateur non trouvé");
             return false;
         };
+        const notifs = [];
+        const unReadNotifs = [];
 
         const notificationRef = userRef.collection('NOTIFICATIONS').orderBy('timestamp', 'desc');
         const snapshot = await notificationRef.get();
-        const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        return notifications;
+        snapshot.docs.map(doc => {
+            const notification = { id: doc.id, ...doc.data() };
+            notifs.push(notification);
+            if (notification.isRead === false) unReadNotifs.push(notification);
+        });
+        return {
+            notifications: notifs,
+            unReadNotifs
+        };
     } catch (error) {
         console.error("Erreur lors de la récupération des notifications de l'utilisateur", error);
         return false;
@@ -284,6 +333,35 @@ const collectUserUnreadNotifications = async (userID) => {
         return unreadNotifications;
     } catch (error) {
         console.error("Erreur lors de la récupération des notifications non lues de l'utilisateur", error);
+        return false;
+    }
+};
+
+const markAdminNotificationAsRead = async (userID, notificationID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        }
+
+        const notificationRef = firestore.collection('ADMIN_NOTIFICATIONS').doc(notificationID);
+        const notificationDoc = await notificationRef.get();
+        if (!notificationDoc.exists) {
+            console.error("Notification non trouvée");
+            return false;
+        }
+        const notificationData = notificationDoc.data();
+        if (notificationData.isRead) {
+            console.log("La notification est déjà marquée comme lue");
+            return true;
+        }
+        await notificationRef.update({ isRead: true });
+        console.log("Notification marquée comme lue avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour de la notification", error);
         return false;
     }
 };
@@ -311,6 +389,175 @@ const markNotificationAsRead = async (userID, notificationID) => {
         console.error("Erreur lors de la lecture de la notification de l'utilisateur", error);
         return false;
     };
+};
+
+const markAllNotificationsAsRead = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        };
+
+        const notificationRef = userRef.collection('NOTIFICATIONS');
+        const snapshot = await notificationRef.get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+            batch.update(doc.ref, { isRead: true });
+        });
+        await batch.commit();
+        console.log("Toutes les notifications ont été marquées comme lues avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la lecture de toutes les notifications de l'utilisateur", error);
+        return false;
+    }
+};
+
+const markAllAdminNotificationsAsRead = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        }
+        const notificationRef = firestore.collection('ADMIN_NOTIFICATIONS');
+        const snapshot = await notificationRef.get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+            batch.update(doc.ref, { isRead: true });
+        });
+        await batch.commit();
+        console.log("Toutes les notifications ont été marquées comme lues avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour des notifications de l'utilisateur", error);
+        return false;
+    }
+};
+
+const clearAdminNotification = async (userID, notificationID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        };
+
+        const notificationRef = firestore.collection('ADMIN_NOTIFICATIONS').doc(notificationID);
+        const notificationDoc = await notificationRef.get();
+        if (!notificationDoc.exists) {
+            console.error("Notification non trouvée");
+            return false;
+        }
+        await notificationRef.delete();
+        console.log("Notification supprimée avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la notification", error);
+        return false;
+    }
+};
+
+const clearUserNotification = async (userID, notificationID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        };
+
+        const notificationRef = userRef.collection('NOTIFICATIONS').doc(notificationID);
+        const notificationDoc = await notificationRef.get();
+        if (!notificationDoc.exists) {
+            console.error("Notification non trouvée");
+            return false;
+        };
+
+        await notificationRef.delete();
+        console.log("Notification supprimée avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la notification de l'utilisateur", error);
+        return false;
+    }
+};
+
+
+const clearAllAdminNotifications = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        };
+
+        const notificationRef = firestore.collection('ADMIN_NOTIFICATIONS');
+        const snapshot = await notificationRef.get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        console.log("Toutes les notifications ont été supprimées avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la suppression de toutes les notifications", error);
+        return false;
+    }
+};
+
+const clearUserAllNotifications = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        };
+
+        const notificationRef = userRef.collection('NOTIFICATIONS');
+        const snapshot = await notificationRef.get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        console.log("Toutes les notifications ont été supprimées avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la suppression de toutes les notifications de l'utilisateur", error);
+        return false;
+    }
+};
+
+const clearAdminAllNotifications = async (userID) => {
+    try {
+        const  userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log("Utilisateur non trouvé");
+            return false;
+        }
+
+        const notificationRef = firestore.collection('ADMIN_NOTIFICATIONS');
+        const snapshot = await notificationRef.get();
+        const batch = firestore.batch();
+        snapshot.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+        console.log("Toutes les notifications ont été supprimées avec succès !");
+        return true;
+    } catch (error) {
+        console.error("Erreur lors de la suppression de toutes les notifications de l'utilisateur", error);
+        return false;
+    }
 };
 
 const storeDeviceToken = async (deviceToken, userID) => {
@@ -404,19 +651,58 @@ const collectAnyUserData = async (userID) => {
     }
 };
 
+const collectUserLoginActivity = async (userID) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            return null;
+        }
+
+        const loginRef = userRef.collection('LOGIN_ACTIVITY');
+        const loginQuery = await loginRef.orderBy('time', 'desc').get();
+        const loginData = loginQuery.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        return loginData;
+    } catch (error) {
+        console.error("❌ Erreur lors de la récupération des données de connexion utilisateur :", error);
+        return null;
+    }
+};
+
 module.exports = {
     addRemoveFavorites,
     collectAnyUserData,
     collectInterlocutorProfile,
+    collectUserLoginActivity,
     collectUserFavorites,
     getUser,
-    getUsers,
+    getUsersData,
     collectUserData,
     collectAllUsersWithStatus,
+
+    collectAdminNotifications,
     collectUserNotifications,
+
+    clearUserAllNotifications,
+    clearAllAdminNotifications,
+    clearAdminAllNotifications,
+
     collectUserUnreadNotifications,
     collectUserPermissions,
+
     markNotificationAsRead,
+    markAdminNotificationAsRead,
+
+    markAllNotificationsAsRead,
+    markAllAdminNotificationsAsRead,
+    markAllAdminNotificationsAsRead,
+
+    clearUserNotification,
+    clearAdminNotification,
+
     setUserOnlineStatus,
     storeDeviceToken,
     updateUserFields,

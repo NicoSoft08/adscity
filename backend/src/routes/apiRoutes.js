@@ -15,24 +15,30 @@ const {
     fetchFilteredPosts,
     hostAdvertising,
     fetchPubs,
-    fetchPubById
+    fetchPubById,
+    getViewCount
 } = require('../controllers/apiController');
 
 const router = express.Router();
 
 router.get('/search/items', searchItems);
+router.get('/search/filtered', fetchFilteredPosts);
+router.get('/search/advanced', advancedSearch);
+
 router.post('/update/interaction', manageInteraction);
 router.post('/update/contact-click', manageContactClick);
+
 router.post('/contact/support-client', contactSupportClient);
 router.get('/collect/locations', getPostsLocations);
-router.get('/search/advanced', advancedSearch);
 router.post('/rate/:userID', rateUser);
 router.post('/update/:userID/social-links', updateUserSocialLinks);
+
 router.post('/increment/view/:postID', incrementViewCount);
 router.post('/increment/click/:postID', incrementClickCount);
-router.get('/search/filtered', fetchFilteredPosts);
+
 router.post('/host/pub', hostAdvertising);
 router.get('/collect/pubs', fetchPubs);
 router.get('/collect/pubs/:pub_id', fetchPubById);
+router.get('/get/view/:postID', getViewCount);
 
 module.exports = router;

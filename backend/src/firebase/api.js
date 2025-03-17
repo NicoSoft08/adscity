@@ -122,18 +122,52 @@ const updateInteraction = async (postID, userID, category) => {
     };
 };
 
-const updateContactClick = async (userID) => {
+const updateContactClick = async (userID, city) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+
+        if (!userDoc.exists) {
+            console.error("Utilisateur non trouvé");
+            return false;
+        }
+
+        const userData = userDoc.data();
+        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+        // Incrément du total des visites
+        const newTotalVisits = (userData.profileVisits || 0) + 1;
+
+        // Mise à jour des visites du jour
+        let newVisitsToday = userData.profileVisitsToday || {};
+        newVisitsToday[today] = (newVisitsToday[today] || 0) + 1;
+
+        // Mise à jour des visites par ville
+        let newVisitsByCity = userData.profileVisitsByCity || {};
+        newVisitsByCity[city] = (newVisitsByCity[city] || 0) + 1;
+
+        // Récupérer le timestamp actuel
+        const timestamp = new Date();
+
+        // Ajout à l'historique des visites
+        const visitEntry = {
+            timestamp: timestamp, // On met un Date() au lieu de serverTimestamp()
+            city: city,
+        };
 
         await userRef.update({
-            profileViewed: admin.firestore.FieldValue.increment(1),
+            profileVisits: newTotalVisits,
+            [`profileVisitsToday.${today}`]: newVisitsToday[today],
+            [`profileVisitsByCity.${city}`]: newVisitsByCity[city],
+            profileVisitsHistory: admin.firestore.FieldValue.arrayUnion(visitEntry),
         });
+
+        console.log(`Visite enregistrée pour ${userID} depuis ${city}`);
         return true;
     } catch (error) {
-        console.error('Erreur lors de la mise à jour des interactions:', error);
+        console.error('Erreur lors de la mise à jour des visites:', error);
         return false;
-    };
+    }
 };
 
 const contactUs = async (formData) => {
@@ -307,42 +341,175 @@ const socialLinksUpdate = async (userID, socialLinks) => {
     }
 };
 
-const incrementView = async (postID) => {
+const incrementView = async (postID, userID) => {
     try {
-        const postRef = firestore.collection('POSTS').doc(postID);
-        const postDoc = await postRef.get();
-        if (!postDoc.exists) {
-            console.log('Le post n\'existe pas');
+        if (!userID) {
+            console.error("userID est invalide :", userID);
             return false;
         }
 
+        const userRef = firestore.collection('USERS').doc(userID);
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const userViewRef = firestore.collection('VIEWS_TRACKING').doc(userID).collection("VIEWS").doc(postID);
+
+        // 🔹 Récupération des documents Firestore en parallèle
+        const [userDoc, postDoc, userViewDoc] = await Promise.all([
+            userRef.get(),
+            postRef.get(),
+            userViewRef.get()
+        ]);
+
+        if (!userDoc.exists || !postDoc.exists) {
+            console.error("L'utilisateur ou l'annonce n'existe pas");
+            return false;
+        }
+
+        if (userViewDoc.exists) {
+            return false; // L'utilisateur a déjà vu cette annonce
+        }
+
+        const userData = userDoc.data();
         const postData = postDoc.data();
-        const views = postData.views || 0;
-        await postRef.update({ views: views + 1 });
-        console.log('Nombre de vues mis à jour avec succès');
+        const { stats = {} } = postData;
+        const { city } = userData;
+
+        // 📌 Initialiser les champs si absents
+        const viewsByCity = stats.views_per_city || {};
+        const viewsHistory = stats.views_history || {};
+
+        // 🔹 Incrémentation des vues globales et par ville
+        viewsByCity[city] = (viewsByCity[city] || 0) + 1;
+
+        // 🔹 Gestion des périodes d'historique des vues
+        const now = new Date();
+        const todayDate = now.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+        // Fonction pour récupérer les dates passées
+        const getPastDate = (days) => {
+            const pastDate = new Date();
+            pastDate.setDate(now.getDate() - days);
+            return pastDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+        };
+
+        // Initialisation des périodes si elles n'existent pas
+        if (!viewsHistory["7"]) viewsHistory["7"] = {};
+        if (!viewsHistory["15"]) viewsHistory["15"] = {};
+        if (!viewsHistory["30"]) viewsHistory["30"] = {};
+
+        // 🔹 Mise à jour des vues pour aujourd’hui
+        viewsHistory["7"][todayDate] = (viewsHistory["7"][todayDate] || 0) + 1;
+        viewsHistory["15"][todayDate] = (viewsHistory["15"][todayDate] || 0) + 1;
+        viewsHistory["30"][todayDate] = (viewsHistory["30"][todayDate] || 0) + 1;
+
+        // 🔹 Suppression des anciennes dates hors période
+        Object.keys(viewsHistory["7"]).forEach(date => {
+            if (date < getPastDate(7)) delete viewsHistory["7"][date];
+        });
+        Object.keys(viewsHistory["15"]).forEach(date => {
+            if (date < getPastDate(15)) delete viewsHistory["15"][date];
+        });
+        Object.keys(viewsHistory["30"]).forEach(date => {
+            if (date < getPastDate(30)) delete viewsHistory["30"][date];
+        });
+
+        // 📌 Mise à jour Firestore (POSTS + VIEWS_TRACKING)
+        await Promise.all([
+            postRef.update({
+                'stats.views': admin.firestore.FieldValue.increment(1),
+                'stats.views_per_city': viewsByCity,
+                'stats.views_history': viewsHistory
+            }),
+            userViewRef.set({ viewed_at: admin.firestore.FieldValue.serverTimestamp() })
+        ]);
+
+        console.log("Vue incrémentée avec succès");
         return true;
     } catch (error) {
-        console.error('Erreur lors de la mise à jour du nombre de vues:', error);
+        console.error("Erreur lors de l'incrémentation des vues:", error);
         return false;
     }
 };
 
-const incrementClick = async (postID) => {
+
+const incrementClick = async (postID, userID) => {
     try {
-        const postRef = firestore.collection('POSTS').doc(postID);
-        const postDoc = await postRef.get();
-        if (!postDoc.exists) {
-            console.log('Le post n\'existe pas');
+        if (!userID) {
+            console.error("userID est invalide :", userID);
             return false;
         }
 
+        const userRef = firestore.collection('USERS').doc(userID);
+        const postRef = firestore.collection('POSTS').doc(postID);
+
+        // 🔹 Récupération des documents Firestore en parallèle
+        const [userDoc, postDoc] = await Promise.all([userRef.get(), postRef.get()]);
+
+        if (!userDoc.exists || !postDoc.exists) {
+            console.error("L'utilisateur ou l'annonce n'existe pas");
+            return false;
+        }
+
+        const userData = userDoc.data();
         const postData = postDoc.data();
-        const clicks = postData.clicks || 0;
-        await postRef.update({ clicks: clicks + 1 });
-        console.log('Nombre de clicks mis à jour avec succès');
+        const { stats = {} } = postData;
+        const { city } = userData;
+
+        // 📌 Initialiser les champs si absents
+        const clicksByCity = stats.clicks_per_city || {};
+        const clicksHistory = stats.clicks_history || {};
+
+        // 🔹 Incrémentation des clics globaux et par ville
+        clicksByCity[city] = (clicksByCity[city] || 0) + 1;
+
+        // 🔹 Gestion des périodes d'historique des clics
+        const now = new Date();
+        const todayDate = now.toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+        // Fonction pour récupérer les dates passées
+        const getPastDate = (days) => {
+            const pastDate = new Date();
+            pastDate.setDate(now.getDate() - days);
+            return pastDate.toISOString().split('T')[0]; // Format YYYY-MM-DD
+        };
+
+        // Initialisation des périodes si elles n'existent pas
+        if (!clicksHistory["7"]) clicksHistory["7"] = {};
+        if (!clicksHistory["15"]) clicksHistory["15"] = {};
+        if (!clicksHistory["30"]) clicksHistory["30"] = {};
+
+        // 🔹 Mise à jour des clics pour aujourd’hui
+        clicksHistory["7"][todayDate] = (clicksHistory["7"][todayDate] || 0) + 1;
+        clicksHistory["15"][todayDate] = (clicksHistory["15"][todayDate] || 0) + 1;
+        clicksHistory["30"][todayDate] = (clicksHistory["30"][todayDate] || 0) + 1;
+
+        // 🔹 Suppression des anciennes dates hors période
+        Object.keys(clicksHistory["7"]).forEach(date => {
+            if (date < getPastDate(7)) delete clicksHistory["7"][date];
+        });
+        Object.keys(clicksHistory["15"]).forEach(date => {
+            if (date < getPastDate(15)) delete clicksHistory["15"][date];
+        });
+        Object.keys(clicksHistory["30"]).forEach(date => {
+            if (date < getPastDate(30)) delete clicksHistory["30"][date];
+        });
+
+        // 🔹 Calcul du taux de conversion (Clics / Vues)
+        const updatedViews = stats.views || 1; // éviter division par zéro
+        const updatedClicks = (stats.clicks || 0) + 1;
+        const conversionRate = (updatedClicks / updatedViews) * 100;
+
+        // 📌 Mise à jour Firestore (POSTS)
+        await postRef.update({
+            'stats.clicks': admin.firestore.FieldValue.increment(1),
+            'stats.clicks_per_city': clicksByCity,
+            'stats.clicks_history': clicksHistory,
+            'stats.conversion_rate': conversionRate
+        });
+
+        console.log("Nombre de clics mis à jour avec succès");
         return true;
     } catch (error) {
-        console.error('Erreur lors de la mise à jour du nombre de clicks:', error);
+        console.error("Erreur lors de la mise à jour du nombre de clics:", error);
         return false;
     }
 };
@@ -448,12 +615,32 @@ const collectPubs = async () => {
         console.error('Erreur lors de la recherche avancée:', error);
         return [];
     }
+};
+
+const collectViewCount = async (postID) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.log('Aucun post trouvé avec cet ID.');
+            return null;
+        }
+
+        const { stats } = postDoc.data() || {};
+        const { views } = stats || { views: 0 };
+
+        return views;
+    } catch (error) {
+        console.error('Erreur lors de la collecte du nombre de vues:', error);
+        return null;
+    }
 }
 
 module.exports = {
     advancedItemSearch,
     collectLocations,
     collectPubs,
+    collectViewCount,
     contactUs,
     evaluateUser,
     collectPubById,

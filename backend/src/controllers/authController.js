@@ -39,7 +39,7 @@ const registerUser = async (req, res) => {
 };
 
 const loginUser = async (req, res) => {
-    const { userID } = req.body;
+    const { userID, deviceInfo } = req.body;
 
     if (!userID) {
         return res.status(400).json({
@@ -49,7 +49,7 @@ const loginUser = async (req, res) => {
     }
 
     try {
-        const signInResult = await signinUser(userID);
+        const signInResult = await signinUser(userID, deviceInfo);
 
         if (!signInResult.success) {
             return res.status(400).json({

@@ -1,6 +1,6 @@
 const { admin, firestore, auth } = require("../config/firebase-admin");
-const { sendUserAdsApprovedEmail, sendUserAdsRefusedEmail } = require("../controllers/emailController");
-const { monthNames, generateSlug } = require("../func");
+const { sendUserAdsApprovedEmail, sendUserAdsRefusedEmail, sendEmailToAdmin } = require("../controllers/emailController");
+const { monthNames, generateSlug, formatRelativeDate } = require("../func");
 const { saveLocation } = require("./firestore");
 const { isPromotionActive } = require("./promotion");
 
@@ -57,11 +57,10 @@ const makePost = async (postData, userID) => {
             return false;
         }
 
-
         // 6️⃣ Ajouter l'annonce dans Firestore
         const postRef = firestore.collection('POSTS')
 
-        // 📌 Récupérer le dernier utilisateur créé (triée par userID)
+        // 📌 Récupérer le dernier utilisateur créé (trié par userID)
         const lastPostSnapshot = await postRef.orderBy('PostID', 'desc').limit(1).get();
         let lastPostID = "POST000";
         if (!lastPostSnapshot.empty) {
@@ -74,13 +73,36 @@ const makePost = async (postData, userID) => {
         const newPostID = `POST${String(newNumber).padStart(3, "0")}`; // Format PUB001, PUB002
         const newPostRef = postRef.doc();
 
+        // 🆕 Initialiser les statistiques
+        const stats = {
+            views: 0,
+            clicks: 0,
+            reportingCount: 0,
+            views_per_city: {},
+            clicks_per_city: {},
+            report_per_city: {},
+            views_history: {},
+            clicks_history: {},
+            report_history: {}
+        };
+
+        // 🗓️ Initialiser les vues et clics sur 7, 15, 30 jours
+        const periods = [7, 15, 30];
+        const today = new Date().toISOString().split('T')[0]; // Format YYYY-MM-DD
+
+        periods.forEach(days => {
+            const formattedDate = formatRelativeDate(today);
+            stats.views_history[days] = { [formattedDate]: 0 };
+            stats.clicks_history[days] = { [formattedDate]: 0 };
+            stats.report_history[days] = { [formattedDate]: 0 };
+        });
+
         await newPostRef.set({
             userID: userID,
             UserID: UserID,
             ...postData,
             expiry_date: null,
-            views: 0,
-            clicks: 0,
+            stats, // Ajout des statistiques
             interactedUsers: [],
             contact_clicks: 0,
             favorites: 0,
@@ -125,6 +147,20 @@ const makePost = async (postData, userID) => {
             await saveLocation(location.country, location.city);
         }
 
+        // 📢 9️⃣ Envoyer une notification à l'admin
+        const adminNotificationRef = firestore.collection('ADMIN_NOTIFICATIONS').doc();
+        await adminNotificationRef.set({
+            type: 'new_post',
+            title: 'Nouvelle annonce en attente',
+            message: `Nouvelle annonce en attente de validation: ${postData.adDetails.title}`,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            isRead: false,
+            link: `/admin/dashboard/posts/${newPostID}`, // Lien vers l'annonce dans le tableau de bord
+        });
+
+        // 📧 🔔  🔹 Envoi d'un email à l'admin
+        sendEmailToAdmin(postData, newPostID);
+
         console.log('Annonce créée avec succès', postRef.id);
         return true;
     } catch (error) {
@@ -144,6 +180,15 @@ const reportPostID = async (postID, userID, reason) => {
             console.log('Utilisateur ou annonce non trouvé');
             return false;
         }
+
+        const userData = userDoc.data();
+        const { city } = userData;
+
+        const postData = postDoc.data();
+        const { stats } = postData;
+
+        const reportByCity = stats.report_per_city || {};
+        const reportHistory = Array.isArray(stats.report_history) ? stats.report_history : [];
 
         // Vérifier si l'utilisateur a déjà signalé ce post
         const existingReportQuery = await firestore
@@ -174,12 +219,28 @@ const reportPostID = async (postID, userID, reason) => {
             postID,
             userID,
             reason,
+            city,
             reported_at: admin.firestore.FieldValue.serverTimestamp()
         });
 
         // Incrémenter le nombre de signalements sur l'annonce
         await postRef.update({
-            reportingCount: admin.firestore.FieldValue.increment(1),
+            'stats.reportingCount': admin.firestore.FieldValue.increment(1),
+        });
+
+        if (city) {
+            reportByCity[city] = (reportByCity[city] || 0) + 1;
+        }
+
+        reportHistory.push(Date.now());
+
+        const now = Date.now();
+        const updatedHistory = reportHistory.filter(timestamp => now - timestamp <= 30 * 24 * 60 * 60 * 1000);
+
+        // 🔹 Mettre à jour Firestore (POSTS)
+        await postRef.update({
+            'stats.report_per_city': reportByCity,
+            'stats.report_history': updatedHistory,
         });
 
         return true;
@@ -302,12 +363,26 @@ const collectPosts = async () => {
 
         const querySnapshot = await adsCollection.get();
 
-        const allAds = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-        }));
+        const ads = [];
+        const pendingAds = [];
+        const approvedAds = [];
+        const refusedAds = [];
 
-        return allAds;
+        querySnapshot.forEach(doc => {
+            const ad = { id: doc.id, ...doc.data() };
+
+            ads.push(ad);
+            if (ad.status === 'pending') pendingAds.push(ad);
+            if (ad.status === 'approved') approvedAds.push(ad);
+            if (ad.status === 'refused') refusedAds.push(ad);
+        });
+
+        return {
+            allAds: ads,
+            pendingAds,
+            approvedAds,
+            refusedAds
+        };
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces:', error);
         return [];
@@ -452,9 +527,26 @@ const collectPostsByUserID = async (userID) => {
             return [];
         }
 
-        const userAds = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const ads = [];
+        const pendingAds = [];
+        const approvedAds = [];
+        const refusedAds = [];
 
-        return userAds;
+        querySnapshot.forEach(doc => {
+            const ad = { id: doc.id, ...doc.data() };
+
+            ads.push(ad);
+            if (ad.status === 'pending') pendingAds.push(ad);
+            if (ad.status === 'approved') approvedAds.push(ad);
+            if (ad.status === 'refused') refusedAds.push(ad);
+        });
+
+        return {
+            allAds: ads,
+            pendingAds,
+            approvedAds,
+            refusedAds
+        };
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces de l\'utilisateur:', error);
         return [];
@@ -511,7 +603,7 @@ const collectApprovedPostsByUserID = async (userID) => {
 
 const collectRejectedPostsByUserID = async (userID) => {
     try {
-        const adsCollection = admin.firestore().collection('POSTS');
+        const adsCollection = firestore.collection('POSTS');
         const refusedAdsQuery = adsCollection
             .where('userID', '==', userID) // Filtrer par l'ID de l'utilisateur
             .where('status', '==', 'refused'); // Filtrer par le statut "pending"
@@ -621,7 +713,7 @@ const collectPostsByCategoryName = async (categoryName) => {
     };
 };
 
-const collectRelatedPosts = async (postID, category) => {
+const collectRelatedPosts = async (post_id, category) => {
     const adsCollection = firestore.collection('POSTS');
     const relatedAdsQuery = adsCollection
         .where('status', '==', 'approved')
@@ -631,7 +723,7 @@ const collectRelatedPosts = async (postID, category) => {
     const querySnapshot = await relatedAdsQuery.get();
     const relatedAds = querySnapshot.docs
         .map(doc => ({ id: doc.id, ...doc.data() }))
-        .filter(ad => ad.id !== postID);
+        .filter(ad => ad.postID !== post_id);
 
     return relatedAds;
 };

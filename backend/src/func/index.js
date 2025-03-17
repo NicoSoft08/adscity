@@ -373,9 +373,23 @@ const allCategories = [
     }
 ];
 
+const formatRelativeDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    
+    const diffTime = today - date;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return "Aujourd'hui";
+    if (diffDays === 1) return "Hier";
+    if (diffDays === 2) return "Avant-hier";
+
+    return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' }); // Ex: "13 mars"
+};
 
 module.exports = {
     allCategories,
+    formatRelativeDate,
     createNodemailerTransport,
     formateDateTimestamp,
     generateVerificationCode,

@@ -1,6 +1,5 @@
 const { firestore, messaging } = require("../config/firebase-admin");
 const {
-    getUsers,
     getUser,
     setUserOnlineStatus,
     collectUserPermissions,
@@ -15,7 +14,17 @@ const {
     collectUserUnreadNotifications,
     collectUserData,
     searchHistoryUpdate,
-    collectAnyUserData
+    collectAnyUserData,
+    collectUserLoginActivity,
+    markAllNotificationsAsRead,
+    clearUserNotification,
+    clearUserAllNotifications,
+    getUsersData,
+    collectAdminNotifications,
+    markAdminNotificationAsRead,
+    markAllAdminNotificationsAsRead,
+    clearAdminNotification,
+    clearAdminAllNotifications
 } = require("../firebase/user");
 
 const getAllUsersWithStatus = async (req, res) => {
@@ -37,10 +46,10 @@ const getAllUsersWithStatus = async (req, res) => {
     };
 };
 
-const getUsersData = async (req, res) => {
+const getUsers = async (req, res) => {
     try {
-        const allUsers = await getUsers();
-        if (!allUsers) {
+        const users = await getUsersData();
+        if (!users) {
             return res.status(404).json({
                 success: false,
                 message: "Aucun utilisateur trouvé"
@@ -49,7 +58,7 @@ const getUsersData = async (req, res) => {
         res.status(200).json({
             success: true,
             message: "Données des utilisateurs récupérées avec succès",
-            allUsers: allUsers,
+            users: users,
         });
     } catch (error) {
         console.error("Erreur lors de la récupération des données utilisateur :", error);
@@ -327,6 +336,30 @@ const getUserFavorites = async (req, res) => {
     };
 };
 
+const getAdminNotifications = async (req, res) => {
+
+    try {
+        const data = await collectAdminNotifications();
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification trouvée"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Notifications récupérées avec succès",
+            data: data
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des notifications de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
 const getUserNotifications = async (req, res) => {
     const { userID } = req.params;
 
@@ -377,6 +410,30 @@ const getUserUnreadNotifications = async (req, res) => {
     };
 };
 
+const readAdminNotification = async (req, res) => {
+    const { userID, notificationID } = req.params;
+
+    try {
+        const isRead = await markAdminNotificationAsRead(userID, notificationID);
+        if (!isRead) {
+            return res.status(404).json({
+                success: false,
+                message: "Notification non trouvée"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Notification marquée comme lue avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la lecture de la notification de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
 const readUserNotification = async (req, res) => {
     const { userID, notificationID } = req.params;
 
@@ -399,6 +456,150 @@ const readUserNotification = async (req, res) => {
             message: "Erreur technique, réessayez plus tard"
         });
     };
+};
+
+const readUserAllNotifications = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const areRead = await markAllNotificationsAsRead(userID);
+        if (!areRead) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Toutes les notifications marquées comme lues avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la lecture de toutes les notifications de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
+const readAdminAllNotifications = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const areRead = await markAllAdminNotificationsAsRead(userID);
+        if (!areRead) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Toutes les notifications marquées comme lues avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la lecture de toutes les notifications de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
+const deleteUserNotification = async (req, res) => {
+    const { userID, notificationID } = req.params;
+    try {
+        const isDeleted = await clearUserNotification(userID, notificationID);
+        if (!isDeleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Notification non trouvée"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Notification supprimée avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la notification de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
+const deleteAdminNotification = async (req, res) => {
+    const { userID, notificationID } = req.params;
+
+    try {
+        const isDeleted = await clearAdminNotification(userID, notificationID);
+        if (!isDeleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Notification non trouvée"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Notification supprimée avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la suppression de la notification de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
+const deleteUserAllNotifications = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const areDeleted = await clearUserAllNotifications(userID);
+        if (!areDeleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Toutes les notifications supprimées avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la suppression de toutes les notifications de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+        
+    }
+};
+
+const deleteAdminAllNotifications = async (req, res) => {
+    const { userID } = req.params; 
+
+    try {
+        const areDeleted = await clearAdminAllNotifications(userID);
+        if (!areDeleted) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune notification trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Toutes les notifications supprimées avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors de la suppression de toutes les notifications de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
 };
 
 const updateDeviceToken = async (req, res) => {
@@ -477,19 +678,53 @@ const updateSearchHistory = async (req, res) => {
     }
 };
 
+const getUserLoginActivity = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        const activity = await collectUserLoginActivity(userID);
+        if (!activity) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune activité de connexion trouvée pour cet utilisateur"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Activité de connexion récupérée avec succès",
+            activity: activity
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'activité de connexion de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plustard"
+        });
+    }
+}
+
 module.exports = {
+    getAdminNotifications,
     getAnyUserData,
     getDataFromUserID,
     fetchInterlocutorProfile,
     getAllUsersWithStatus,
-    getUsersData,
+    getUsers,
     getUserData,
     getUserFavorites,
     getUserNotifications,
     getUserUnreadNotifications,
+    deleteUserNotification,
+    deleteAdminNotification,
+    deleteUserAllNotifications,
+    deleteAdminAllNotifications,
     getUserPermissions,
+    getUserLoginActivity,
     modifyUserFields,
     readUserNotification,
+    readAdminNotification,
+    readUserAllNotifications,
+    readAdminAllNotifications,
     setUserOnline,
     sendUserNotification,
     toggleFavorites,

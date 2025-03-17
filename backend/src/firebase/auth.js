@@ -104,6 +104,10 @@ const createUser = async (address, city, country, email, password, firstName, la
             profilChanges: { count: 0, lastUpdated: null },
             profileType: "Particulier",
             profileViewed: 0,
+            profileVisits: 0, // Total des visites
+            profileVisitsToday: 0, // Visites du jour
+            profileVisitsByCity: {}, // Objet { 'Moscow': 0, 'St-Petersbourg': 0, ... }
+            profileVisitsHistory: [], // Historique des visites
             profileNumber: profileNumber,
             profilURL: null,
             ratings: {
@@ -149,9 +153,10 @@ const createUser = async (address, city, country, email, password, firstName, la
 };
 
 
-const signinUser = async (userID) => {
+const signinUser = async (userID, deviceInfo) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
+        const loginActivityRef = userRef.collection("LOGIN_ACTIVITY");
         const userDoc = await userRef.get();
 
         if (!userDoc.exists) {
@@ -160,6 +165,31 @@ const signinUser = async (userID) => {
 
         const userData = userDoc.data();
         const { role, loginCount = 0 } = userData;
+
+        // 🔍 Vérifier si l'appareil est déjà enregistré (basé sur le navigateur, l'OS et l'IP)
+        const existingDevices = await loginActivityRef
+            .where("deviceInfo.browser", "==", deviceInfo.browser)
+            .where("deviceInfo.os", "==", deviceInfo.os)
+            .where("deviceInfo.device", "==", deviceInfo.device)
+            .get();
+
+        let isDeviceRegistered = false;
+        existingDevices.forEach((doc) => {
+            if (doc.data().deviceInfo.ip === deviceInfo.ip) {
+                isDeviceRegistered = true;
+            }
+        });
+
+        if (isDeviceRegistered) {
+            console.log("🔹 Appareil déjà enregistré :", deviceInfo);
+        } else {
+            // 📌 Enregistrer le nouvel appareil
+            await loginActivityRef.add({
+                deviceInfo,
+                time: admin.firestore.FieldValue.serverTimestamp(),
+            });
+            console.log("✅ Nouvel appareil enregistré :", deviceInfo);
+        }
 
         // 🔹 Mise à jour des informations utilisateur après connexion
         await userRef.update({

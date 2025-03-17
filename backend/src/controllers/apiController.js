@@ -12,7 +12,8 @@ const {
     fetchFilteredPostsQuery,
     publishAdvertising,
     collectPubs,
-    collectPubById
+    collectPubById,
+    collectViewCount
 } = require("../firebase/api");
 
 const searchItems = async (req, res) => {
@@ -65,10 +66,10 @@ const manageInteraction = async (req, res) => {
 };
 
 const manageContactClick = async (req, res) => {
-    const { userID } = req.body;
+    const { userID, city } = req.body;
 
     try {
-        const interactionResult = await updateContactClick(userID);
+        const interactionResult = await updateContactClick(userID, city);
         if (!interactionResult) {
             return res.status(404).json({
                 success: false,
@@ -212,9 +213,10 @@ const updateUserSocialLinks = async (req, res) => {
 
 const incrementViewCount = async (req, res) => {
     const { postID } = req.params;
+    const { userID } = req.body;
 
     try {
-        const isUpdated = await incrementView(postID);
+        const isUpdated = await incrementView(postID, userID);
         if (!isUpdated) {
             return res.status(404).json({
                 success: false,
@@ -236,9 +238,10 @@ const incrementViewCount = async (req, res) => {
 
 const incrementClickCount = async (req, res) => {
     const { postID } = req.params;
+    const { userID } = req.body;
 
     try {
-        const isUpdated = await incrementClick(postID);
+        const isUpdated = await incrementClick(postID, userID);
         if (!isUpdated) {
             return res.status(404).json({
                 success: false,
@@ -362,6 +365,38 @@ const fetchPubs = async (req, res) => {
     };
 };
 
+const getViewCount = async (req, res) => {
+    const { postID } = req.params; 
+
+    if (!postID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID du post manquant'
+        });
+    }
+
+    try {
+        const viewCount = await collectViewCount(postID);
+        if (!viewCount) {
+            return res.status(404).json({
+                success: false,
+                message: 'Aucun post trouvé'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Nombre de vues récupéré avec succès',
+            viewCount: viewCount
+        });
+    } catch (error) {
+        console.error('Erreur lors de la récupération du nombre de vues: ', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });
+    }
+};
+
 module.exports = {
     advancedSearch,
     contactSupportClient,
@@ -369,6 +404,7 @@ module.exports = {
     fetchPubs,
     fetchPubById,
     getPostsLocations,
+    getViewCount,
     hostAdvertising,
     incrementViewCount,
     incrementClickCount,

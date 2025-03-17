@@ -3,7 +3,6 @@ const express = require('express');
 // Importation des controleurs
 const { 
     setUserOnline, 
-    getUsersData, 
     getUserData, 
     modifyUserFields,
     toggleFavorites,
@@ -12,18 +11,26 @@ const {
     readUserNotification,
     updateDeviceToken,
     getAllUsersWithStatus,
-    fetchInterlocutorProfile,
-    getUserUnreadNotifications,
     getDataFromUserID,
     updateSearchHistory,
-    getAnyUserData
+    getAnyUserData,
+    getUserLoginActivity,
+    readUserAllNotifications,
+    deleteUserNotification,
+    deleteUserAllNotifications,
+    getUsers,
+    getAdminNotifications,
+    readAdminNotification,
+    readAdminAllNotifications,
+    deleteAdminNotification,
+    deleteAdminAllNotifications
 } = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Route liées à l'uttilisateur
-router.get('/all', getUsersData);
+router.get('/', getUsers);
 router.get('/all/status', getAllUsersWithStatus);
 router.get('/:userID', getUserData);
 router.get('/user/:user_id', getDataFromUserID);
@@ -33,10 +40,24 @@ router.post('/user/status', setUserOnline);
 router.get('/:userID/favorites', getUserFavorites);
 router.put('/:userID/profile-fields/update', modifyUserFields);
 router.post('/:userID/favorites/add-remove', toggleFavorites);
+
+router.get('/:userID/admin/notifications', getAdminNotifications);
+router.get('/:userID/admin/notifications/:notificationID/read', readAdminNotification);
+router.post('/:userID/admin/notifications/read-all', readAdminAllNotifications);
+
 router.get('/:userID/notifications', getUserNotifications);
-router.get('/:userID/notifications/unread', getUserUnreadNotifications);
+
+router.delete('/:userID/notifications/:notificationID/delete', deleteUserNotification);
+router.delete('/:userID/notifications/delete-all', deleteUserAllNotifications);
+
+router.delete('/:userID/admin/notifications/:notificationID/delete', deleteAdminNotification);
+router.delete('/:userID/admin/notifications/delete-all', deleteAdminAllNotifications);
+
 router.post('/:userID/notifications/:notificationID/read', readUserNotification);
+router.post('/:userID/notifications/read-all', readUserAllNotifications);
+
 router.post('/update-device-token', verifyToken, updateDeviceToken);
 router.post('/:userID/update-search-history', updateSearchHistory);
+router.get('/:userID/login-activity', getUserLoginActivity);
 
 module.exports = router;

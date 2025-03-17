@@ -549,6 +549,56 @@ const sendAdminEmail = async (email, password, displayName) => {
             console.log('Email envoyé :', info.response);
         }
     });
+};
+
+const sendEmailToAdmin = async = (postData, PostID) => {
+    const admin_url = process.env.ADMIN_URL;
+
+    // Envoi du code par email
+    const nodemailerTransport = createNodemailerTransport();
+
+    const mailOptions = {
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
+        to: ['admin@adscity.net', 'n.dahpenielnicolas123@gmail.com'],
+        replyTo: process.env.SMTP_MAIL,
+        subject: "Nouvelle annonce en attente",
+        html: `
+        <html>
+            <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                    <h3 style="color: #417abc;">Bonjour,</h3>
+                    <p>Une nouvelle annonce a été postée et attend votre validation.</p>
+                    <p><strong>Titre :</strong> ${postData.adDetails.title}</p>
+                    <p><strong>Accéder à l'annonce :</strong> <a href="${admin_url}/admin/dashboard/posts/${PostID}">Voir l'annonce</a></p>
+
+                    <p style="margin-top: 20px;">Cordialement,</p>
+                    <p style="font-style: italic; color: #777;">L'équipe AdsCity</p>
+                    <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                    <small style="color: #777;">Ce message vous est généré automatiquement et ne nécessite aucune réponse de votre part.</small>
+                </div>
+                <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
+                    <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
+                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                    </a>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">
+                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                    </p>
+                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                </footer>
+            </body>
+        </html>
+        `,
+    };
+
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
 }
 
 
@@ -561,5 +611,6 @@ module.exports = {
     sendUserEmailWithTicket,
     sendSupportEmail,
     sendNewDeviceAlert,
+    sendEmailToAdmin,
     sendCustomerPaymentIntentEmail
 };

@@ -147,6 +147,30 @@ const refusePost = async (req, res) => {
     };
 };
 
+const getPosts = async (req, res) => {
+    try {
+        const posts = await collectPosts();
+        if (!posts) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la récupération des annonces'
+            });
+        };
+        res.status(201).json({
+            success: true,
+            message: 'Annonces récupérées avec succès',
+            posts: posts,
+        });
+    } catch (error) {
+        console.error('Erreur pendant la récupération des annonces:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+        
+    }
+};
+
 const getPostsData = async (req, res) => {
     try {
         const postsData = await collectPosts();
@@ -490,10 +514,10 @@ const getPostsByCategoryName = async (req, res) => {
 };
 
 const getRelatedPosts = async (req, res) => {
-    const { postID, category } = req.body;
+    const { post_id, category } = req.body;
 
     try {
-        const relatedPosts = await collectRelatedPosts(postID, category);
+        const relatedPosts = await collectRelatedPosts(post_id, category);
         if (!relatedPosts) {
             return res.status(400).json({
                 success: false,
@@ -663,6 +687,7 @@ module.exports = {
     getPostBySlug,
     getPostsByUserID,
     getPostsData,
+    getPosts,
     getOutdatedPostsByUserID,
     getRefusedPostsByUserID,
     getRefusedPosts,

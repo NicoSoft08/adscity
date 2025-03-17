@@ -3,15 +3,12 @@
 
 
 .user-settings {
-    margin-top: 6rem;
     padding: 20px;
     background-color: #f9f9f9;
+    margin-top: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
-    @media (max-width: 768px) {
-        margin-top: 10rem;
-    }
 
     section {
         margin-bottom: 30px;

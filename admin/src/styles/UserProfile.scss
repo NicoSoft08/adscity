@@ -3,7 +3,66 @@
 
 
 .user-profile {
-    
+
+    .switcher {
+        .switcher-tabs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+
+
+            .switcher-tab {
+                display: flex;
+                align-items: center;
+                font-family: 'Ubuntu', sans-serif;
+                padding: 10px;
+                cursor: pointer;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                transition: background-color 0.3s ease;
+                background-color: #f4f4f4;
+
+                @media (max-width: 768px) {
+                    flex-direction: column;
+                    align-items: center;
+                }
+
+
+                &.active {
+                    background-color: $two;
+                    color: $white;
+                    border-color: $two;
+                    font-weight: $font-regular;
+
+                    svg {
+                        margin-right: 10px;
+                        color: $white;
+                        font-weight: $font-light;
+                    }
+
+                    span {
+                        color: $white;
+                        font-weight: $font-light;
+                        font-size: 16px;
+                    }
+                }
+
+                svg {
+                    margin-right: 10px;
+                    color: #333;
+                    font-weight: $font-light;
+                }
+
+                span {
+                    color: #333;
+                    font-weight: $font-light;
+                    font-size: 16px;
+                }
+            }
+        }
+    }
 
     .banner-content {
         position: relative;
@@ -128,6 +187,71 @@
         }
     }
 
+    .activity {
+        padding: 20px;
+        background-color: #f9f9f9;
+        margin-top: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+        h2 {
+            color: #333;
+        }
+
+        p {
+            font-size: 16px;
+            color: #333;
+            font-weight: $font-light;
+        }
+
+        .table-container {
+            width: 100%;
+            overflow-x: auto;
+
+            @media (max-width: 768px) {
+                overflow-x: auto;
+                border-radius: 5px;
+                padding-bottom: 10px;
+            }
+
+            table {
+                width: 100%;
+                min-width: 600px;
+                /* Ajuste la largeur minimale selon tes besoins */
+                border-collapse: collapse;
+                background-color: $white;
+
+                th,
+                td {
+                    padding: 12px;
+                    text-align: left;
+                    font-weight: $font-light;
+                    border-bottom: 1px solid #ddd;
+                    white-space: nowrap;
+                    /* Évite les retours à la ligne */
+                }
+
+                thead {
+                    color: $dark;
+                    background-color: #f5f5f5;
+
+                    th {
+                        text-transform: uppercase;
+                        font-weight: $font-regular;
+                    }
+                }
+
+                tbody tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+
+                tbody tr:hover {
+                    background-color: #f1f1f1;
+                }
+            }
+        }
+    }
+
     .modal {
         position: fixed;
         top: 0;
@@ -139,7 +263,7 @@
         align-items: center;
         justify-content: center;
         z-index: 1000;
-    
+
         .modal-content {
             background-color: #fff;
             border-radius: 8px;
@@ -149,13 +273,13 @@
             padding: 20px;
             text-align: center;
             animation: fadeIn 0.3s ease-in-out;
-    
+
             h3 {
                 font-size: 1.5rem;
                 margin-bottom: 15px;
                 color: #333;
             }
-    
+
             .modal-preview {
                 width: 100%;
                 max-height: 300px;
@@ -163,12 +287,12 @@
                 border-radius: 4px;
                 margin-bottom: 15px;
             }
-    
+
             .modal-actions {
                 display: flex;
                 justify-content: space-between;
                 gap: 10px;
-    
+
                 .btn {
                     flex: 1;
                     padding: 10px 15px;
@@ -177,25 +301,25 @@
                     cursor: pointer;
                     border: none;
                     transition: background-color 0.3s;
-    
+
                     &.btn-confirm {
                         background-color: #4caf50; // Vert
                         color: #fff;
-    
+
                         &:hover {
                             background-color: #45a049;
                         }
                     }
-    
+
                     &.btn-cancel {
                         background-color: #f44336; // Rouge
                         color: #fff;
-    
+
                         &:hover {
                             background-color: #e53935;
                         }
                     }
-    
+
                     svg {
                         margin-right: 8px;
                     }

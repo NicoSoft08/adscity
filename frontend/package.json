@@ -12,6 +12,8 @@
     "@fortawesome/free-brands-svg-icons": "^6.6.0",
     "@fortawesome/free-solid-svg-icons": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@mui/lab": "^6.0.0-beta.30",
+    "@mui/material": "^6.4.7",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -41,6 +43,7 @@
     "serve": "^14.2.4",
     "swiper": "^11.1.14",
     "ua-parser-js": "^2.0.0",
+    "useragent": "^2.3.0",
     "uuid": "^10.0.0",
     "web-vitals": "^2.1.4"
   },

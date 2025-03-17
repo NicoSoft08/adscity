@@ -19,7 +19,6 @@ export default function Menu({ onClose, isOpen, options }) {
 
     if (!isOpen) return null;
 
-
     return (
         <div className="menu" ref={menuRef}>
             {options.map((option, index) => (

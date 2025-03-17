@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBalanceScale,
     faBan, faCalendarDay, faClone, faEllipsisV, faExclamationTriangle,
-    faEye, faFlag, faGavel, faQuestionCircle, faShare
+    faEye, faFlag, faGavel, faQuestionCircle,
+    faShareFromSquare
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -12,6 +13,7 @@ import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
 import {
+    getViewCount,
     incrementClickCount,
     incrementViewCount,
     updateContactClick,
@@ -28,13 +30,65 @@ import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
-    const { id, PostID, UserID, userID, adDetails, images, location, category, subcategory, views, isActive, moderated_at, isSold } = post;
+    const { id, PostID, UserID, userID, adDetails, images, location, category, subcategory, isActive, moderated_at, isSold, stats } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [profilURL, setProfilURL] = useState(null);
+    const [reportSuccess, setReportSuccess] = useState(false);
+    const [currentImage, setCurrentImage] = useState(images?.length > 0 ? images[0] : "");
+    const [views, setViews] = useState(0);
     const navigate = useNavigate();
+    const cardRef = useRef(null);
+    const reportRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (reportRef.current && !reportRef.current.contains(event.target)) {
+                setReportSuccess(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        if (!currentUser || !currentUser.uid || !id) return;
+
+        const observer = new IntersectionObserver(
+            async (entries) => {
+                if (entries[0].isIntersecting) {
+                    const success = await incrementViewCount(id, currentUser?.uid);
+                    if (success) {
+                        const result = await getViewCount(id);
+                        if (result.success) {
+                            setViews(result.viewCount);
+                        }
+                    }
+
+                    observer.disconnect(); // Arrêter l'observation après enregistrement
+                }
+            },
+            { threshold: 0.5 } // Déclenche si 50% de l'annonce est visible
+        );
+
+        if (cardRef.current) {
+            observer.observe(cardRef.current);
+        }
+
+        return () => observer.disconnect();
+    }, [currentUser, id]);
+
+    // Charger le nombre de vues au montage
+    useEffect(() => {
+        getViewCount(id).then((result) => {
+            if (result.success) {
+                setViews(result.viewCount);
+            }
+        });
+    }, [id]);
 
     useEffect(() => {
         if (currentUser && userData?.adsSaved?.includes(post.id)) {
@@ -59,7 +113,6 @@ export default function CardItem({ post, onToggleFavorite }) {
             fetchProfilURL();
         }
     }, [userID, currentUser, userData, post]);
-
 
     const reportReasons = [
         {
@@ -108,7 +161,7 @@ export default function CardItem({ post, onToggleFavorite }) {
         },
         {
             label: 'Partager',
-            icon: faShare,
+            icon: faShareFromSquare,
             action: () => handleShareAd(post.PostID)
         },
         // {
@@ -117,6 +170,16 @@ export default function CardItem({ post, onToggleFavorite }) {
         //     action: () => handleHideAd(post.id)
         // },
     ];
+
+    const handleMouseEnter = () => {
+        if (images?.length > 1) {
+            setCurrentImage(images[0]) // Passer à la deuxième image si disponible
+        }
+    };
+
+    const handleMouseLeave = () => {
+        setCurrentImage(images?.length > 0 ? images[0] : ""); // Revenir à l’image principale
+    };
 
     const handleReportWithReason = async (postID, reasonLabel) => {
         if (!currentUser) {
@@ -128,76 +191,64 @@ export default function CardItem({ post, onToggleFavorite }) {
             return;
         };
 
-        // Confirmation avant d'envoyer le signalement
-        const confirmReport = window.confirm(`Êtes-vous sûr de vouloir signaler cette annonce pour : "${reasonLabel}" ?`);
-        if (!confirmReport) return;
+        try {
+            const userID = currentUser.uid;
 
-        const userID = currentUser.id;
+            const result = await reportPost(postID, userID, reasonLabel);
 
-        const result = await reportPost(postID, userID, reasonLabel);
-        logEvent(analytics, 'report_ad', {
-            postID: postID,
-            userID: userID,
-            reason: reasonLabel
-        });
-
-        if (result.success) {
-            setToast({
-                show: true,
-                type: 'success',
-                message: 'Votre signalement a été envoyé avec succès.'
-            });
-        } else {
+            if (result.success) {
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: 'Votre signalement a été envoyé avec succès.'
+                });
+                setReportSuccess(true);
+                logEvent(analytics, 'report_ad', {
+                    postID: postID,
+                    userID: userID,
+                    reason: reasonLabel
+                });
+            } else {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Une erreur est survenue lors du signalement de l\'annonce.'
+                });
+                setReportSuccess(false);
+            }
+            setShowReportModal(false);
+        } catch (error) {
+            console.error('Erreur lors du signalement de l\'annonce :', error);
             setToast({
                 show: true,
                 type: 'error',
                 message: 'Une erreur est survenue lors du signalement de l\'annonce.'
             });
         }
-        setShowReportModal(false);
     };
 
-    const handleReportAd = (postID) => {
+    const handleReportAd = () => {
         setShowReportModal(true);
         setShowMenu(false);
-        console.log(`Signaler l'annonce avec l'ID : ${postID}`);
     };
 
     const handleShareAd = async (PostID) => {
-        const postUrl = `${window.location.origin}/posts/${category}/${subcategory}/${PostID}`;
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: "Découvrez cette annonce sur AdsCity !",
-                    text: "Jetez un œil à cette annonce, ça pourrait vous intéresser.",
-                    url: postUrl,
-                });
-                setToast({
-                    show: true,
-                    type: 'success',
-                    message: 'L\'annonce a été partagée avec succès.'
-                });
-            } catch (error) {
-                console.error('Erreur lors du partage :', error);
-                setToast({
-                    show: true,
-                    type: 'error',
-                    message: 'Erreur lors du partage. Veuillez réessayer.'
-                });
-            }
-        } else {
-            navigator.clipboard.writeText(postUrl).then(() => {
-                setToast({
-                    show: true,
-                    type: 'success',
-                    message: 'L\'URL de l\'annonce a été copiée dans le presse-papiers.'
-                });
-            }).catch(err => setToast({
+        const shareLink = `${window.location.origin}/posts/${category}/${subcategory}/${PostID}`;
+        await navigator.clipboard.writeText(shareLink).then(() => {
+            setToast({
+                show: true,
+                type: 'success',
+                message: 'Le lien a été copié dans le presse-papiers.'
+            });
+            logEvent(analytics, 'share_link');
+        }).catch((error) => {
+            console.error('Erreur lors de la copie dans le presse-papiers :', error);
+            setToast({
                 show: true,
                 type: 'error',
-                message: 'Erreur lors de la copie de l\'URL. Veuillez réessayer.'
-            }))
-        }
+                message: 'Une erreur est survenue lors de la copie du lien dans le presse-papiers.'
+            });
+        });
     };
 
     // const handleHideAd = (postID) => {
@@ -219,20 +270,18 @@ export default function CardItem({ post, onToggleFavorite }) {
         let formattedDate = format(date, 'd MMMM HH:mm', { locale: fr });
 
         return formattedDate;
-    }
+    };
 
     const handlePostClick = async (url) => {
-        const userID = currentUser?.uid;
         const postID = id;
+        navigate(url, { state: { id: postID } });
 
-        navigate(url, { state: { id: id} });
-
+        const userID = currentUser?.uid;
         if (!userID) return null;
 
         try {
             await updateInteraction(postID, userID, category); // Fonction pour mettre à jour adsViewed, categoriesViewed, et totalAdsViewed
-            await incrementViewCount(postID);
-            await incrementClickCount(postID);
+            await incrementClickCount(postID, userID);
 
         } catch (error) {
             throw error;
@@ -248,13 +297,16 @@ export default function CardItem({ post, onToggleFavorite }) {
 
         if (!currentUser) return null;
 
-        await updateContactClick(userID);
+        const { city } = userData;
+
+        await updateContactClick(userID, city);
 
         logEvent(analytics, 'view_profile', {
             userID: userID,
             postID: id,
+            city: city
         });
-    }
+    };
 
     const handleToggleFavorite = async (postID) => {
         if (!currentUser) {
@@ -303,12 +355,12 @@ export default function CardItem({ post, onToggleFavorite }) {
                 message: 'Une erreur s\'est produite.',
             });
         }
-    }
+    };
 
     // Vérifier si l'annonce a expiré
     function parseTimestamp(timestamp) {
         return new Date(timestamp?._seconds * 1000 + timestamp?._nanoseconds / 1000000);
-    }
+    };
 
     const moderatedAtDate = parseTimestamp(moderated_at);
 
@@ -321,19 +373,22 @@ export default function CardItem({ post, onToggleFavorite }) {
     if (!isActive) return null;
 
     return (
-        <div className={`card-container ${isActive ? 'active' : 'inactive'}`} key={id}>
+        <div ref={cardRef} className={`card-container ${isActive ? 'active' : 'inactive'}`} key={id}>
             {isSold && <span className="sold-badge">VENDU</span>}
             {/* Image de l'annonce */}
-            {images && images.length > 0 && (
-                <div onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${post_id}`)}>
-                    <img
-                        title={`Annonce<<${adDetails.title}>>`}
-                        src={images[0]}
-                        alt={adDetails.title}
-                        className="card-image"
-                    />
-                </div>
-            )}
+            <div
+                onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${post_id}`)}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+            >
+                <img
+                    title={`Annonce: ${adDetails.title}`}
+                    src={currentImage}
+                    alt={adDetails.title}
+                    className="card-image"
+                // onError={() => setCurrentImage(PlaceholderImage)} // Gérer les erreurs de chargement
+                />
+            </div>
 
             {/* Contenu de l'annonce */}
             <div className="card-content">
@@ -355,7 +410,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                     </span>
                     <span className="card-viewCount">
                         <FontAwesomeIcon icon={faEye} color={"gray"} />
-                        {formatViewCount(views)}
+                        {formatViewCount(views || stats?.views || 0)}
                     </span>
                 </div>
             </div>
@@ -380,6 +435,15 @@ export default function CardItem({ post, onToggleFavorite }) {
                     {isFavorite ? '❤️' : '🤍'}
                 </button>
             </div>
+
+            {reportSuccess && (
+                <div className="report-success" ref={reportRef} aria-live="polite">
+                    <div className="content">
+                        <p className="message">Signalement enregistré !</p>
+                        <p className='text'>Merci ! Un modérateur vérifiera bientôt l'annonce</p>
+                    </div>
+                </div>
+            )}
 
             <Menu options={options} isOpen={showMenu} onClose={() => setShowMenu(false)} />
             <Menu options={reportReasons} isOpen={showReportModal} onClose={() => setShowReportModal(false)} />

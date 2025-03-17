@@ -3,16 +3,14 @@
 
 
 .user-settings {
-    max-width: 600px;
-    margin: 0 auto;
     padding: 20px;
     background-color: #f9f9f9;
-    margin-top: 6rem;
+    margin-top: 2rem;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 
-    @media (max-width: 768px) {
-        margin-top: 9rem;
+    h2 {
+        color: #333;
     }
 
     section {
@@ -98,8 +96,41 @@
         }
     }
 
-    p {
+    h4 {
+        font-size: 14px;
+        color: $dark;
         font-weight: $font-light;
-        text-align: justify;
+        text-transform: uppercase;
+    }
+
+    p {
+        font-size: 14px;
+        color: $dark;
+        font-weight: $font-light;
+    }
+
+    .ad-details-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .modal-button {
+            background-color: transparent;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-light;
+
+            &.approve-button {
+                background-color: $two;
+            }
+
+            &.reject-button {
+                background-color: #f44336;
+            }
+        }
     }
 }

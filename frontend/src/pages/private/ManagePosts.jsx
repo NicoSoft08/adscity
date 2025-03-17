@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchPostsByUserID } from '../../routes/userRoutes';
 import { deletePost, markAsSold, updatePost } from '../../routes/postRoutes';
-import { formatViewCount } from '../../func';
 import { format, formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
@@ -11,10 +10,18 @@ import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faChartPie, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
 import { allCategories } from '../../data/database';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/MyPosts.scss';
+
+const STATUS_ICONS = {
+    pending: "🟠 En attente",
+    approved: "🟢 Accepté",
+    refused: "🔴 Rejetée",
+    expired: "⚫ Expirée",
+    sold: "✅ Vendue"
+};
 
 const PostsFilter = ({ onFilterChange }) => {
     const [filters, setFilters] = useState({
@@ -90,28 +97,42 @@ const PostsFilter = ({ onFilterChange }) => {
     );
 };
 
-const PostRow = ({ index, post, onAction }) => {
+const PostRow = ({ index, post, onAction, isSelected, onSelect }) => {
+
     return (
-        <tr>
+        <tr className={isSelected ? 'selected' : ''}>
+            <td>
+                <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onSelect(post.PostID)}
+                />
+            </td>
             <td>{index + 1}</td>
             <td>{post.PostID}</td>
-            <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
+            <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
             <td>{post.adDetails.title}</td>
             <td>{post.adDetails.price} RUB </td>
-            <td>{formatViewCount(post.views)}</td>
-            <td>{formatViewCount(post.clicks)}</td>
-            <td>{post.views > 0 ? ((post.clicks / post.views) * 100).toFixed(1) + "%" : "0%"}</td>
-            <td>{post.reportingCount || 0}</td>
             <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
-            <td>{post.status === "pending" ? "🟠 En attente" : post.status === "approved" ? "🟢 Accepté" : "🔴 Rejetée"}</td>
-            <td>
-                <button className="see-more" onClick={() => onAction(post)}>Voir</button>
-            </td>
+            <td>{STATUS_ICONS[post.status] || "⚪ Inconnu"}</td>
+
+            {/* 📌 Div flottante affichée si l'annonce est sélectionnée */}
+            {isSelected && (
+                <div className="floating-menu">
+                    <button title="Voir l'annonce" onClick={() => onAction('view', post.PostID)}>
+                        <FontAwesomeIcon icon={faEye} />
+                    </button>
+                    <button title='Statistiques' onClick={() => onAction('stats', post.PostID)}>
+                        <FontAwesomeIcon icon={faChartPie} />
+                    </button>
+                </div>
+            )}
         </tr>
     );
 };
 
 export default function ManagePosts({ currentUser }) {
+    const [selectedPosts, setSelectedPosts] = useState([]);
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -125,29 +146,64 @@ export default function ManagePosts({ currentUser }) {
     const [editData, setEditData] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [openFilter, setOpenFilter] = useState(false);
-    const [postPerPage] = useState(10);
+    const [postPerPage] = useState(5);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const userID = currentUser?.uid;
+        let isMounted = true;
+
         const fetchPosts = async () => {
-            if (!userID) return;
-            const result = await fetchPostsByUserID(userID);
-            if (result.success) {
-                setPosts(result?.postsData || []);
-                setFilteredPosts(result.postsData || []);
+            try {
+                if (!currentUser) return;
+
+                const userID = currentUser.uid;
+                const data = await fetchPostsByUserID(userID);
+
+                if (isMounted && data) {
+                    setPosts(data.postsData?.allAds || []);
+                    setFilteredPosts(data.postsData?.allAds || []);
+                }
+            } catch (error) {
+                console.error('Erreur lors de la récupération des annonces:', error);
             }
         };
 
         fetchPosts();
+
+        return () => {
+            isMounted = false;
+        };
     }, [currentUser]);
 
-    const indexOfLastPost = currentPage * postPerPage;
-    const indexOfFirstPost = indexOfLastPost - postPerPage;
-    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+    const currentPosts = useMemo(() => {
+        const indexOfLastPost = currentPage * postPerPage;
+        const indexOfFirstPost = indexOfLastPost - postPerPage;
+        return filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+    }, [filteredPosts, currentPage, postPerPage]);
 
     // Change page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    // Gérer la sélection d'une annonce
+    const handleSelect = (postID) => {
+        setSelectedPosts(prev => {
+            const newSelection = new Set(prev);
+            if (newSelection.has(postID)) {
+                newSelection.delete(postID);
+            } else {
+                newSelection.add(postID);
+            }
+            return Array.from(newSelection);
+        });
+    };
+
+    // Vérifier si tous les posts sont sélectionnés
+    const allSelected = useMemo(() => selectedPosts.length === posts.length, [selectedPosts, posts]);
+
+    // Sélectionner/Désélectionner tout
+    const toggleSelectAll = () => {
+        setSelectedPosts(allSelected ? [] : posts.map(post => post.PostID));
+    };
 
 
     const handleEditPost = (post) => {
@@ -259,27 +315,32 @@ export default function ManagePosts({ currentUser }) {
         }
     };
 
-    const handleAction = (post) => {
-        const PostID = post.PostID;
-        const post_id = PostID.toLowerCase();
-        navigate(`${post_id}`);
+    const handleAction = (action, postID) => {
+        switch (action) {
+            case 'view':
+                navigate(`${postID}`);
+                break;
+            case 'stats':
+                navigate(`${postID}/statistics`);
+                break;
+            default:
+                break;
+        }
     };
 
     // Fonction pour appliquer les filtres
-    const handleFilterChange = (filters) => {
-        const filtered = posts.filter(post =>
+    const handleFilterChange = useCallback((filters) => {
+        setFilteredPosts(posts.filter(post =>
             (filters.search === "" ||
                 post.adDetails.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-                post.PostID.toLowerCase().includes(filters.search.toLowerCase())
-            ) &&
+                post.PostID.toLowerCase().includes(filters.search.toLowerCase())) &&
             (filters.status === "all" || post.status === filters.status || post.isSold === true) &&
             (filters.category === "all" || post.category === filters.category) &&
             (filters.city === "" || post.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
             (filters.date === "" || format(new Date(post.expiry_date), "yyyy-MM-dd") === filters.date) &&
-            (filters.views === "" || post.views >= Number(filters.views))
-        );
-        setFilteredPosts(filtered);
-    };
+            (filters.views === "" || post.stats?.views >= Number(filters.views))
+        ));
+    }, [posts]);
 
     const options = [
         {
@@ -304,7 +365,7 @@ export default function ManagePosts({ currentUser }) {
     return (
         <div className='my-ads'>
             <div className="head">
-                <h2>Mes Annonces</h2>
+                <h2>Annonces</h2>
                 <div className="filters-container" onClick={() => setOpenFilter(!openFilter)}>
                     <FontAwesomeIcon icon={faFilter} />
                 </div>
@@ -316,22 +377,24 @@ export default function ManagePosts({ currentUser }) {
             )}
 
             <div className="ads-list">
-                <div className="card-list">
+                <div className="table-container">
                     <table>
                         <thead>
                             <tr>
+                                <th>
+                                    <input
+                                        type="checkbox"
+                                        checked={allSelected}
+                                        onChange={toggleSelectAll}
+                                    />
+                                </th>
                                 <th>#</th>
-                                <th>Post ID</th>
-                                <th>📸 Image</th>
-                                <th>🏷️ Titre</th>
-                                <th>💰 Prix</th>
-                                <th>👀 Vues</th>
-                                <th>📌 Clics</th>
-                                <th>📊 Conversion (%)</th>
-                                <th>🚨 Signalements</th>
-                                <th>📅 Expiration</th>
-                                <th>⚡ Statut</th>
-                                <th>🛠️ Actions</th>
+                                <th>ID</th>
+                                <th>Image</th>
+                                <th>Titre</th>
+                                <th>Prix</th>
+                                <th>Expiration</th>
+                                <th>Statut</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -341,7 +404,9 @@ export default function ManagePosts({ currentUser }) {
                                         key={post.id}
                                         index={index}
                                         post={post}
-                                        onAction={(post) => handleAction(post)}
+                                        onAction={handleAction}
+                                        isSelected={selectedPosts.includes(post.PostID)}
+                                        onSelect={handleSelect}
                                     />
                                 ))
                             ) : (
@@ -352,12 +417,15 @@ export default function ManagePosts({ currentUser }) {
                         </tbody>
                     </table>
                 </div>
-                <Pagination
-                    currentPage={currentPage}
-                    elements={posts}
-                    elementsPerPage={postPerPage}
-                    paginate={paginate}
-                />
+
+                {posts.length > postPerPage && (
+                    <Pagination
+                        currentPage={currentPage}
+                        elements={posts}
+                        elementsPerPage={postPerPage}
+                        paginate={paginate}
+                    />
+                )}
             </div>
 
             {showMenu && (

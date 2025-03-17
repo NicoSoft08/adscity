@@ -5,16 +5,14 @@ import {
     faBell,
     faBullhorn,
     faChartLine,
-    faCogs,
     faHeartCircleCheck,
-    // faMessage,
-    faMoneyBill,
+    // faMoneyBill,
     faUserCircle
 } from '@fortawesome/free-solid-svg-icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import Header from '../../components/dashboard-header/Header';
 import { AuthContext } from '../../contexts/AuthContext';
-import { fetchUnreadNotifications } from '../../routes/userRoutes';
+import { fetchNotifications } from '../../routes/userRoutes';
 import '../../styles/UserHome.scss';
 
 const menuItems = [
@@ -23,9 +21,8 @@ const menuItems = [
     { id: "favoris", label: "Favoris", icon: faHeartCircleCheck, path: "/user/dashboard/favoris" },
     // { id: "messages", label: "Messages", icon: faMessage, path: "/user/dashboard/messages" },
     { id: "notifications", label: "Notifications", icon: faBell, path: "/user/dashboard/notifications", badge: 0 },
-    { id: "payments", label: "Paiements", icon: faMoneyBill, path: "/user/dashboard/payments" },
+    // { id: "payments", label: "Paiements", icon: faMoneyBill, path: "/user/dashboard/payments" },
     { id: "profile", label: "Profil", icon: faUserCircle, path: "/user/dashboard/profile" },
-    { id: "settings", label: "Paramètres", icon: faCogs, path: "/user/dashboard/settings" },
 ];
 
 
@@ -37,6 +34,8 @@ export default function UserHome() {
     const [unreadnotifications, setUnreadNotifications] = useState([]);
 
     useEffect(() => {
+        let isMounted = true;
+
         if (!currentUser) {
             console.error("❌ Utilisateur non connecté.");
             navigate('/auth/signin');
@@ -45,15 +44,23 @@ export default function UserHome() {
 
         const userID = currentUser.uid;
         const getNotifications = async () => {
-            const result = await fetchUnreadNotifications(userID);
-            if (result.success) {
-                setUnreadNotifications(result?.data);
+            try {
+                const result = await fetchNotifications(userID);
+                if (isMounted && result) {
+                    setUnreadNotifications(result?.data.unReadNotifs || []);
+                }
+            } catch (error) {
+                console.error("❌ Erreur lors de la récupération des notifications :", error);
             }
         }
 
         if (userID) {
             getNotifications();
         }
+
+        return () => {
+            isMounted = false;
+        };
     }, [currentUser, navigate]);
 
     return (
@@ -82,6 +89,9 @@ export default function UserHome() {
 
                     <div className="main-content">
                         <Outlet />
+                        <div className="footer">
+                            <p>© 2025 AdsCity DashBoard  by AdsCity</p>
+                        </div>
                     </div>
                 </div>
             </div>

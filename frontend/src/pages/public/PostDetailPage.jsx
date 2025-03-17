@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { fetchPostById } from '../../routes/postRoutes';
 import { fetchDataByUserID } from '../../routes/userRoutes';
 import OwnerProfileCard from '../../components/owner-card/OwnerProfileCard';
@@ -12,6 +12,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 // import { sendMessage } from '../../routes/chatRoutes';
 import Toast from '../../customs/Toast';
 import '../../styles/PostDetailPage.scss';
+import Loading from '../../customs/Loading';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -71,27 +72,32 @@ const ImageGallery = ({ images = [] }) => {
 }
 
 export default function PostDetailPage() {
-    const { postID } = useParams();
-    const { state: { id } } = useLocation();
-    const { currentUser } = useContext(AuthContext);
+    const params = useParams();
+    const { currentUser, userData } = useContext(AuthContext);
     const [post, setPost] = useState(null);
     const [profilData, setProfilData] = useState({});
+    const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const { post_id } = params;
+
+    const userCity = userData?.city || '';
 
     useEffect(() => {
         const fetchAdsData = async () => {
-            const result = await fetchPostById(postID);
+            const result = await fetchPostById(post_id);
             if (result.success) {
                 setPost(result?.data);
+                setIsLoading(false);
             }
         };
         fetchAdsData();
 
-    }, [postID]);
+    }, [post_id]);
 
-    const { adDetails = {}, location = {}, images = [], posted_at, views, category, subcategory, isSold } = post || {};
+    const { adDetails = {}, location = {}, images = [], posted_at, stats = {}, isSold } = post || {};
     const { title = '', price = 0, priceType = '' } = adDetails || {};
     const { address = '', city = '', country = '' } = location || {};
+    const { views = 0 } = stats || {};
 
     useEffect(() => {
         if (post && post?.userID) {
@@ -131,6 +137,10 @@ export default function PostDetailPage() {
     //         setToast({ show: true, type: 'error', message: result.message });
     //     }
     // };
+
+    if (isLoading) {
+        return <Loading />
+    }
 
     return (
         <div className="ad-details">
@@ -223,8 +233,8 @@ export default function PostDetailPage() {
                         <section className="meta-info">
                             <h2>Informations supplémentaires</h2>
                             <ul>
-                                <li><strong>Catégorie :</strong> {category}</li>
-                                <li><strong>Sous-catégorie :</strong> {subcategory}</li>
+                                <li><strong>Catégorie :</strong> {post?.category}</li>
+                                <li><strong>Sous-catégorie :</strong> {post?.subcategory}</li>
                                 <li><strong>Vues :</strong> {views}</li>
                             </ul>
                         </section>
@@ -236,6 +246,7 @@ export default function PostDetailPage() {
                         <OwnerProfileCard
                             owner={profilData}
                             userID={currentUser?.uid}
+                            city={userCity}
                         />
                     </div>
                 </div>
@@ -245,7 +256,7 @@ export default function PostDetailPage() {
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
 
-            <RelatedListing postID={id} category={category} />
+            <RelatedListing post_id={post_id} category={post?.category} />
         </div>
     );
 }

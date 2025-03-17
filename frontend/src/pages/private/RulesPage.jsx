@@ -48,7 +48,7 @@ export default function RulesPage() {
             <p>AdsCity se réserve le droit de modifier ces règles à tout moment. Les utilisateurs seront informés de toute modification via le site.</p>
 
             <h2>Contact</h2>
-            <p>Pour toute question ou clarification concernant ces règles, veuillez nous contacter à l'adresse suivante : <a href="mailto:contactadscity.net">contact@adscity.net</a></p>
+            <p>Pour toute question ou clarification concernant ces règles, veuillez nous contacter à l'adresse suivante : <a href="mailto:support@adscity.net">support@adscity.net</a></p>
         </div>
     );
 };

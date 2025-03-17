@@ -18,7 +18,7 @@ export default function Modal({ onShow, onHide, isHide, hideText, title, childre
                 <div className="modal-body">
                     {children}
                 </div>
-                <div className={`modal-footer`}>
+                <div className={`modal-footer ${isNext ? "space-between" : "flex-end"}`}>
                     {isNext ? (
                         <button className="modal-button next" onClick={onNext}>
                             {nextText}

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import Toast from '../../customs/Toast';
 import '../../styles/PostCard.scss';
+import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
+import { deletePost } from '../../routes/postRoutes';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -58,7 +61,7 @@ const ImageGallery = ({ images = [] }) => {
     );
 }
 
-export default function PostCard({ post }) {
+export default function PostCard({ post, currentUser, permissions, setToast, toast }) {
     const { adDetails, images, location, views, shares, comments, favorites, posted_at, expiry_date } = post;
 
     const formatSpecialFeatures = (features) => {
@@ -76,6 +79,30 @@ export default function PostCard({ post }) {
         }
 
         return features;
+    };
+
+    const handleDeletePost = async  () => {
+        if (!post.postID) return;
+
+        if (currentUser && permissions.includes('MANAGE_POSTS')) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: "Oups !! Vous n'avez pas les autorisations de gestions des annonces !"
+            });
+            return;
+        }
+
+        // 🔥 Supprimer d'abord les images de Firebase Storage
+        await deletePostImagesFromStorage(post.postID);
+
+        // 🔥 Ensuite, supprimer l'annonce de Firestore
+        const result = await deletePost(post.postID, currentUser?.uid);
+        if (result.success) {
+            setToast({ show: true, type: 'info', message: result.message });
+        } else {
+            setToast({ show: true, type: 'error', message: result.message });
+        }
     };
 
     return (
@@ -129,9 +156,11 @@ export default function PostCard({ post }) {
 
             <div className="actions">
                 <button className="action-button suspend">Suspendre</button>
-                <button className="action-button delete">Supprimer</button>
+                <button className="action-button delete" onClick={handleDeletePost}>Supprimer</button>
                 <button className="action-button restaure">Restaurer</button>
             </div>
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

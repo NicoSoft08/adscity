@@ -6,6 +6,7 @@ const collectDeviceInfo = async () => {
         const parser = new UAParser();
         const result = parser.getResult();
 
+
         return {
             browser: result.browser.name || 'Unknown',
             os: result.os.name || 'Unknown',

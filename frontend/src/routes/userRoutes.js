@@ -10,7 +10,6 @@ const fetchUserData = async (userID) => {
         });
 
         const result = await response.json();
-        console.log(result)
         return result;
     } catch (error) {
         throw error;
@@ -74,73 +73,14 @@ const fetchPostsByUserID = async (userID) => {
         if (!response.ok) {
             throw new Error('Erreur lors de la récupération des annonces de l\'utilisateur.');
         }
-        const userAllAds = await response.json();
-        return userAllAds;
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error('Erreur:', error);
         return [];
     }
 };
 
-const fetchApprovedPostsByUserID = async (userID) => {
-    try {
-        const response = await fetch(`${backendUrl}/api/posts/user/${userID}/approved`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des annonces approuvées de l\'utilisateur.');
-        }
-        const userApprovedAds = await response.json();
-        return userApprovedAds;
-    } catch (error) {
-        console.error('Erreur:', error);
-        return [];
-    }
-};
-
-const fetchPendingPostsByUserID = async (userID) => {
-    try {
-        const response = await fetch(`${backendUrl}/api/posts/user/${userID}/pending`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des annonces en attente de l\'utilisateur.');
-        }
-        const userPendingAds = await response.json();
-        return userPendingAds;
-    } catch (error) {
-        console.error('Erreur:', error);
-        return [];
-    }
-};
-
-const fetchRefusedPostsByUserID = async (userID) => {
-    try {
-        const response = await fetch(`${backendUrl}/api/posts/user/${userID}/refused`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération des annonces refusées de l\'utilisateur.');
-        }
-        const userRefusedAds = await response.json();
-        return userRefusedAds;
-    } catch (error) {
-        console.error('Erreur:', error);
-        return [];
-    }
-};
 
 const fetchUserActivePosts = async (UserID) => {
     const response = await fetch(`${backendUrl}/api/posts/user/${UserID}/active`, {
@@ -151,7 +91,6 @@ const fetchUserActivePosts = async (UserID) => {
     });
 
     const result = await response.json();
-    console.log(result)
     return result;
 };
 
@@ -241,18 +180,6 @@ const fetchNotifications = async (userID) => {
     return result;
 };
 
-const fetchUnreadNotifications = async (userID) => {
-    const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/unread`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-
-    const result = await response.json();
-    return result;
-};
-
 const markNotificationAsRead = async (userID, notificationID) => {
     const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/${notificationID}/read`, {
         method: 'POST',
@@ -264,6 +191,42 @@ const markNotificationAsRead = async (userID, notificationID) => {
     const result = await response.json();
     return result;
 };
+
+const markAllNotificationsAsRead = async (userID) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/read-all`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const result = await response.json();
+    return result;
+}
+
+const deleteNotification = async (userID, notificationID) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/${notificationID}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    }); 
+
+    const result = await response.json();
+    return result;
+};
+
+const deteleteAllNotifications = async (userID) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/delete-all`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+
+    const result = await response.json();
+    return result;
+}
 
 const rateUser = async (userID, rating, comment) => {
     try {
@@ -336,22 +299,38 @@ const updateSearchHistory = async (userID, query) => {
     }
 };
 
+const getUserLoginActivity = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/${userID}/login-activity`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'activité de connexion de l\'utilisateur:', error);
+        throw error;
+    }
+}
 
 export {
     fetchUserData,
     fetchDataByUserID,
     fetchNotifications,
-    fetchUnreadNotifications,
     fetchPostsByUserID,
     fetchInterlocutorProfile,
-    fetchApprovedPostsByUserID,
-    fetchPendingPostsByUserID,
-    fetchRefusedPostsByUserID,
     fetchUserActivePosts,
     fetchUserInactivePosts,
     getUserDevices,
     getUserFavorites,
+    getUserLoginActivity,
     markNotificationAsRead,
+    markAllNotificationsAsRead,
+    deleteNotification,
+    deteleteAllNotifications,
     rateUser,
     setUserOnlineStatus,
     toggleFavorites,

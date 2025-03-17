@@ -1,12 +1,29 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-const incrementViewCount = async (postID) => {
+const getViewCount = async (postID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/do/get/view/${postID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la récupération du nombre de vues:', error);
+        throw error;
+    }
+};
+
+const incrementViewCount = async (postID, userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/increment/view/${postID}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            body: JSON.stringify({ userID }),
         });
         const result = await response.json();
         return result;
@@ -16,13 +33,14 @@ const incrementViewCount = async (postID) => {
     }
 };
 
-const incrementClickCount = async (postID) => {
+const incrementClickCount = async (postID, userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/increment/click/${postID}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            body: JSON.stringify({ userID }),
         });
         const result = await response.json();
         return result;
@@ -50,14 +68,14 @@ const updateInteraction = async (postID, userID, category) => {
     }
 };
 
-const updateContactClick = async (userID) => {
+const updateContactClick = async (userID, city) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/update/contact-click`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ userID })
+            body: JSON.stringify({ userID, city })
         });
         const result = await response.json();
         return result;
@@ -218,6 +236,7 @@ export {
     contactSupportClient,
     fetchPubs,
     fetchFilteredPosts,
+    getViewCount,
     incrementClickCount,
     incrementViewCount,
     searchItems,

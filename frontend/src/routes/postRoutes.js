@@ -146,6 +146,7 @@ const updatePost = async (postID, updatedData, userID) => {
         });
 
         const result = await response.json();
+        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'annonce:', error);

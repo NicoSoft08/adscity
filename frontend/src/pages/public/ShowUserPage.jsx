@@ -29,10 +29,11 @@ export default function ShowUserPage() {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: `/user/${UserID}` });
         const textArea = textAreaRef.current;
         textArea.style.height = 'auto';  // Réinitialiser la hauteur
         textArea.style.height = `${textArea.scrollHeight}px`; // Ajuster à la taille du contenu
-    }, [comment]);
+    }, [comment, UserID]);
 
     useEffect(() => {
         const fetchData = async () => {

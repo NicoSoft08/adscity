@@ -13,6 +13,8 @@ import CardItem from '../../utils/card/CardItem';
 // import PubsSwitcher from '../../utils/pubs/PubsSwitcher';
 // import { MastheadSlider, NativeDisplayPub, VideoInFeedPub } from '../../utils/pubs/Pubs';
 import '../../styles/HomePage.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -25,6 +27,7 @@ export default function HomePage() {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/home' });
         const getApprovedAds = async () => {
             setIsLoading(true);
 

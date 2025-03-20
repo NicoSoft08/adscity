@@ -35,6 +35,8 @@ export default function UserProfile() {
     useEffect(() => {
         if (!currentUser?.uid) return;
 
+        logEvent(analytics, 'page_view', { page_path: '/user/dashboard/profile' });
+
         const fetchUserActivity = async () => {
             const result = await getUserLoginActivity(currentUser.uid);
             if (result.success) {

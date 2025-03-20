@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../../styles/PrivacyPage.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function PrivacyPage() {
+    useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/privacy' });
+    }, [])
+
     return (
         <div className='privacy'>
             <h1>Politique de Confidentialité</h1>

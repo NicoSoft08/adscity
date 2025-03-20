@@ -14,6 +14,8 @@ import Header from '../../components/dashboard-header/Header';
 import { AuthContext } from '../../contexts/AuthContext';
 import { fetchNotifications } from '../../routes/userRoutes';
 import '../../styles/UserHome.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 const menuItems = [
     { id: "panel", label: "Panel", icon: faChartLine, path: "/user/dashboard/panel" },
@@ -42,6 +44,8 @@ export default function UserHome() {
             return;
         }
 
+        logEvent(analytics, 'page_view', { page_path: '/user/dashboard' });
+        
         const userID = currentUser.uid;
         const getNotifications = async () => {
             try {

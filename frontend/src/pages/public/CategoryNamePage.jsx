@@ -2,12 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import ButtonAdd from '../../customs/ButtonAdd';
 import Hero from '../../components/hero/Hero';
-import { allCategories } from '../../data/database';
 import { fetchPostsByCategory } from '../../routes/postRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import data from '../../json/data.json';
 import '../../styles/CategoryNamePage.scss';
 
 export default function CategoryNamePage() {
@@ -15,6 +15,7 @@ export default function CategoryNamePage() {
     const [adsCategory, setAdsCategory] = useState([]);
 
     useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: `/category/${categoryName}` });
         const getAdsByCategory = async () => {
             const result = await fetchPostsByCategory(categoryName);
             logEvent(analytics, 'view_category_page');
@@ -27,15 +28,16 @@ export default function CategoryNamePage() {
     }, [categoryName]);
 
     const getItems = () => {
-        const BackgroundImage = allCategories.find((item) => item.categoryName === categoryName)?.categoryImage;
-        const HeaderOne = allCategories.find((item) => item.categoryName === categoryName)?.categoryTitles.fr;
-        return { BackgroundImage, HeaderOne };
+        const HeaderOne = data.categories.find((item) => item.categoryName === categoryName)?.categoryTitles.fr;
+        return { HeaderOne };
     }
+
+    const { HeaderOne } = getItems();
 
     return (
         <div className='category-page'>
             <Hero
-                headerOne={getItems().HeaderOne}
+                headerOne={HeaderOne}
                 paragraph={"Découvrez les annonces relatives à cette catégorie."}
                 backgroundImage={getItems().BackgroundImage}
                 postsLength={adsCategory.length}

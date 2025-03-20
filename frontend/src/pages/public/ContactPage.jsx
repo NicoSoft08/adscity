@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { faCheck, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -7,6 +7,8 @@ import { contactSupportClient } from '../../routes/apiRoutes';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import '../../styles/ContactPage.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function ContactPage() {
     const navigate = useNavigate();
@@ -24,6 +26,10 @@ export default function ContactPage() {
         message: '',
         agree: false,
     });
+
+    useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/contact' });
+    }, []);
 
     const validateForm = () => {
         const formErrors = {};

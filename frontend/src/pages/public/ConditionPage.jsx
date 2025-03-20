@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../../styles/ConditionPage.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function ConditionPage() {
+    useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/conditions' });
+    }, [])
+
     return (
         <div className='terms'>
             <h1>Conditions Générales d'Utilisation</h1>

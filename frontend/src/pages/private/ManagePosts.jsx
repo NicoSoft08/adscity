@@ -11,7 +11,7 @@ import Tab from '../../customs/Tab';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartPie, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
-import { allCategories } from '../../data/database';
+import data from '../../json/data.json';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/MyPosts.scss';
 
@@ -62,7 +62,7 @@ const PostsFilter = ({ onFilterChange }) => {
 
             <select name="category" value={filters.category} onChange={handleChange}>
                 <option value="all">Toutes les catégories</option>
-                {allCategories.map(category => (
+                {data.categories.map(category => (
                     <option
                         key={category.key}
                         value={category.categoryName}>
@@ -111,8 +111,8 @@ const PostRow = ({ index, post, onAction, isSelected, onSelect }) => {
             <td>{index + 1}</td>
             <td>{post.PostID}</td>
             <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
-            <td>{post.adDetails.title}</td>
-            <td>{post.adDetails.price} RUB </td>
+            <td>{post.details?.title}</td>
+            <td>{post.details?.price} RUB </td>
             <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
             <td>{STATUS_ICONS[post.status] || "⚪ Inconnu"}</td>
 
@@ -332,7 +332,7 @@ export default function ManagePosts({ currentUser }) {
     const handleFilterChange = useCallback((filters) => {
         setFilteredPosts(posts.filter(post =>
             (filters.search === "" ||
-                post.adDetails.title.toLowerCase().includes(filters.search.toLowerCase()) ||
+                post.details.title.toLowerCase().includes(filters.search.toLowerCase()) ||
                 post.PostID.toLowerCase().includes(filters.search.toLowerCase())) &&
             (filters.status === "all" || post.status === filters.status || post.isSold === true) &&
             (filters.category === "all" || post.category === filters.category) &&

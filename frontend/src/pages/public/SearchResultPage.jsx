@@ -59,6 +59,7 @@ export default function SearchResultPage() {
 
 
     useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/search-result' });
         const fetchSearchResults = async () => {
             try {
                 const result = await searchItems(searchQuery);

@@ -1,13 +1,21 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
     IconCreateAd,
     IconCreateAdButton,
     IconRegister
 } from '../../config/images';
+import { analytics } from '../../firebaseConfig';
+import { logEvent } from 'firebase/analytics';
 import '../../styles/FAQsPage.scss';
 
 export default function FAQsPage() {
     const [activeIndex, setActiveIndex] = useState(null);
+
+    useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/faqs' });
+    }, []);
+
+
     const handleToggle = (index) => {
         setActiveIndex(activeIndex === index ? null : index);
     };

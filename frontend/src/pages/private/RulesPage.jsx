@@ -1,7 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import '../../styles/RulesPage.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function RulesPage() {
+    useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/rules' });
+    }, [])
+
     return (
         <div className='rules'>
             <h1>Règles de Diffusion d'Annonces d'AdsCity</h1>

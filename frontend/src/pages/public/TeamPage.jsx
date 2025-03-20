@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IconAvatar } from '../../config/images';
 import '../../styles/TeamPage.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 
 export default function TeamPage() {
+    useEffect(() => {
+        logEvent(analytics, 'page_view', { page_path: '/team' });
+    }, []);
+    
     const teamMembers = [
         {
             name: "Nicolas N'DAH",

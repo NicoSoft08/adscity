@@ -7,7 +7,7 @@ import Toast from '../../customs/Toast';
 import Modal from '../../customs/Modal';
 import ComparisonTable from '../../utils/ComparisonTable';
 import PlanItem from '../../components/plan-item/PlanItem';
-import { allCategories } from '../../data/database';
+import data from '../../json/data.json';
 import '../../styles/PlansPage.scss';
 
 export default function PlansPage() {
@@ -211,7 +211,7 @@ export default function PlansPage() {
                     onHide={() => setShowCategoryModal(false)}
                 >
                     <div className="category-selector">
-                        {allCategories.map((category) => (
+                        {data.categories.map((category) => (
                             <div
                                 key={category.key}
                                 className={`category-item ${selectedCategory === category.categoryName ? 'selected' : ''}`}

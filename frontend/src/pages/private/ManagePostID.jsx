@@ -126,7 +126,12 @@ export default function ManagePostID({ currentUser }) {
                 setLoading(false);
             }
         } catch (error) {
-            
+            console.error('Erreur lors de la mise à jour de l\'annonce :', error);
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Une erreur est survenue lors de la mise à jour de l\'annonce.'
+            });
         }
     };
 
@@ -204,6 +209,7 @@ export default function ManagePostID({ currentUser }) {
                     </div>
                 }
             </div>
+            
             <PostCard post={post} />
 
             {confirm.willDelete && (

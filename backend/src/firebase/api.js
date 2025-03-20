@@ -1,6 +1,7 @@
 const { firestore, admin, auth } = require('../config/firebase-admin');
 const { sendSupportEmail, sendUserEmailWithTicket } = require('../controllers/emailController');
-const { generateTicketID, allCategories } = require('../func');
+const { generateTicketID } = require('../func');
+const data = require('../json/data.json');
 
 const searchQuery = async (query) => {
     if (!query || query.trim().length === 0) return [];
@@ -12,19 +13,19 @@ const searchQuery = async (query) => {
         const searchResults = new Map(); // Evite les doublons
 
         // 🔹 Vérifier si `query` correspond à une catégorie ou sous-catégorie
-        allCategories.forEach(category => {
+        data.categories.forEach(cat => {
             if (
-                category.categoryName.includes(query.toLowerCase()) ||
-                Object.values(category.categoryTitles.fr).some(title => title.toLowerCase().includes(query.toLowerCase()))
+                cat.categoryTitles.fr.includes(query) ||
+                Object.values(cat.categoryTitles.fr).some(title => title.includes(query))
             ) {
-                matchedCategory = category; // 🎯 Match trouvé avec une catégorie
+                matchedCategory = cat; // 🎯 Match trouvé avec une catégorie
             } else {
-                category.container.forEach(subCategory => {
+                cat.container.forEach(subCat => {
                     if (
-                        subCategory.sousCategoryName.includes(query.toLowerCase()) ||
-                        Object.values(subCategory.sousCategoryTitles).some(title => title.toLowerCase().includes(query.toLowerCase()))
+                        subCat.sousCategoryTitles.fr.includes(query) ||
+                        Object.values(subCat.sousCategoryTitles.fr).some(title => title.includes(query))
                     ) {
-                        matchedCategory = subCategory; // 🎯 Match trouvé avec une sous-catégorie
+                        matchedCategory = subCat; // 🎯 Match trouvé avec une sous-catégorie
                     }
                 });
             }
@@ -519,8 +520,8 @@ const fetchFilteredPostsQuery = async (item, category, minPrice, maxPrice) => {
         let postRef = firestore.collection('POSTS');
 
         if (category) postRef = postRef.where('category', '==', category);
-        if (minPrice) postRef = postRef.where("adDetails.price", ">=", parseInt(minPrice));
-        if (maxPrice) postRef = postRef.where("adDetails.price", "<=", parseInt(maxPrice));
+        if (minPrice) postRef = postRef.where("details.price", ">=", parseInt(minPrice));
+        if (maxPrice) postRef = postRef.where("details.price", "<=", parseInt(maxPrice));
 
         const querySnapshot = await postRef.get();
         if (querySnapshot.empty) return [];

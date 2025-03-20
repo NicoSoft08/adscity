@@ -120,7 +120,7 @@ const makePost = async (postData, userID) => {
             engagement_rate: 0,
             report_reason: null,
             reported: false,
-            slug: generateSlug(postData?.adDetails.title),
+            slug: generateSlug(postData?.details.title),
             type: 'regular',
         });
 
@@ -152,7 +152,7 @@ const makePost = async (postData, userID) => {
         await adminNotificationRef.set({
             type: 'new_post',
             title: 'Nouvelle annonce en attente',
-            message: `Nouvelle annonce en attente de validation: ${postData.adDetails.title}`,
+            message: `Nouvelle annonce en attente de validation: ${postData?.details.title}`,
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             isRead: false,
             link: `/admin/dashboard/posts/${newPostID}`, // Lien vers l'annonce dans le tableau de bord
@@ -262,16 +262,16 @@ const validatePost = async (postID) => {
             expiry_date: expiryDate.toISOString(),
         });
 
-        const adRef = firestore.collection('POSTS').doc(postID);
-        const adDoc = await adRef.get();
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
 
-        if (!adDoc.exists) {
+        if (!postDoc.exists) {
             console.error('Annonce non trouvée.');
             return false;
         }
 
-        const adData = adDoc.data();
-        const { adDetails: { title }, posted_at, userID } = adData;
+        const postData = postDoc.data();
+        const { details: { title }, posted_at, userID } = postData;
 
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
@@ -312,16 +312,16 @@ const rejectPost = async (postID, reason) => {
             refusal_reason: reason,
         });
 
-        const adRef = firestore.collection('POSTS').doc(postID);
-        const adDoc = await adRef.get();
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
 
         if (!adDoc.exists) {
             console.error('Annonce non trouvée.');
             return false;
         }
 
-        const adData = adDoc.data();
-        const { adDetails: { title }, posted_at, userID } = adData;
+        const postData = postDoc.data();
+        const { details: { title }, posted_at, userID } = postData;
 
 
         const userRef = firestore.collection('USERS').doc(userID);

@@ -568,7 +568,7 @@ const sendEmailToAdmin = async = (postData, PostID) => {
                 <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
                     <h3 style="color: #417abc;">Bonjour,</h3>
                     <p>Une nouvelle annonce a été postée et attend votre validation.</p>
-                    <p><strong>Titre :</strong> ${postData.adDetails.title}</p>
+                    <p><strong>Titre :</strong> ${postData?.details.title}</p>
                     <p><strong>Accéder à l'annonce :</strong> <a href="${admin_url}/admin/dashboard/posts/${PostID}">Voir l'annonce</a></p>
 
                     <p style="margin-top: 20px;">Cordialement,</p>

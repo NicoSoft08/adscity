@@ -1,0 +1,62 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.select-cat {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+
+    select {
+        margin: 10px 0;
+        appearance: none;
+    }
+
+    .input-field,
+    option {
+        width: 100%;
+        font-weight: $font-light;
+        font-size: 14px;
+        padding: 10px 15px;
+        font-family: 'Ubuntu', sans-serif;
+        outline: none;
+    }
+
+    .input-field.error {
+        border: 1px solid $danger;
+        background-color: #ffcccb;
+    }
+
+    span.error {
+        color: $danger;
+        font-size: 13px;
+        font-weight: $font-light;
+    }
+
+    button {
+        margin-top: 18px;
+        color: $white;
+        border-radius: 5px;
+        cursor: pointer;
+        border: none;
+        background-color: $secondary-color;
+        font-weight: $font-regular;
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 15px;
+        padding: 8px 15px;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+
+
+    .contact-support {
+        p {
+            text-align: center;
+            font-size: 13px;
+            color: $dark;
+
+            a {
+                text-decoration: none;
+            }
+        }
+    }
+}

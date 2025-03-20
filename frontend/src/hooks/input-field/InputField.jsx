@@ -1,54 +1,78 @@
 import React from 'react';
 import './InputField.scss';
 
-export default function InputField({ label, name, value, onChange, disabled, error, type = 'text', options, placeholder, title }) {
+export default function InputField({ type, name, label, placeholder, options, multiple, required, value, onChange }) {
     return (
-        <div className="wrap" title={title}>
-            <label htmlFor={name}>
-                {label}
-            </label>
-            {type === 'select' ? (
-                <select
+        <div className="Input-field">
+            <label htmlFor={name}>{label}{required && <strong className='compulsory'>*</strong>} </label>
+
+            {type === "text" || type === "number" || type === "textarea" || type === "date" || type === "time" || type === "email" || type === "password" || type === "country" || type === "city" || type === "address" ? (
+                <input
+                    type={type}
+                    id={name}
                     name={name}
+                    placeholder={placeholder}
+                    required={required}
                     value={value}
                     onChange={onChange}
-                    className={`input-field ${error ? 'error' : ''}`}
-                >
-                    <option value="">-- Choisissez --</option>
-                    {options && options.map((opt, idx) => (
-                        <option key={idx} value={opt}>
-                            {opt}
-                        </option>
+                />
+            ) : null}
+
+            {type === "select" ? (
+                <select id={name} name={name} value={value} required={required} onChange={onChange}>
+                    <option value="">Sélectionner</option>
+                    {options?.map((option, index) => (
+                        <option key={index} value={option}>{option}</option>
                     ))}
                 </select>
-            ) : type === 'checkbox' && Array.isArray(options) ? (
-                <div className="checkbox-group">
-                    {options && options.map((opt, idx) => (
-                        <label key={idx} className="checkbox-option">
+            ) : null}
+
+            {type === "radio" ? (
+                <div className="radio-group">
+                    {options?.map((option, index) => (
+                        <label key={index}>
                             <input
-                                type="checkbox"
+                                type="radio"
                                 name={name}
-                                value={opt}
-                                checked={Array.isArray(value) && value.includes(opt)}
+                                value={option}
+                                checked={value === option}
+                                required={required}
                                 onChange={onChange}
-                                disabled={disabled}
                             />
-                            {opt}
+                            {option}
                         </label>
                     ))}
                 </div>
-            ) : (
+            ) : null}
+
+            {type === "checkbox" ? (
+                <div className="checkbox-group">
+                    {options?.map((option, index) => (
+                        <label key={index}>
+                            <input
+                                type="checkbox"
+                                name={name}
+                                value={option}
+                                checked={value.includes(option)}
+                                required={required}
+                                onChange={onChange}
+                            />
+                            {option}
+                        </label>
+                    ))}
+                </div>
+            ) : null}
+
+            {type === "file" ? (
                 <input
-                    className={`input-field ${error ? 'error' : ''}`}
-                    type={type}
+                    type="file"
+                    id={name}
                     name={name}
-                    value={value}
-                    placeholder={placeholder}
+                    multiple={multiple}
+                    required={required}
                     onChange={onChange}
-                    disabled={disabled}
                 />
-            )}
-            {error && <span className="error">{error}</span>}
+            ) : null}
         </div>
     );
 };

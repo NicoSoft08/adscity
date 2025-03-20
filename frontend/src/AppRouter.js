@@ -35,20 +35,22 @@ import QuickStartGuide from './pages/public/QuickStartGuide';
 import FeedbackForm from './pages/private/FeedbackForm';
 import PostDetailPage from './pages/public/PostDetailPage';
 import CreatePostPage from './pages/public/CreatePostPage';
-import FiltersPage from './pages/public/FiltersPage';
+// import FiltersPage from './pages/public/FiltersPage';
 import PubCreationForm from './hooks/host-publicity/PubCreationForm';
 import PaymentPage from './pages/private/PaymentPage';
-import MyNotifications from './pages/private/MyNotifications';
-import PaymentIntents from './components/payment/PaymentIntents';
 import UserProfile from './pages/private/UserProfile';
 import DashboardPanel from './pages/private/DashboardPanel';
 import { AuthContext } from './contexts/AuthContext';
-import MyFavorites from './pages/private/MyFavorites';
 import Settings from './pages/private/Settings';
 // import Messages from './pages/private/Messages';
 import ManagePosts from './pages/private/ManagePosts';
 import ManagePostID from './pages/private/ManagePostID';
 import PostIDPage from './pages/public/PostIDPage';
+import ManageNotifications from './pages/private/ManageNotifications';
+import ManagePayments from './components/payment/ManagePayments';
+import EditPostID from './pages/private/EditPostID';
+import StatsPostID from './pages/private/StatsPostID';
+import ManageFavorites from './pages/private/ManageFavorites';
 
 export default function AppRouter() {
     const { currentUser } = useContext(AuthContext);
@@ -68,7 +70,7 @@ export default function AppRouter() {
 
                     <Route path='/pricing' element={<PlansPage />} />
                     <Route path='/search-results' element={<SearchResultPage />} />
-                    <Route path="/filters" element={<FiltersPage />} />
+                    {/* <Route path="/filters" element={<FiltersPage />} /> */}
 
                     <Route path='/legal/privacy-policy' element={<PrivacyPage />} />
                     <Route path='/legal/terms' element={<ConditionPage />} />
@@ -77,8 +79,8 @@ export default function AppRouter() {
                     <Route path='/business' element={<Business />} />
                     <Route path='/pub' element={<PubCreationForm />} />
                     <Route path='/about' element={<TeamPage />} />
+                    <Route path="/posts/:category/:subcategory/:post_id" element={<PostDetailPage />} />
                     <Route path="/posts/:category/:subcategory/:postID" element={<PostIDPage />} />
-                    <Route path="/posts/:category/:subcategory/:PostID" element={<PostDetailPage />} />
                     <Route path='/users/user/:UserID/profile/show' element={<ShowUserPage />} />
                     <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />
 
@@ -104,12 +106,14 @@ export default function AppRouter() {
 
                 <Route path='/user/dashboard' element={<UserHome />}>
                     <Route path="panel" element={<DashboardPanel />} />
-                    <Route path="favoris" element={<MyFavorites currentUser={currentUser} />} />
+                    <Route path="favoris" element={<ManageFavorites currentUser={currentUser} />} />
                     <Route path="posts" element={<ManagePosts currentUser={currentUser} />} />
                     <Route path='posts/:post_id' element={<ManagePostID currentUser={currentUser} />} />
-                    <Route path="payments" element={<PaymentIntents userID={currentUser?.uid} />} />
+                    <Route path='posts/:post_id/edit' element={<EditPostID currentUser={currentUser} />} />
+                    <Route path='posts/:post_id/statistics' element={<StatsPostID />} />
+                    <Route path="payments" element={<ManagePayments userID={currentUser?.uid} />} />
                     {/* <Route path="messages" element={<Messages currentUser={currentUser} />} /> */}
-                    <Route path="notifications" element={<MyNotifications />} />
+                    <Route path="notifications" element={<ManageNotifications />} />
                     <Route path="profile" element={<UserProfile />} />
                     <Route path="settings" element={<Settings />} />
                 </Route>

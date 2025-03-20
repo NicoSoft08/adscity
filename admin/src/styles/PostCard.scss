@@ -116,35 +116,67 @@
         }
     }
 
-    .actions {
-        margin-top: 20px;
-        display: flex;
-        justify-content: center;
-        gap: 10px;
+    .progress-bar {
+        width: 90%;
+        margin: auto;
+        padding: 10px;
+        font-family: 'Ubuntu', sans-serif;
 
-        .action-button {
-            font-family: 'Ubuntu', sans-serif;
-            font-weight: $font-regular;
-            font-size: 15px;
-            padding: 8px 16px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
+        .dates {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            position: relative;
+
+            .start {
+                color: $dark;
+                font-weight: $font-light;
+                transform: translateX(-50%);
+                position: absolute;
+                top: 20px;
+                left: 0;
+            }
+
+            .today {
+                top: -20px;
+                position: absolute;
+                transform: translateX(-50%);
+                font-weight: $font-light;
+                color: $danger;
+            }
+
+            .end {
+                color: $dark;
+                font-weight: $font-light;
+                transform: translateX(50%);
+                position: absolute;
+                top: 20px;
+                right: 0;
+            }
         }
 
-        .suspend {
-            background-color: $orange;
-            color: $white;
-        }
+        .bar-line {
+            position: relative;
+            border-radius: 5px;
+            height: 10px;
+            background-color: #ddd;
+            width: 100%;
 
-        .delete {
-            background-color: $danger;
-            color: $white;
-        }
+            .bar-fill {
+                height: 10px;
+                background: $success;
+                transition: width 0.5s ease-in-out;
+            }
 
-        .restaure {
-            background-color: $green;
-            color: $white;
+            .today-marker {
+                position: absolute;
+                top: -8px;
+                transform: translateX(-50%);
+                width: 10px;
+                height: 10px;
+                background-color: $danger;
+                border-radius: 50%;
+            }
         }
     }
 }

@@ -124,7 +124,8 @@ export default function ManagePostID() {
                     </div>
                 }
             </div>
-            <PostCard post={post} toast={toast} setToast={setToast} currentUser={currentUser} permissions={permissions} />
+            
+            <PostCard post={post} toast={toast} setToast={setToast} />
 
             {confirm.willDelete && (
                 <Modal title={"Suppression d'annonce"} onShow={confirm.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>

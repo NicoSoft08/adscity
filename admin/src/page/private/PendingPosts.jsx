@@ -18,8 +18,8 @@ const PostRow = ({ index, post, isSelected, onSelect, onView }) => (
         </td>
         <td>{index + 1}</td>
         <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
-        <td>{post.adDetails.title}</td>
-        <td>{post.adDetails.price} RUB</td>
+        <td>{post.details.title}</td>
+        <td>{post.details.price} RUB</td>
         <td>{formateDateTimestamp(post.posted_at._seconds)}</td>
         {isSelected && (
             <div className="floating-menu">
@@ -174,7 +174,7 @@ export default function PendingPosts() {
                     <div className='ad-details'>
                         {postsPending.filter(ad => ad.PostID === selectedPostID).map(pendingAd => (
                             <React.Fragment key={pendingAd.PostID}>
-                                <Tab pendingAd={pendingAd} />
+                                <Tab formData={pendingAd} />
                                 <div className="ad-details-buttons">
                                     <button className="modal-button approve-button" onClick={() => handleApprove(pendingAd.id)}>
                                         {isLoading ? <Spinner /> : 'Approuver'}

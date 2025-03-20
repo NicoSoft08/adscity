@@ -1,6 +1,4 @@
 import React, { useState } from 'react'
-import { faFilter } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { fetchNearbyPosts } from '../../routes/postRoutes';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
@@ -62,11 +60,6 @@ function TabFilter({ adsApproved, setFilteredAds, onFilterClick, currentUser, us
             >
                 Autour de moi
             </span>
-            <FontAwesomeIcon
-                icon={faFilter}
-                className="filter-icon"
-                onClick={onFilterClick}
-            />
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );

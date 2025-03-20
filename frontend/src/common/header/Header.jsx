@@ -4,17 +4,22 @@ import { letterBlueBgWhite } from '../../config/logos';
 import SearchBar from '../../components/search-bar/SearchBar';
 import NavLinks from '../../components/nav-links/NavLinks';
 import CreateAdButton from '../../components/create-ad-button/CreateAdButton';
-import { allCategories } from '../../data/database';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
+import data from '../../json/data.json';
 import './Header.scss';
 
 export default function Header() {
     const { currentUser, userRole } = useContext(AuthContext);
+
+    const renderCategoryImage = (categoryImage) => {
+        return require(`../../imgs/cats/${categoryImage}`);
+    };
+
     return (
         <header className='header'>
             <div className="content">
-                {currentUser ? null : (
+                {!currentUser && (
                     <div className="top-header">
                         <div className="__left">
                             <Link to="/help-center"><span>Aide</span></Link>
@@ -38,11 +43,11 @@ export default function Header() {
                     </div>
                 </div>
                 <div className="sub-header">
-                    {allCategories.map((item) => (
-                        <div key={item.key} className="sub-header-item">
-                            <Link to={`/category/${item.categoryName}`}>
-                                <img src={item.categoryImage} alt="" />
-                                <span>{item.categoryTitles.fr}</span>
+                    {data.categories.map(({ key, categoryId, categoryTitles, categoryName, categoryImage }) => (
+                        <div key={key} id={categoryId} className="sub-header-item">
+                            <Link to={`/category/${categoryName}`}>
+                                <img src={renderCategoryImage(categoryImage)} alt={categoryName} />
+                                <span>{categoryTitles.fr}</span>
                             </Link>
                         </div>
                     ))}

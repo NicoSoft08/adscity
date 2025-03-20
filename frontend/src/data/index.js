@@ -12,10 +12,6 @@ import {
 } from 'react-icons/fa';
 import { calculateEndDate } from '../func';
 import { faChartLine } from '@fortawesome/free-solid-svg-icons';
-import { img_1, img_2, img_3, img_4, img_5 } from '../config/images';
-import { video_1 } from '../config/video';
-
-
 
 const userLeftBarContent = [
     { id: 1, name: 'Panel', selectId: 'panel', icon: FaTachometerAlt, activeIcon: FaTachometerAlt, onClick: () => { } },
@@ -133,21 +129,7 @@ const securityAdvice = {
     }
 };
 
-const banners = [
-    { pubType: 'masthead', imageUrl: img_1, targetUrl: "https://www.adscity.net" },
-    { pubType: 'masthead', imageUrl: img_2, targetUrl: "https://example.com/annonce" },
-    { pubType: 'masthead', imageUrl: img_3, targetUrl: "https://example.com/offre" },
-];
-
-const spots = [
-    { mediaType: 'image', mediaFile: img_4, targetUrl: "https://www.adscity.net" },
-    { mediaType: 'video', mediaFile: video_1, targetUrl: "https://www.adscity.net/video" },
-    { mediaType: 'image', mediaFile: img_5, targetUrl: "https://example.com/annonce" },
-];
-
 export {
-    banners,
-    spots,
     userLeftBarContent,
     adminSidebarData,
     plans,

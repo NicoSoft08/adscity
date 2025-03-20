@@ -2,16 +2,17 @@ import { faImages, faInfoCircle, faMapMarker, faTags } from '@fortawesome/free-s
 import React, { useEffect } from 'react';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { allCategories, typeOfPrice } from '../data/database';
+import { typeOfPrice } from '../data/database';
+import data from '../json/data.json';
 import '../styles/Tab.scss';
 
 export default function Tab({ post }) {
     const [activeTab, setActiveTab] = useState('category');
-    const [postData, setPostData] = useState(post || { adDetails: { title: '', description: '' } });
+    const [postData, setPostData] = useState(post || { details: { title: '', description: '' } });
     const [images, setImages] = useState(post?.images || []);
 
     useEffect(() => {
-        setPostData(post || { adDetails: { title: '', description: '' } });
+        setPostData(post || { details: { title: '', description: '' } });
     }, [post]); // Met à jour les données quand `post` change
 
     const tabs = [
@@ -26,7 +27,7 @@ export default function Tab({ post }) {
         let updatedValue;
 
         if (type === 'checkbox') {
-            const currentValues = postData.adDetails?.[name] || [];
+            const currentValues = postData.details?.[name] || [];
             updatedValue = checked
                 ? [...currentValues, value]
                 : currentValues.filter(v => v !== value);
@@ -38,8 +39,8 @@ export default function Tab({ post }) {
 
         setPostData((prev) => ({
             ...prev,
-            adDetails: {
-                ...prev.adDetails,
+            details: {
+                ...prev.details,
                 [name]: updatedValue, // Mise à jour dynamique du champ
             },
         }));
@@ -83,7 +84,7 @@ export default function Tab({ post }) {
                             Sous-catégorie:
                         </label>
                         <select name='subcategory' onChange={handleChange}>
-                            {allCategories
+                            {data.categories
                                 .find(cat => cat.categoryName === postData?.category)?.container.map(
                                     (subcat) => (
                                         <option key={subcat.id} value={subcat.sousCategoryName}>
@@ -104,7 +105,7 @@ export default function Tab({ post }) {
                         <input
                             type='text'
                             name='title'
-                            value={postData?.adDetails?.title}
+                            value={postData?.details?.title}
                             onChange={handleChange}
                         />
 
@@ -114,10 +115,10 @@ export default function Tab({ post }) {
                         <textarea
                             type='text'
                             name='description'
-                            value={postData?.adDetails?.description}
+                            value={postData?.details?.description}
                             onChange={handleChange}
                         />
-                        {postData?.adDetails.productName !== undefined
+                        {postData?.details.productName !== undefined
                             ?
                             <>
                                 <label>
@@ -126,7 +127,7 @@ export default function Tab({ post }) {
                                 <input
                                     type='text'
                                     name='productName'
-                                    value={postData?.adDetails.productName}
+                                    value={postData?.details.productName}
                                     onChange={handleChange}
                                 />
                             </>
@@ -136,9 +137,9 @@ export default function Tab({ post }) {
                         <label>
                             Type de Prix:
                         </label>
-                        <select name='priceType' onChange={handleChange}>
+                        <select name='price_type' onChange={handleChange}>
                             {typeOfPrice.fr.map((type, index) => (
-                                <option key={index} value={type || postData?.adDetails?.priceType}>
+                                <option key={index} value={type || postData?.details?.priceType}>
                                     {type}
                                 </option>
                             ))}
@@ -150,7 +151,7 @@ export default function Tab({ post }) {
                         <input
                             type='number'
                             name='price'
-                            value={postData?.adDetails?.price}
+                            value={postData?.details?.price}
                             onChange={handleChange}
                         />
                         {/* Other details */}

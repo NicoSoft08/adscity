@@ -9,7 +9,7 @@ export default function HelpLayout() {
         <div className='help-layout'>
 
             <div className="heading">
-                <img src={IconHelpCenter} alt="hel-center-logo" />
+                <img src={IconHelpCenter} alt="hel-center-logo" />                
             </div>
 
             {/* <section className="help-hero">

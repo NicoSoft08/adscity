@@ -1,0 +1,11 @@
+{
+    "fields": [
+        {
+            "name": "images",
+            "label": "Photos",
+            "type": "file",
+            "multiple": true,
+            "required": true
+        }
+    ]
+}

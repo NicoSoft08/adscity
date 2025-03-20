@@ -30,7 +30,7 @@ import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
-    const { id, PostID, UserID, userID, adDetails, images, location, category, subcategory, isActive, moderated_at, isSold, stats } = post;
+    const { id, PostID, UserID, userID, details = {}, images = [], location = {}, category, subcategory, isActive, moderated_at, isSold, stats } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -172,13 +172,13 @@ export default function CardItem({ post, onToggleFavorite }) {
     ];
 
     const handleMouseEnter = () => {
-        if (images?.length > 1) {
-            setCurrentImage(images[0]) // Passer à la deuxième image si disponible
+        if (images.length > 1) {
+            setCurrentImage(images[1]); // Passer à la deuxième image si disponible
         }
     };
 
     const handleMouseLeave = () => {
-        setCurrentImage(images?.length > 0 ? images[0] : ""); // Revenir à l’image principale
+        setCurrentImage(images.length > 0 ? images[0] : ""); // Revenir à l’image principale
     };
 
     const handleReportWithReason = async (postID, reasonLabel) => {
@@ -382,9 +382,9 @@ export default function CardItem({ post, onToggleFavorite }) {
                 onMouseLeave={handleMouseLeave}
             >
                 <img
-                    title={`Annonce: ${adDetails.title}`}
+                    title={`Annonce: ${details.title}`}
                     src={currentImage}
-                    alt={adDetails.title}
+                    alt={details.title}
                     className="card-image"
                 // onError={() => setCurrentImage(PlaceholderImage)} // Gérer les erreurs de chargement
                 />
@@ -392,13 +392,13 @@ export default function CardItem({ post, onToggleFavorite }) {
 
             {/* Contenu de l'annonce */}
             <div className="card-content">
-                <h2 className="card-title" title={`${adDetails?.title}`}>
-                    {adDetails?.title?.length > 50
-                        ? `${adDetails.title.substring(0, 50)}...`
-                        : adDetails.title
+                <h2 className="card-title" title={`${details?.title}`}>
+                    {details?.title?.length > 50
+                        ? `${details.title.substring(0, 50)}...`
+                        : details.title
                     }
                 </h2>
-                <p className="card-price">{adDetails.price} RUB</p>
+                <p className="card-price">{details.price} RUB</p>
                 <p className="card-city">{location.city}, {location.country}</p>
                 <div onClick={() => handleProfileClick(`/users/user/${user_id}/profile/show`)} className="announcer">
                     <img src={profileImage} alt="avatar" className="avatar" />

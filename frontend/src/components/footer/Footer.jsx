@@ -23,7 +23,7 @@ export default function Footer() {
                         <li><a href="/about">Qui sommes-nous</a></li>
                         {/* <li><a href="/pub">Publicité</a></li> */}
                         <li><a href="/business">Pour les entreprises</a></li>
-                        <li><a href="/pricing">Tarifs</a></li>
+                        {/* <li><a href="/pricing">Tarifs</a></li> */}
                     </ul>
                 </div>
 

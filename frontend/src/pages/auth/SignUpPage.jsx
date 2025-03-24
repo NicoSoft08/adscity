@@ -24,6 +24,7 @@ export default function SignUpPage() {
     const [loading, setLoading] = useState(false);
     const [selectedCountry, setSelectedCountry] = useState(countries[0]);
     const [cities, setCities] = useState([]);
+    const [selectedLetter, setSelectedLetter] = useState('');
     const [formData, setFormData] = useState({
         firstName: '', lastName: '',
         email: '', phoneNumber: '',
@@ -176,6 +177,13 @@ export default function SignUpPage() {
         }
     }
 
+    const handleLetterChange = (event) => {
+        const letter = event.target.value;
+        setSelectedLetter(letter);
+        setCities(citiesData.filter(city => city.city.startsWith(letter)));
+        // setFilteredCities(citiesData.filter(city => city.startsWith(letter)));
+    };
+
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -264,20 +272,30 @@ export default function SignUpPage() {
                         />
                         {errors.country && <div className="error-text">{errors.country}</div>}
 
-                        <select
-                            id="city-select"
-                            name='city'
-                            className={`input-field ${errors.city ? 'error' : ''}`}
-                            value={formData.city}
-                            onChange={handleChange}
-                        >
-                            <option value="">Ville</option>
-                            {cities.map((city, index) => (
-                                <option key={index} value={city.city}>
-                                    {city.city}
-                                </option>
-                            ))}
+                        <select onChange={handleLetterChange}>
+                            <option value="">Lettre initiale de la ville</option>
+                            {[...Array(26)].map((_, index) => {
+                                const letter = String.fromCharCode(65 + index);
+                                return <option key={letter} value={letter}>{letter}</option>;
+                            })}
                         </select>
+
+                        {selectedLetter && (
+                            <select
+                                id="city-select"
+                                name='city'
+                                className={`input-field ${errors.city ? 'error' : ''}`}
+                                value={formData.city}
+                                onChange={handleChange}
+                            >
+                                <option value="">Ville</option>
+                                {cities.map((city, index) => (
+                                    <option key={index} value={city.city}>
+                                        {city.city}
+                                    </option>
+                                ))}
+                            </select>
+                        )}
                         {errors.city && <div className="error-text">{errors.city}</div>}
 
                         <input

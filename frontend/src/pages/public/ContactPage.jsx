@@ -1,27 +1,25 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { faCheck, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link, useNavigate } from 'react-router-dom';
 import { contactSupportClient } from '../../routes/apiRoutes';
-import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
-import '../../styles/ContactPage.scss';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import '../../styles/ContactPage.scss';
 
 export default function ContactPage() {
     const navigate = useNavigate();
-    const { currentUser, userData } = useContext(AuthContext);
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [message, setMessage] = useState('');
     const [errors, setErrors] = useState({});
     const [formData, setFormData] = useState({
-        firstName: userData.firstName || '',
-        lastName: userData.lastName || '',
-        email: userData.email || '',
+        firstName: '',
+        lastName: '',
+        email: '',
         object: '',
         message: '',
         agree: false,
@@ -82,26 +80,9 @@ export default function ContactPage() {
             return;
         }
 
-        if (currentUser) {
-            setToast({
-                show: true,
-                type: 'error',
-                message: 'Veuillez vous connecter pour envoyer un message',
-            });
-
-            setLoading(false);
-            return;
-        };
-
+        
         try {
-            const newForm = {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                object: formData.object,
-                message: formData.message,
-            };
-            const result = await contactSupportClient(newForm);
+            const result = await contactSupportClient(formData);
             if (result.success) {
                 setMessage(result.message);
                 setSubmitted(true);

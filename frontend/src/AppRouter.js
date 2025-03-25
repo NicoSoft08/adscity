@@ -18,7 +18,7 @@ import HelpPage from './pages/public/HelpPage';
 import HomePage from './pages/public/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import NotFoundPage from './pages/public/NotFoundPage';
-import PlansPage from './pages/public/PlansPage';
+// import PlansPage from './pages/public/PlansPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import RulesPage from './pages/private/RulesPage';
 import SearchResultPage from './pages/public/SearchResultPage';
@@ -41,7 +41,7 @@ import PaymentPage from './pages/private/PaymentPage';
 import UserProfile from './pages/private/UserProfile';
 import DashboardPanel from './pages/private/DashboardPanel';
 import { AuthContext } from './contexts/AuthContext';
-import Settings from './pages/private/Settings';
+// import Settings from './pages/private/Settings';
 // import Messages from './pages/private/Messages';
 import ManagePosts from './pages/private/ManagePosts';
 import ManagePostID from './pages/private/ManagePostID';
@@ -68,7 +68,7 @@ export default function AppRouter() {
 
                     <Route path='/contact-us' element={<ContactPage />} />
 
-                    <Route path='/pricing' element={<PlansPage />} />
+                    {/* <Route path='/pricing' element={<PlansPage />} /> */}
                     <Route path='/search-results' element={<SearchResultPage />} />
                     {/* <Route path="/filters" element={<FiltersPage />} /> */}
 
@@ -115,7 +115,7 @@ export default function AppRouter() {
                     {/* <Route path="messages" element={<Messages currentUser={currentUser} />} /> */}
                     <Route path="notifications" element={<ManageNotifications />} />
                     <Route path="profile" element={<UserProfile />} />
-                    <Route path="settings" element={<Settings />} />
+                    {/* <Route path="settings" element={<Settings />} /> */}
                 </Route>
 
                 <Route path='/access-denied' element={<AccessDenied />} />

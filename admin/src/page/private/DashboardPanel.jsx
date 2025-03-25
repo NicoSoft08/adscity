@@ -108,7 +108,7 @@ export default function DashboardPanel() {
 
     const handleClickAddAdmin = () => {
         if (currentUser && userData.permissions.includes('SUPER_ADMIN')) {
-            navigate('create-admin')
+            navigate('create-admin');
         } else {
             setToast({
                 show: true,

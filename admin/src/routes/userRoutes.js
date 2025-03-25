@@ -199,10 +199,27 @@ const getUserLoginActivity = async (userID) => {
         console.error('Erreur lors de la récupération de l\'activité de connexion de l\'utilisateur:', error);
         throw error;
     }
-}
+};
+
+const getUserIDLoginActivity = async (UserID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/user/${UserID}/login-activity`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la récupération de l\'activité de connexion de l\'utilisateur:', error);
+        throw error;
+    }
+};
 
 export {
     getUserLoginActivity,
+    getUserIDLoginActivity,
     markAllNotificationsAsRead,
     deteleteAllNotifications,
     deleteNotification,

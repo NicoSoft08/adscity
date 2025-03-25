@@ -6,9 +6,9 @@ import { fetchPostById } from '../../routes/postRoutes';
 import Loading from '../../customs/Loading';
 import PostCard from '../../components/card/PostCard';
 import { AuthContext } from '../../contexts/AuthContext';
-import '../../styles/ManagePostID.scss';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
+import '../../styles/ManagePostID.scss';
 
 export default function ManagePostID() {
     const { post_id } = useParams();

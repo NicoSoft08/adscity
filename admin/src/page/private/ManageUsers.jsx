@@ -165,7 +165,7 @@ export default function ManageUsers() {
                 navigate(`${user_id}`)
                 break;
             case 'activity':
-                navigate(`${user_id}/activity`)
+                navigate(`${user_id}/activity`, { state: { user_id: user_id } });
                 break;
             default:
                 return null;

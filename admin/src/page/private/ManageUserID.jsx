@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { fetchUserById } from '../../routes/userRoutes';
 import Loading from '../../customs/Loading';
 import UserCard from '../../components/card/UserCard';
+import { deleteUser, disableUser, restoreUser } from '../../routes/authRoutes';
 import '../../styles/ManageUserID.scss';
 
 export default function ManageUserID() {
@@ -58,7 +59,7 @@ export default function ManageUserID() {
         {
             label: 'Activités',
             icon: faChartSimple,
-            action: () => navigate('activity')
+            action: () => navigate('activity', { state: { UserID: user?.UserID } })
         },
         {
             label: 'Restaurer',
@@ -72,11 +73,38 @@ export default function ManageUserID() {
         },
     ];
 
-    const handleDelete = () => {};
+    const handleDelete = async () => {
+        try {
+            const result = await deleteUser(user?.userID);
+            if (result.success) {
+                navigate('/admin/dashboard/users');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suppression:', error);
+        }
+    };
 
-    const handleSuspend = () => {};
+    const handleSuspend = async () => {
+        try {
+            const result = await disableUser(user?.userID);
+            if (result.success) {
+                navigate('/admin/dashboard/users');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suspension:', error);
+        }
+    };
 
-    const handleRestore = () => {};
+    const handleRestore = async () => {
+        try {
+            const result = await restoreUser(user?.userID);
+            if (result.success) {
+                navigate('/admin/dashboard/users');
+            }
+        } catch (error) {
+            console.error('Erreur lors de la restauration:', error);
+        }
+    };
 
     if (loading) {
         return <Loading />;

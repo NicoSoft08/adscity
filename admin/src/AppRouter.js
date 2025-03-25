@@ -10,7 +10,7 @@ import DashboardPanel from './page/private/DashboardPanel';
 import ManagePosts from './page/private/ManagePosts';
 import ManageUsers from './page/private/ManageUsers';
 import UserProfile from './page/private/UserProfile';
-import Settings from './page/private/Settings';
+// import Settings from './page/private/Settings';
 import ManagePubs from './page/private/ManagePubs';
 import CreatePub from './page/private/CreatePub';
 import CreateAdmin from './page/private/CreateAdmin';
@@ -43,7 +43,7 @@ export default function AppRouter() {
                     <Route path='payments' element={<ManagePayments />} />
                     <Route path='notifications' element={<ManageNotifications />} />
                     <Route path='profile' element={<UserProfile />} />
-                    <Route path='settings' element={<Settings />} />
+                    {/* <Route path='settings' element={<Settings />} /> */}
                 </Route>
                 <Route path='/access-denied' element={<AccessDenied />} />
                 <Route path='*' element={<NotFoundPage />} />

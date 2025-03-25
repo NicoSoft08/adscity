@@ -136,8 +136,42 @@ const deleteUser = async (userID) => {
             throw new Error('Erreur lors de la suppression de l\'utilisateur');
         }
 
-        const data = await response.json();
-        console.log(data.message); // "Utilisateur supprimé avec succès."
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+};
+
+const disableUser = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/disable-user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID }),
+        });
+        const result = await response.json();
+        return result;
+       
+    } catch (error) {
+        console.error('Erreur:', error);
+    }
+};
+
+const restoreUser = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/restore-user`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID }),
+        });
+        const result = await response.json();
+        console.log(result);
+        return result;
     } catch (error) {
         console.error('Erreur:', error);
     }
@@ -145,6 +179,8 @@ const deleteUser = async (userID) => {
 
 export { 
     addNewAdmin,
+    disableUser,
+    restoreUser,
     deleteUser,
     logoutUser,
     sendVerificationCode,

@@ -24,10 +24,10 @@ export default function EditPostID({ currentUser }) {
             if (result.success) {
                 setLoading(false);
                 setFormData({
-                    condition: result.data.adDetails.condition || "",
-                    description: result.data.adDetails.description || "",
-                    price: result.data.adDetails.price || "",
-                    priceType: result.data.adDetails.priceType || "",
+                    condition: result.data.details.condition || "",
+                    description: result.data.details.description || "",
+                    price: result.data.details.price || "",
+                    price_type: result.data.details.price_type || "",
                 })
             }
         };

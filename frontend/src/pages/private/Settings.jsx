@@ -221,14 +221,14 @@ export default function Settings() {
                         onChange={handleInputChange}
                         placeholder="Téléphone"
                     />
-                    <input
+                    {/* <input
                         type="text"
                         name='country'
                         value={personalInfo.country}
                         onChange={handleInputChange}
                         placeholder="Pays"
-                    />
-                    <input
+                    /> */}
+                    {/* <input
                         type="text"
                         name='city'
                         value={personalInfo.city}
@@ -241,7 +241,7 @@ export default function Settings() {
                         value={personalInfo.address}
                         onChange={handleInputChange}
                         placeholder="Adresse"
-                    />
+                    /> */}
                     <button onClick={handlePersonalInfoUpdate}>Enregistrer</button>
                 </form>
             </section>

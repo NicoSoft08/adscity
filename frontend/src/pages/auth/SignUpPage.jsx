@@ -33,10 +33,36 @@ export default function SignUpPage() {
     });
 
     useEffect(() => {
-        setCities(citiesData);
-    }, []);
+        if (selectedCountry) {
+            setCities(citiesData.filter(city => city.countryCode === selectedCountry.code));
+        }
+    }, [selectedCountry]);
 
-    const nextStep = () => setStep(step + 1);
+    const validateStep = () => {
+        let errors = {};
+        if (step === 1) {
+            if (!formData.firstName.trim()) errors.firstName = "Le prénom est requis";
+            if (!formData.lastName.trim()) errors.lastName = "Le nom est requis";
+        }
+        if (step === 2) {
+            if (!formData.email.includes("@")) errors.email = "Email invalide";
+            if (!formData.phoneNumber.trim()) errors.phoneNumber = "Numéro requis";
+        }
+        if (step === 3) {
+            if (!formData.city) errors.city = "Ville requise";
+            if (!formData.address.trim()) errors.address = "Adresse requise";
+        }
+        if (step === 4) {
+            if (formData.password.length < 6) errors.password = "Mot de passe trop court";
+        }
+    
+        setErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+    
+    const nextStep = () => {
+        if (validateStep()) setStep(step + 1);
+    };
     const prevStep = () => setStep(step - 1);
 
     const toggleShowPassword = () => {
@@ -126,6 +152,9 @@ export default function SignUpPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        setErrors({});  // Réinitialisation des erreurs
+        setLoading(true);
+
 
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
@@ -178,10 +207,9 @@ export default function SignUpPage() {
     }
 
     const handleLetterChange = (event) => {
-        const letter = event.target.value;
+        const letter = event.target.value.toUpperCase();
         setSelectedLetter(letter);
-        setCities(citiesData.filter(city => city.city.startsWith(letter)));
-        // setFilteredCities(citiesData.filter(city => city.startsWith(letter)));
+        setCities(citiesData.filter(city => city.city.toUpperCase().startsWith(letter)));
     };
 
     const renderStep = () => {

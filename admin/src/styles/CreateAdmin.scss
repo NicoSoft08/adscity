@@ -44,7 +44,52 @@
                 font-size: 18px;
                 margin: 0;
             }
-        
+
+            .phone-input-container {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                background: #fff;
+            
+                .select-wrapper {
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+                    position: relative;
+            
+                    .country-select {
+                        appearance: none;
+                        border: none;
+                        padding: 6px;
+                        font-size: 14px;
+                        background: transparent;
+                        cursor: pointer;
+                        outline: none;
+                    }
+            
+                    .selected-flag {
+                        width: 24px;
+                        height: 16px;
+                        border-radius: 3px;
+                        box-shadow: 0 0 3px rgba(0, 0, 0, 0.2);
+                    }
+                }
+            
+                .input-field {
+                    flex: 1;
+                    border: none;
+                    outline: none;
+                    font-size: 14px;
+                    padding: 6px;
+                    width: 100%;
+            
+                    &.error {
+                        border-bottom: 2px solid $danger;
+                    }
+                }
+            }        
         
             .error-text {
                 font-size: 13px;

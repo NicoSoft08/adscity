@@ -3916,7 +3916,90 @@
                 "placeholder": "Ajoutez une description détaillée..."
             }
         ],
-        "land": [],
+        "land": [
+            {
+                "label": "Titre de l'annonce",
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : Terrain de 500 m² en vente à Abidjan"
+            },
+            {
+                "label": "Type d'offre",
+                "name": "offer_type",
+                "type": "select",
+                "options": ["Vente", "Location", "Bail"],
+                "required": true
+            },
+            {
+                "label": "Superficie totale",
+                "name": "surface",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : 500 m², 1 hectare"
+            },
+            {
+                "label": "Type de terrain",
+                "name": "land_type",
+                "type": "select",
+                "options": [
+                    "Terrain résidentiel",
+                    "Terrain commercial",
+                    "Terrain agricole",
+                    "Terrain industriel",
+                    "Terrain mixte"
+                ],
+                "required": true
+            },
+            {
+                "label": "Localisation",
+                "name": "location",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : Abidjan, Cocody, Riviera 2"
+            },
+            {
+                "label": "Statut juridique",
+                "name": "legal_status",
+                "type": "select",
+                "options": [
+                    "ACD (Arrêté de Concession Définitive)",
+                    "TF (Titre Foncier)",
+                    "Attestation Villageoise",
+                    "Terrain en lotissement",
+                    "Non spécifié"
+                ],
+                "required": true
+            },
+            {
+                "label": "Documents disponibles",
+                "name": "documents",
+                "type": "checkbox",
+                "options": ["Plan de lotissement", "Certificat de propriété", "Attestation villageoise", "ACD", "TF"],
+                "required": false
+            },
+            {
+                "label": "Viabilisé",
+                "name": "service_land",
+                "type": "select",
+                "options": ["Oui", "Non"],
+                "required": true
+            },
+            {
+                "label": "Prix",
+                "name": "price",
+                "type": "number",
+                "required": true,
+                "placeholder": "Ex. : 5000000 (sans symbole)"
+            },
+            {
+                "label": "Type de prix",
+                "name": "price_type",
+                "type": "select",
+                "options": ["Prix fixe", "Prix négociable", "Sur devis"],
+                "required": true
+            }
+        ],
         "residences": [
             {
                 "name": "title",
@@ -4061,6 +4144,13 @@
                 "required": true
             },
             {
+                "name": "price",
+                "label": "Prix",
+                "type": "number",
+                "required": true,
+                "placeholder": "Ex: 80000000"
+            },
+            {
                 "name": "price_type",
                 "label": "Type de prix",
                 "type": "select",
@@ -4070,13 +4160,6 @@
                     "Prix à partir de"
                 ],
                 "required": true
-            },
-            {
-                "name": "price",
-                "label": "Prix",
-                "type": "number",
-                "required": true,
-                "placeholder": "Ex: 80000000"
             },
             {
                 "name": "description",
@@ -4107,7 +4190,132 @@
         "bedding-and-mattresses": [],
         "garden-and-swimming-pool": [],
         "other-for-the-home": [],
-        "job-offers": [],
+        "job-offers": [
+            {
+                "label": "Titre du poste",
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : Développeur Web Full Stack"
+            },
+            {
+                "label": "Nom de l'entreprise",
+                "name": "company_name",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : AdsCity Technologies"
+            },
+            {
+                "label": "Secteur d'activité",
+                "name": "industry",
+                "type": "select",
+                "options": [
+                    "Informatique & Télécoms",
+                    "BTP & Construction",
+                    "Finance & Comptabilité",
+                    "Santé & Médecine",
+                    "Éducation & Formation",
+                    "Commerce & Vente",
+                    "Transport & Logistique",
+                    "Hôtellerie & Restauration",
+                    "Marketing & Communication",
+                    "Autres"
+                ],
+                "required": true
+            },
+            {
+                "label": "Type de contrat",
+                "name": "contract_type",
+                "type": "select",
+                "options": [
+                    "CDI (Contrat à Durée Indéterminée)",
+                    "CDD (Contrat à Durée Déterminée)",
+                    "Stage",
+                    "Freelance",
+                    "Temps partiel"
+                ],
+                "required": true
+            },
+            {
+                "label": "Niveau d'expérience",
+                "name": "experience_level",
+                "type": "select",
+                "options": [
+                    "Débutant (0-1 an)",
+                    "Junior (1-3 ans)",
+                    "Confirmé (3-5 ans)",
+                    "Senior (5 ans et plus)"
+                ],
+                "required": true
+            },
+            {
+                "label": "Diplôme requis",
+                "name": "degree_required",
+                "type": "select",
+                "options": [
+                    "Sans diplôme",
+                    "BEP/CAP",
+                    "Bac",
+                    "Bac+2 (DUT, BTS)",
+                    "Bac+3 (Licence)",
+                    "Bac+5 et plus (Master, Doctorat)"
+                ],
+                "required": true
+            },
+            {
+                "label": "Mode de travail",
+                "name": "work_mode",
+                "type": "select",
+                "options": ["Présentiel", "Télétravail", "Hybride"],
+                "required": true
+            },
+            {
+                "label": "Compétences requises",
+                "name": "skills",
+                "type": "textarea",
+                "required": true,
+                "placeholder": "Listez les compétences nécessaires (ex. : Maîtrise de React, gestion de projet, etc.)"
+            },
+            {
+                "label": "Avantages et bénéfices",
+                "name": "benefits",
+                "type": "textarea",
+                "required": false,
+                "placeholder": "Ex. : Tickets restaurant, assurance santé, prime de performance..."
+            },
+            {
+                "label": "Date limite de candidature",
+                "name": "deadline",
+                "type": "date",
+                "message": "La date limite est requise.",
+                "required": true
+            },
+            {
+                "name": "price_type",
+                "label": "Type de prix",
+                "type": "select",
+                "required": true,
+                "options": [
+                    "Prix fixe",
+                    "Prix négociable",
+                    "Prix à partir de"
+                ]
+            },
+            {
+                "label": "Fourchette salariale",
+                "name": "price",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : 300 000 - 500 000 RUB"
+            },
+            {
+                "label": "Description du poste",
+                "name": "description",
+                "type": "textarea",
+                "required": true,
+                "placeholder": "Détaillez les missions, les responsabilités et les attentes du poste."
+            }
+        ],
         "job-applications": [],
         "training-courses": [],
         "carpooling": [],
@@ -4116,8 +4324,151 @@
         "household-and-kitchen": [],
         "shopping-deliveries-and-moving": [],
         "work-tinkering-and-gardening": [],
-        "web-services-design-and-photo": [],
-        "fashion-beauty-and-wellness-services": [],
+        "web-services-design-and-photo": [
+            {
+                "name": "title",
+                "label": "Titre",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex : Création de site web, Montage vidéo, Retouche photo"
+            },
+            {
+                "name": "service_type",
+                "label": "Type de service",
+                "type": "select",
+                "required": true,
+                "options": [
+                    "Développement Web",
+                    "Design Graphique",
+                    "Photographie",
+                    "Montage Vidéo",
+                    "Autre"
+                ]
+            },
+            {
+                "name": "skills",
+                "label": "Compétences et logiciels utilisés",
+                "type": "text",
+                "required": false,
+                "placeholder": "Exemple : Photoshop, Figma, Premiere Pro, React"
+            },
+            {
+                "name": "delivery_time",
+                "label": "Délai de livraison",
+                "type": "select",
+                "required": true,
+                "options": [
+                    "Immédiat",
+                    "1 jour",
+                    "2-3 jours",
+                    "1 semaine",
+                    "Plus d'une semaine",
+                    "1 mois",
+                    "Plus d'un mois"
+                ]
+            },
+            {
+                "name": "price_type",
+                "label": "Type de prix",
+                "type": "select",
+                "required": true,
+                "options": [
+                    "Prix fixe",
+                    "Prix négociable",
+                    "Prix à partir de"
+                ]
+            },
+            {
+                "name": "price",
+                "label": "Prix",
+                "type": "number",
+                "required": true,
+                "placeholder": "Ex: 8000"
+            },
+            {
+                "name": "description",
+                "label": "Description",
+                "type": "textarea",
+                "required": false,
+                "placeholder": "Ajoutez une description détaillée..."
+            }
+        ],
+        "fashion-beauty-and-wellness-services": [
+            {
+                "label": "Titre de l'annonce",
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : Robes africaines sur mesure / Coiffure à domicile"
+            },
+            {
+                "label": "Type de produit ou service",
+                "name": "product_type",
+                "type": "select",
+                "options": ["Vêtements et accessoires", "Produits cosmétiques", "Coiffure", "Esthétique", "Bien-être", "Autre"],
+                "required": true
+            },
+            {
+                "label": "Catégorie spécifique",
+                "name": "category",
+                "type": "select",
+                "options": [
+                    "Vêtements traditionnels africains",
+                    "Chaussures et sacs",
+                    "Bijoux et accessoires",
+                    "Produits cosmétiques naturels",
+                    "Parfums et soins du corps",
+                    "Coiffure et tresses africaines",
+                    "Maquillage professionnel",
+                    "Onglerie et manucure",
+                    "Massages et relaxation",
+                    "Soins de la peau et spa"
+                ],
+                "required": true
+            },
+            {
+                "label": "Matériaux ou ingrédients (si applicable)",
+                "name": "materials",
+                "type": "textarea",
+                "required": false,
+                "placeholder": "Ex. : Coton wax 100%, beurre de karité, huile d'argan"
+            },
+            {
+                "label": "Tailles disponibles (si applicable)",
+                "name": "size",
+                "type": "text",
+                "required": false,
+                "placeholder": "Ex. : S, M, L, XL / Sur mesure"
+            },
+            {
+                "label": "Service à domicile disponible",
+                "name": "home_service",
+                "type": "select",
+                "options": ["Oui", "Non"],
+                "required": true
+            },
+            {
+                "label": "Prix",
+                "name": "price",
+                "type": "number",
+                "required": true,
+                "placeholder": "Ex. : 15000 (sans symbole)"
+            },
+            {
+                "label": "Type de prix",
+                "name": "price_type",
+                "type": "select",
+                "options": ["Prix fixe", "Prix négociable", "Sur devis"],
+                "required": true
+            },
+            {
+                "label": "Description",
+                "name": "description",
+                "type": "textarea",
+                "required": false,
+                "placeholder": "Décrivez votre produit ou service en détail (matières, techniques, bienfaits, etc.)"
+            }
+        ],
         "other-services": [],
         "children-clothing": [
             {
@@ -4852,6 +5203,85 @@
         ],
         "art-and-crafts": [],
         "travel-and-tourism": [],
-        "other-sports-and-leisure": []
+        "other-sports-and-leisure": [],
+        "food-products": [
+            {
+                "label": "Titre de l'annonce",
+                "name": "title",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : Vente de poudre de manioc bio"
+            },
+            {
+                "label": "Type de produit",
+                "name": "product_type",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex: maïs, riz, manioc, fruits, légumes"
+            },
+            {
+                "label": "Catégorie du produit",
+                "name": "category",
+                "type": "select",
+                "options": ["Céréales", "Légumes", "Fruits tropicaux", "Tubercules", "Viandes & Poissons", "Épices & Condiments", "Huiles & Graisses", "Produits laitiers"],
+                "required": false
+            },
+            {
+                "label": "Unité de mesure",
+                "name": "unit_of_measure",
+                "type": "select",
+                "options": ["kg", "litres", "sacs", "pièces", "bouteilles"],
+                "required": false
+            },
+            {
+                "label": "Quantité disponible",
+                "name": "quantity",
+                "type": "text",
+                "required": false,
+                "placeholder": "Ex. : 100 kg, 100 pièces"
+            },
+            {
+                "label": "Origine du produit",
+                "name": "origine",
+                "type": "text",
+                "required": true,
+                "placeholder": "Ex. : Abidjan, Côte d'Ivoire"
+            },
+            {
+                "label": "Type de prix",
+                "name": "price_type",
+                "type": "select",
+                "options": ["Fixe", "Négociable", "À partir de"],
+                "required": true
+            },
+            {
+                "label": "Prix par unité",
+                "name": "price",
+                "type": "number",
+                "required": true,
+                "placeholder": "Ex. : 1500 (sans symbole)"
+            },
+            {
+                "label": "Description",
+                "name": "description",
+                "type": "textarea",
+                "required": true,
+                "placeholder": "Décrivez votre produit en détail (méthode de culture, fraîcheur, avantages, etc.)"
+            },
+            {
+                "label": "Disponibilité du produit",
+                "name": "availability",
+                "type": "select",
+                "options": ["En stock", "Sur commande"],
+                "required": true
+            },
+            {
+                "label": "Méthode de livraison",
+                "name": "delievery",
+                "type": "select",
+                "options": ["Livraison locale", "Expédition internationale", "Retrait sur place"],
+                "required": false
+            }
+        ]
     }
 }

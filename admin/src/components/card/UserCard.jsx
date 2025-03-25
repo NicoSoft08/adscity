@@ -119,13 +119,6 @@ export default function UserCard({ user }) {
                     )}
                 </>
             ) : null}
-
-            {/* Bouton d'actions */}
-            <div className="actions">
-                <button className="action-button suspend">Suspendre</button>
-                <button className="action-button delete">Supprimer</button>
-                <button className="action-button restaure">Supprimer</button>
-            </div>
         </div>
     );
 };

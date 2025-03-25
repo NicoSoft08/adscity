@@ -28,7 +28,7 @@ const sendCode = async (displayName, email, code) => {
                     <h3 style="color: #417abc;">Bonjour ${displayName},</h3>
                     <p>Vous avez initié une inscription sur la plateforme <strong>AdsCity</strong>.</p>
                     <p>Votre code de vérification est : <strong style="font-size: 18px;">${code}</strong>.</p>
-                    <p>Il est valable pendant <strong>15 minutes</strong>.</p>
+                    <p>Il est valable pendant <strong>24 heures</strong>.</p>
                     <p>Merci de vérifier votre adresse email pour continuer à utiliser AdsCity.</p>
                     
                     <p style="color: red; font-weight: bold; margin-top: 20px;">

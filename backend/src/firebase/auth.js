@@ -275,6 +275,66 @@ const deletionUser = async (userID) => {
     }
 };
 
+const disableUser = async (userID) => {
+    try {
+        // Vérifie si l'utilisateur existe dans Firebase Authentication
+        const userRecord = await auth.getUser(userID);
+        if (!userRecord) {
+            console.log('Utilisateur non trouvé');
+            return false;
+        }
+        await auth.updateUser(userID, {
+            disabled: true,
+        });
+
+        // Vérifie si l'utilisateur existe dans Firestore
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log('Utilisateur non trouvé');
+            return false;
+        }
+        await userRef.update({
+            isActive: false,
+            lastLogoutAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la désactivation de l\'utilisateur:', error);
+        return false;
+    }
+};
+
+const restoreUser = async (userID) => {
+    try {
+        // Vérifie si l'utilisateur existe dans Firebase Authentication
+        const userRecord = await auth.getUser(userID);
+        if (!userRecord) {
+            console.log('Utilisateur non trouvé');
+            return false;
+        }
+        await auth.updateUser(userID, {
+            disabled: false,
+        });
+
+        // Vérifie si l'utilisateur existe dans Firestore
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            console.log('Utilisateur non trouvé');
+            return false;
+        }
+        await userRef.update({
+            isActive: true,
+            lastLogoutAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la restauration de l\'utilisateur:', error);
+        return false;
+    }
+}
+
 const verifyCode = async (email, code) => {
     try {
         // Recherche l'utilisateur dans Firestore par email
@@ -509,6 +569,8 @@ module.exports = {
     signinUser,
     logoutUser,
     deletionUser,
+    disableUser,
+    restoreUser,
     updatePassword,
     verifyCode,
 };

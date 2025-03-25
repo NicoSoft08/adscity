@@ -24,7 +24,8 @@ const {
     markAdminNotificationAsRead,
     markAllAdminNotificationsAsRead,
     clearAdminNotification,
-    clearAdminAllNotifications
+    clearAdminAllNotifications,
+    collectUserIDLoginActivity
 } = require("../firebase/user");
 
 const getAllUsersWithStatus = async (req, res) => {
@@ -701,7 +702,32 @@ const getUserLoginActivity = async (req, res) => {
             message: "Erreur technique, réessayez plustard"
         });
     }
-}
+};
+
+const getUserIDLoginActivity = async (req, res) => {
+    const { UserID } = req.params; 
+
+    try {
+        const activity = await collectUserIDLoginActivity(UserID);
+        if (!activity) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune activité de connexion trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Activité de connexion récupérée avec succès",
+            activity: activity
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération de l'activité de connexion de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plustard"
+        });
+    }
+};
 
 module.exports = {
     getAdminNotifications,
@@ -720,6 +746,7 @@ module.exports = {
     deleteAdminAllNotifications,
     getUserPermissions,
     getUserLoginActivity,
+    getUserIDLoginActivity,
     modifyUserFields,
     readUserNotification,
     readAdminNotification,

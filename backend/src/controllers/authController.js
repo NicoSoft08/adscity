@@ -1,4 +1,4 @@
-const { createUser, signinUser, logoutUser, deletionUser, verifyCode, updatePassword, addNewAdmin, authorizeDevice, desableDevice } = require("../firebase/auth");
+const { createUser, signinUser, logoutUser, deletionUser, verifyCode, updatePassword, addNewAdmin, authorizeDevice, desableDevice, disableUser, restoreUser } = require("../firebase/auth");
 const { checkIfPhoneNumberExists } = require("../func");
 const { getFirebaseErrorMessage } = require("../utils/firebaseErrorHandler");
 
@@ -142,7 +142,7 @@ const signoutUser = async (req, res) => {
 };
 
 const deleteUser = async (req, res) => {
-    const { userID } = req.params;
+    const { userID } = req.body;
 
     try {
         const isDeleted = await deletionUser(userID);
@@ -163,6 +163,54 @@ const deleteUser = async (req, res) => {
         return res.status(500).json({
             success: false,
             error: errorMessage,
+            message: 'Erreur technique, réessayez plus tard.'
+        });
+    }
+};
+
+const disableUserAccount = async (req, res) => {
+    const { userID } = req.body; 
+
+    try {
+        const isDisabled = await disableUser(userID);
+        if (!isDisabled) {
+            return res.status(400).json({
+                success: false,
+                message: 'L\'utilisateur n\'a pas été trouvé ou n\'a pas encore vérifié son email.'
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Votre compte a été désactivé avec succès.'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la désactivation de l\'utilisateur :', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard.'
+        });
+    }
+};
+
+const restoreUserAccount = async (req, res) => {
+    const { userID } = req.body; 
+
+    try {
+        const isRestored = await restoreUser(userID);
+        if (!isRestored) {
+            return res.status(400).json({
+                success: false,
+                message: 'L\'utilisateur n\'a pas été trouvé ou n\'a pas encore vérifié son email.'
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Votre compte a été restauré avec succès.'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la restauration de l\'utilisateur :', error);
+        return res.status(500).json({
+            success: false,
             message: 'Erreur technique, réessayez plus tard.'
         });
     }
@@ -309,6 +357,8 @@ module.exports = {
     loginUser,
     signoutUser,
     deleteUser,
+    disableUserAccount,
+    restoreUserAccount,
     refuseDevice,
     validateDevice,
     verifyOTPCode,

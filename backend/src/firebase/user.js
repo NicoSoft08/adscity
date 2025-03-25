@@ -672,11 +672,36 @@ const collectUserLoginActivity = async (userID) => {
     }
 };
 
+const collectUserIDLoginActivity = async (UserID) => {
+    const user_id = UserID?.toUpperCase();
+    try {
+        const userSnapshot = await firestore.collection('USERS').where('UserID', '==', user_id).limit(1).get();
+        if (userSnapshot.empty) {
+            console.log("❌ Aucun utilisateur trouvé avec l'UserID spécifié.");
+            return null;
+        }
+        const userDoc = userSnapshot.docs[0];
+        const userID = userDoc.id;
+
+        const loginRef = firestore.collection('USERS').doc(userID).collection('LOGIN_ACTIVITY');
+        const loginQuery = await loginRef.orderBy('time', 'desc').get();
+        const loginData = loginQuery.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        }));
+        return loginData
+    } catch (error) {
+        console.error("❌ Erreur lors de la récupération des données de connexion utilisateur :", error);
+        return null;
+    }
+};
+
 module.exports = {
     addRemoveFavorites,
     collectAnyUserData,
     collectInterlocutorProfile,
     collectUserLoginActivity,
+    collectUserIDLoginActivity,
     collectUserFavorites,
     getUser,
     getUsersData,

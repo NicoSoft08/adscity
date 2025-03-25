@@ -11,7 +11,9 @@ const {
     createNewAdmin,
     validateDevice,
     refuseDevice,
-    loginAdmin
+    loginAdmin,
+    disableUserAccount,
+    restoreUserAccount
 } = require('../controllers/authController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
@@ -21,7 +23,9 @@ const router = express.Router();
 router.post('/create-user', registerUser);
 router.post('/login-user', verifyToken, loginUser);
 router.post('/logout-user', verifyToken, signoutUser);
-router.post('/delete-user', deleteUser);
+router.delete('/delete-user', deleteUser);
+router.post('/disable-user', disableUserAccount);
+router.post('/restore-user', restoreUserAccount);
 router.post('/verify-code', verifyOTPCode);
 // router.post('/verify-device/:deviceID', verifyToken, validateDevice);
 // router.post('/decline-device/:deviceID', verifyToken, refuseDevice);

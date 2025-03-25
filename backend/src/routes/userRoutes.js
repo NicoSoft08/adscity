@@ -23,7 +23,8 @@ const {
     readAdminNotification,
     readAdminAllNotifications,
     deleteAdminNotification,
-    deleteAdminAllNotifications
+    deleteAdminAllNotifications,
+    getUserIDLoginActivity
 } = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
@@ -59,5 +60,6 @@ router.post('/:userID/notifications/read-all', readUserAllNotifications);
 router.post('/update-device-token', verifyToken, updateDeviceToken);
 router.post('/:userID/update-search-history', updateSearchHistory);
 router.get('/:userID/login-activity', getUserLoginActivity);
+router.get('/user/:UserID/login-activity', getUserIDLoginActivity);
 
 module.exports = router;

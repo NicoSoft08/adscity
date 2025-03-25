@@ -3,29 +3,30 @@
 
 .pagination {
     display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    margin-top: 2rem;
-    background-color: $dark;
-    padding: 8px 0;
-    border-radius: 12px;
+    gap: 10px;
+    margin-top: 20px;
 
     .page-btn {
-        padding: 0.5rem 1rem;
-        border: 1px solid #ddd;
         background: $white;
+        border: 1px solid #ddd;
+        padding: 8px 14px;
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'Ubuntu', sans-serif;
+        transition: 0.3s;
+        border-radius: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        color: #333;
 
         &:hover {
             background: #f0f0f0;
         }
 
         &.active {
-            background: $two;
+            background: $two; // Couleur spéciale pour la page active
             color: $white;
-            border-color: $two;
+            border: none;
         }
 
         &:disabled {

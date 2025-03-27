@@ -4304,9 +4304,9 @@
             {
                 "label": "Fourchette salariale",
                 "name": "price",
-                "type": "text",
+                "type": "number",
                 "required": true,
-                "placeholder": "Ex. : 300 000 - 500 000 RUB"
+                "placeholder": "Ex. : 300 000"
             },
             {
                 "label": "Description du poste",

@@ -16,6 +16,7 @@ import Loading from '../../customs/Loading';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import FormData from '../../hooks/FormData';
+import data from '../../json/data.json';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -133,6 +134,28 @@ export default function PostDetailPage() {
     //     }
     // };
 
+    const formatCategorization = () => {
+        let category = "";
+        let subcategory = "";
+
+        if (post?.category) {
+            const categoryData = data.categories.find(cat => cat.categoryName === post?.category);
+            if (categoryData) category = categoryData.categoryTitles.fr;
+        }
+
+        if (post?.subcategory) {
+            const categoryData = data.categories.find(cat => cat.categoryName === post?.category);
+            if (categoryData) {
+                const subcategoryData = categoryData.container.find(subcat => subcat.sousCategoryName === post?.subcategory);
+                if (subcategoryData) subcategory = subcategoryData.sousCategoryTitles.fr;
+            }
+        }
+
+        return { category, subcategory };
+    };
+
+    const { category, subcategory } = formatCategorization();
+
     if (isLoading) {
         return <Loading />
     }
@@ -140,6 +163,7 @@ export default function PostDetailPage() {
     return (
         <div className="ad-details">
             <ImageGallery images={images} />
+           
             <div className="display">
 
                 <div className='under_score'>
@@ -180,8 +204,8 @@ export default function PostDetailPage() {
                         <section className="meta-info">
                             <h2>Informations supplémentaires</h2>
                             <ul>
-                                <li><strong>Catégorie :</strong> {post?.category}</li>
-                                <li><strong>Sous-catégorie :</strong> {post?.subcategory}</li>
+                                <li><strong>Catégorie :</strong> {category}</li>
+                                <li><strong>Sous-catégorie :</strong> {subcategory}</li>
                                 <li><strong>Vues :</strong> {views}</li>
                             </ul>
                         </section>

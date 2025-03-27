@@ -7,6 +7,30 @@
     display: flex;
     flex-direction: column;
 
+    .sensitive-warning {
+        background-color: #fff3cd; // Jaune clair pour un avertissement doux
+        color: #856404; // Marron foncé pour un bon contraste
+        border: 1px solid #ffeeba;
+        padding: 15px;
+        border-radius: 8px;
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+        p {
+            margin: 5px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        strong {
+            font-size: 16px;
+            color: #654321; // Brun légèrement plus foncé pour accentuer
+        }
+    }
+
     select {
         margin: 10px 0;
         appearance: none;

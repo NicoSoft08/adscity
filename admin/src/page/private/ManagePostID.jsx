@@ -2,13 +2,16 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import { faChartPie, faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchPostById } from '../../routes/postRoutes';
+import { deletePost, fetchPostById } from '../../routes/postRoutes';
 import Loading from '../../customs/Loading';
 import PostCard from '../../components/card/PostCard';
 import { AuthContext } from '../../contexts/AuthContext';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import '../../styles/ManagePostID.scss';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
+import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
 
 export default function ManagePostID() {
     const { post_id } = useParams();
@@ -70,7 +73,7 @@ export default function ManagePostID() {
         },
         {
             label: 'Supprimer',
-            icon: faTrash, 
+            icon: faTrash,
             action: () => handleDelete(post?.id)
         }
     ];
@@ -81,24 +84,48 @@ export default function ManagePostID() {
     };
 
     // Suspendre une annonce
-    const handleSuspend = async () => {};
+    const handleSuspend = async () => { };
 
     // Restaurer une annonce
-    const handleRestore = async () => {};
+    const handleRestore = async () => { };
 
     // Voir les statistiques d'une annonce
-    const handleStatistics = async ()=> {
+    const handleStatistics = async () => {
         navigate("statistics");
     }
 
     // Supprimer une annonce
     const handleDelete = async () => {
+        if (!permissions.includes('MANAGE_ADS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les permissions pour supprimer une annonce' });
+            return;
+        }
         setShowMenu(!showMenu);
         setConfirm({ ...confirm, willDelete: true });
     }
 
     // Confirmer la suppression
-    const confirmDeletePost = async () => {};
+    const confirmDeletePost = async () => {
+        try {
+            setLoading(true);
+
+            // 🔥 Supprimer d'abord les images de Firebase Storage
+            await deletePostImagesFromStorage(post?.id).then(() => {
+                logEvent(analytics, 'delete_images');
+            });
+
+            // 🔥 Ensuite, supprimer l'annonce de Firestore
+            const result = await deletePost(post?.id, currentUser?.uid);
+            if (result.success) {
+                setToast({ show: true, type: 'info', message: result.message });
+                logEvent(analytics, 'admin_delete_post');
+            } else {
+                setToast({ show: true, type: 'error', message: result.message });
+            }
+        } catch (error) {
+            console.error('Erreur lors de la suppression de l\'annonce :', error);
+        }
+    };
 
     if (loading) {
         return <Loading />;
@@ -124,7 +151,7 @@ export default function ManagePostID() {
                     </div>
                 }
             </div>
-            
+
             <PostCard post={post} toast={toast} setToast={setToast} />
 
             {confirm.willDelete && (

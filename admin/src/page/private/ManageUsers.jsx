@@ -16,6 +16,7 @@ const UsersFilter = ({ onFilterChange }) => {
         city: "",
         subscription: "all", // "all", "free", "pro", "business"
         registrationDate: "",
+        emailVerified: "all", // "all", "true", "false"
     });
 
     const handleChange = (e) => {
@@ -62,6 +63,12 @@ const UsersFilter = ({ onFilterChange }) => {
                 <option value="free">Gratuit</option>
                 <option value="pro">Professionnel</option>
                 <option value="business">Business</option>
+            </select>
+
+            <select name='emailVerified' value={filters.emailVerified} onChange={handleChange}>
+                <option value="all">Tous les emails</option>
+                <option value="true">Vérifiés</option>
+                <option value="false">Non vérifiés</option>
             </select>
 
             <input
@@ -152,7 +159,9 @@ export default function ManageUsers() {
             (filters.status === "all" || user.isActive === (filters.status === "active")) &&
             (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
             (filters.subscription === "all" || user.subscription === filters.subscription) &&
-            (filters.search === "" || user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || user.email.toLowerCase().includes(filters.search.toLowerCase()))
+            (filters.search === "" || user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || user.email.toLowerCase().includes(filters.search.toLowerCase())) &&
+            (filters.emailVerified === "all" || user.emailVerified === (filters.emailVerified === "true")) &&
+            (filters.registrationDate === "" || new Date(user.createdAt) <= new Date(filters.registrationDate))
         ));
         setFilteredUsers(filtered);
     };

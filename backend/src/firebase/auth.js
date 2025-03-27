@@ -416,7 +416,7 @@ const addNewAdmin = async (firstName, lastName, email, phoneNumber, password, pe
         userRef.where('email', '==', email).limit(1);
 
         const userSnapshot = await userRef.get();
-        if (!userSnapshot.empty) {
+        if (userSnapshot.empty) {
             console.log('Utilisateur déjà existant');
             return false;
         }

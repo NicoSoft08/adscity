@@ -559,7 +559,13 @@ const sendEmailToAdmin = async = (postData, PostID) => {
 
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
-        to: ['admin@adscity.net', 'n.dahpenielnicolas123@gmail.com'],
+        to: [
+            'admin@adscity.net',
+            'n.dahpenielnicolas123@gmail.com',
+            'koffigalloharistide@gmail.com',
+            'josiasyeboua1@yandex.com',
+            'plj663376@gmail.com'
+        ],
         replyTo: process.env.SMTP_MAIL,
         subject: "Nouvelle annonce en attente",
         html: `

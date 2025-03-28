@@ -2647,7 +2647,7 @@
             {
                 "name": "size",
                 "label": "Taille",
-                "type": "select",
+                "type": "checkbox",
                 "required": true,
                 "options": [
                     "XS",
@@ -2822,7 +2822,7 @@
             {
                 "name": "size",
                 "label": "Taille",
-                "type": "select",
+                "type": "checkbox" ,
                 "required": true,
                 "options": [
                     "XS",
@@ -2925,7 +2925,7 @@
             {
                 "name": "pointure",
                 "label": "Pointure",
-                "type": "select",
+                "type": "checkbox",
                 "options": [
                     "38",
                     "39",
@@ -3062,7 +3062,7 @@
             {
                 "name": "pointure",
                 "label": "Pointure",
-                "type": "select",
+                "type": "checkbox",
                 "options": [
                     "35",
                     "36",
@@ -3705,7 +3705,7 @@
             {
                 "name": "size",
                 "label": "Taille",
-                "type": "select",
+                "type": "checkbox",
                 "options": [
                     "XS",
                     "S",

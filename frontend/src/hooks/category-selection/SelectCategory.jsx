@@ -45,7 +45,11 @@ export default function SelectCategory({ onNext, formData, setFormData, subcateg
                         <p>🔒 <strong>Vérification requise pour cette catégorie</strong></p>
                         <p>
                             Pour garantir la sécurité et la qualité des annonces, cette catégorie nécessite une vérification supplémentaire.
-                            Veuillez suivre les instructions et fournir les documents requis afin de poursuivre la publication de votre annonce.
+                            {/* Veuillez suivre les instructions et fournir les documents requis afin de poursuivre la publication de votre annonce. */}
+                        </p>
+                        <p>
+                            ℹ️ Nous travaillons activement sur la mise en place de ce système de vérification supplémentaire, qui sera disponible dans les plus brefs délais.
+                            Nous vous remercions pour votre patience et votre compréhension.
                         </p>
                     </div>
                 ) : (

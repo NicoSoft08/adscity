@@ -41,6 +41,12 @@ export default function TeamPage() {
             description: 'Responsable du développement commercial et de la croissance des revenus.',
         },
         {
+            name: 'Madame DOSSO',
+            role: 'Chief Revenue Vice Officer',
+            photo: IconAvatar,
+            description: 'Vice Responsable du développement commercial et de la croissance des revenus.',
+        },
+        {
             name: 'Charlotte NANGA',
             role: 'Head Marketing Officer',
             photo: IconAvatar,
@@ -53,8 +59,8 @@ export default function TeamPage() {
             description: 'Adjoint au Responsable des stratégies marketing et de la communication.',
         },
         {
-            name: "Madame DOSSO",
-            role: 'Chief Community Officer',
+            name: "Josias YEBOUA",
+            role: 'Chief Community Manager',
             photo: IconAvatar,
             description: 'Responsable de la gestion des communautés et des réseaux sociaux.',
         },

@@ -98,9 +98,9 @@ export default function FormData({ details }) {
             {details?.saison !== undefined ? (<p>Saison  : {details?.saison}</p>) : null}
             {details?.style !== undefined ? (<p>Style  : {details?.style}</p>) : null}
             {details?.longueur_manches !== undefined ? (<p>Longueur des manches  : {details?.longueur_manches}</p>) : null}
-            {details?.size !== undefined ? (<p>Taille  : {details?.size}</p>) : null}
+            {details?.size !== undefined ? (<p>Taille  : {formatSpecialFeatures(details?.size)}</p>) : null}
             {details?.type_chaussure !== undefined ? (<p>Type de chaussure  : {details?.type_chaussure}</p>) : null}
-            {details?.pointure !== undefined ? (<p>Pointure  : {details?.pointure}</p>) : null}
+            {details?.pointure !== undefined ? (<p>Pointure  : {formatSpecialFeatures(details?.pointure)}</p>) : null}
             {details?.hauteur_talon !== undefined ? (<p>Hauteur du talon  : {details?.hauteur_talon}</p>) : null}
             {details?.type_accessoire !== undefined ? (<p>Type d'accessoire  : {details?.type_accessoire}</p>) : null}
             {details?.genre !== undefined ? (<p>Genre  : {details?.genre}</p>) : null}

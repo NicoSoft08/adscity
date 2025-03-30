@@ -65,6 +65,26 @@
                 }
             }
 
+            button {
+                background: $two;
+                color: $dark;
+                border: none;
+                display: flex;
+                padding: 5px;
+                border-radius: 5px;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-light;
+                align-items: center;
+                justify-content: center;
+                color: $white;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+
+                &:hover {
+                    background: darken($two, 10%);
+                }
+            }
+
             tbody tr {
                 position: relative;
             }
@@ -87,7 +107,7 @@
             display: flex;
             gap: 8px;
             top: 50%;
-            left: 60px;
+            right: 60px;
             transform: translateY(-50%);
 
             button {

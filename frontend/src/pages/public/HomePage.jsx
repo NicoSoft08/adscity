@@ -12,9 +12,9 @@ import CardItem from '../../utils/card/CardItem';
 // import { fetchCombinedPosts } from '../../helpers/algorythms';
 // import PubsSwitcher from '../../utils/pubs/PubsSwitcher';
 // import { MastheadSlider, NativeDisplayPub, VideoInFeedPub } from '../../utils/pubs/Pubs';
-import '../../styles/HomePage.scss';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import '../../styles/HomePage.scss';
 
 export default function HomePage() {
     const navigate = useNavigate();
@@ -27,7 +27,10 @@ export default function HomePage() {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
-        logEvent(analytics, 'page_view', { page_path: '/home' });
+        logEvent(analytics, 'view_home_page', { 
+            page_path: '/home',
+            user_id: currentUser?.uid,
+        });
         const getApprovedAds = async () => {
             setIsLoading(true);
 
@@ -55,7 +58,7 @@ export default function HomePage() {
         };
 
         getApprovedAds();
-    }, []);
+    }, [currentUser]);
 
     // useEffect(() => {
     //     const loadPosts = async () => {

@@ -3,6 +3,8 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Loading from '../../customs/Loading';
 import { useNavigate } from 'react-router-dom';
 import CreatePostFlow from '../../hooks/create-ad-flow/CreatePostFlow';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
 import '../../styles/CreatePostPage.scss';
 
 export default function CreatePostPage() {
@@ -26,6 +28,10 @@ export default function CreatePostPage() {
     };
 
     useEffect(() => {
+        logEvent(analytics, 'view_create_post_page', {
+            page_path: '/create-post',
+            user_id: userData?.userID,
+        });
         if (userData) {
             const plan = getUserPlan(userData);
             if (plan) {

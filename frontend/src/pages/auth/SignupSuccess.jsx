@@ -69,6 +69,7 @@ export default function SignupSuccess() {
             <h1>Inscription Réussie ! Bienvenue chez AdsCity</h1>
             <p>Merci pour votre inscription, <strong>{displayName}</strong> ! Nous sommes ravis de vous compter parmi nous.</p>
             <p>Veuillez vérifier votre boîte de réception email, un code de vérification vous a été envoyé à <strong>{email}</strong>.</p>
+            <p>Si vous ne trouvez pas l'email, vérifiez vos spams et ajoutez notre adresse à votre liste de contacts pour éviter cela à l’avenir.</p>
             <p>Entrez le code à 6 chiffres</p>
             <ReactCodeInput
                 value={code}

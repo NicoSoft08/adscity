@@ -15,10 +15,12 @@ export default function CategoryNamePage() {
     const [adsCategory, setAdsCategory] = useState([]);
 
     useEffect(() => {
-        logEvent(analytics, 'page_view', { page_path: `/category/${categoryName}` });
         const getAdsByCategory = async () => {
             const result = await fetchPostsByCategory(categoryName);
-            logEvent(analytics, 'view_category_page');
+            logEvent(analytics, 'view_category_page', {
+                page_path: `/category/${categoryName}`,
+                category_name: categoryName,
+            });
             if (result.success) {
                 setAdsCategory(result?.postsByCategoryName);
             }

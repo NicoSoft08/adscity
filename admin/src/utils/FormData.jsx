@@ -81,7 +81,7 @@ export default function FormData({ details }) {
             {details?.frequency_response !== undefined ? (<p>Réponse en fréquence (Hz)  : {details?.frequency_response}</p>) : null}
             {details?.wireless_standard !== undefined ? (<p>Norme sans fil  : {details?.wireless_standard}</p>) : null}
             {details?.storage_capacity !== undefined ? (<p>Capacité de stockage  : {details?.storage_capacity}</p>) : null}
-            {details?.game_title !== undefined ? (<p>Titre du jeu  : {details?.game_title}</p>) : null}
+             {details?.game_title !== undefined ? (<p>Titre du jeu  : {details?.game_title}</p>) : null}
             {details?.platform !== undefined ? (<p>Plateforme  : {details?.platform}</p>) : null}
             {details?.edition !== undefined ? (<p>Édition du jeu  : {details?.edition}</p>) : null}
             {details?.online_subscription !== undefined ? (<p>Abonnement en ligne inclus  : {details?.online_subscription}</p>) : null}

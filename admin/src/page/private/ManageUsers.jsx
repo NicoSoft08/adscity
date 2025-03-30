@@ -152,6 +152,31 @@ export default function ManageUsers() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
+    const parseCustomDate = (dateStr) => {
+        if (!dateStr || typeof dateStr !== "string") return new Date(NaN); // Vérifier si c'est bien une chaîne
+    
+        const months = {
+            "janvier": 0, "février": 1, "mars": 2, "avril": 3, "mai": 4, "juin": 5,
+            "juillet": 6, "août": 7, "septembre": 8, "octobre": 9, "novembre": 10, "décembre": 11
+        };
+    
+        const regex = /(\d{1,2}) (\w+) (\d{4}), (\d{2}):(\d{2}):(\d{2}) (AM|PM)/i;
+        const match = dateStr.match(regex);
+    
+        if (!match) return new Date(NaN); // Si le format ne correspond pas, renvoyer une date invalide
+    
+        let [, day, monthStr, year, hours, minutes, seconds, period] = match;
+        let month = months[monthStr.toLowerCase()];
+        
+        if (period.toUpperCase() === "PM" && hours < 12) {
+            hours = parseInt(hours) + 12;
+        } else if (period.toUpperCase() === "AM" && hours === 12) {
+            hours = 0;
+        }
+    
+        return new Date(year, month, day, hours, minutes, seconds);
+    };    
+
     // Application des filtres
     const handleFilterChange = (filters) => {
         let filtered = users.filter(user => (
@@ -161,10 +186,10 @@ export default function ManageUsers() {
             (filters.subscription === "all" || user.subscription === filters.subscription) &&
             (filters.search === "" || user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || user.email.toLowerCase().includes(filters.search.toLowerCase())) &&
             (filters.emailVerified === "all" || user.emailVerified === (filters.emailVerified === "true")) &&
-            (filters.registrationDate === "" || new Date(user.createdAt) <= new Date(filters.registrationDate))
+            (filters.registrationDate === "" || (user.createdAt) === new Date(filters.registrationDate))
         ));
         setFilteredUsers(filtered);
-    };
+    };  
 
     const handleAction = (action, UserID) => {
         const user_id = UserID.toLowerCase();

@@ -1,30 +1,25 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { faChartPie, faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
-import { deletePost, fetchPostById } from '../../routes/postRoutes';
+import { adminDeletePost, fetchPostById } from '../../routes/postRoutes';
 import Loading from '../../customs/Loading';
 import PostCard from '../../components/card/PostCard';
 import { AuthContext } from '../../contexts/AuthContext';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import '../../styles/ManagePostID.scss';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from '../../firebaseConfig';
-import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
 
 export default function ManagePostID() {
     const { post_id } = useParams();
     const menuRef = useRef(null);
     const navigate = useNavigate();
-    const { currentUser, userData } = useContext(AuthContext);
-    const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
+    const {  userData } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
+    const [confirm, setConfirm] = useState({ willDelete: false });
     const [post, setPost] = useState(null);
     const [showMenu, setShowMenu] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' })
-
-    const permissions = userData.permissions || [];
 
     const handleBack = () => {
         navigate('/admin/dashboard/posts');
@@ -74,7 +69,7 @@ export default function ManagePostID() {
         {
             label: 'Supprimer',
             icon: faTrash,
-            action: () => handleDelete(post?.id)
+            action: () => confirmDeletePost(post?.id)
         }
     ];
 
@@ -95,36 +90,38 @@ export default function ManagePostID() {
     }
 
     // Supprimer une annonce
-    const handleDelete = async () => {
-        if (!permissions.includes('MANAGE_ADS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les permissions pour supprimer une annonce' });
+    const handleDelete = useCallback(async () => {
+        if (!userData?.permissions?.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Permission refusée.' });
             return;
         }
-        setShowMenu(!showMenu);
-        setConfirm({ ...confirm, willDelete: true });
-    }
 
-    // Confirmer la suppression
-    const confirmDeletePost = async () => {
+        if (!post) return;
+
+        setLoading(true);
         try {
-            setLoading(true);
-
-            // 🔥 Supprimer d'abord les images de Firebase Storage
-            await deletePostImagesFromStorage(post?.id).then(() => {
-                logEvent(analytics, 'delete_images');
-            });
-
-            // 🔥 Ensuite, supprimer l'annonce de Firestore
-            const result = await deletePost(post?.id, currentUser?.uid);
+            const result = await adminDeletePost(post.postID);
             if (result.success) {
-                setToast({ show: true, type: 'info', message: result.message });
-                logEvent(analytics, 'admin_delete_post');
+                setToast({ show: true, type: 'success', message: 'Annonce supprimée avec succès.' });
+                closeModal();
             } else {
                 setToast({ show: true, type: 'error', message: result.message });
             }
         } catch (error) {
-            console.error('Erreur lors de la suppression de l\'annonce :', error);
+            setToast({ show: true, type: 'error', message: 'Une erreur est survenue.' });
+        } finally {
+            setLoading(false);
         }
+    }, [userData, post]);
+
+    // Confirmer la suppression
+    const confirmDeletePost = () => {
+        setConfirm({ willDelete: true });
+    };
+
+    const closeModal = () => {
+        setPost(null);
+        setConfirm({ willDelete: false });
     };
 
     if (loading) {
@@ -154,16 +151,14 @@ export default function ManagePostID() {
 
             <PostCard post={post} toast={toast} setToast={setToast} />
 
-            {confirm.willDelete && (
-                <Modal title={"Suppression d'annonce"} onShow={confirm.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>
-                    <p>Êtes-vous sûr de vouloir supprimer cette annonce ?</p>
+            {confirm?.willDelete && (
+                <Modal title={"Suppression d'annonce"} onShow={confirm?.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>
+                    <p>Êtes-vous sûr de vouloir supprimer cette annonce définitivement ?</p>
                     <div className="ad-details-buttons">
-                        <button className="modal-button approve-button" onClick={confirmDeletePost}>
+                        <button className='modal-button approve-button' onClick={handleDelete}>
                             {loading ? <Spinner /> : 'Confirmer'}
                         </button>
-                        <button className="modal-button reject-button" onClick={() => setConfirm({ ...confirm, willDelete: false })}>
-                            Annuler
-                        </button>
+                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
                     </div>
                 </Modal>
             )}

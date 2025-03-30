@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState, useCallback } from 'react';
-import { fetchPosts, onApprovePost, onRefusePost } from '../../routes/postRoutes';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { fetchPosts, onApprovePost, onRefusePost, adminDeletePost } from '../../routes/postRoutes';
 import { formateDateTimestamp } from '../../func';
 import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
@@ -11,42 +11,35 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Pagination from '../../components/pagination/Pagination';
 import '../../styles/PendingPosts.scss';
 
-const PostRow = ({ index, post, isSelected, onSelect, onView }) => (
-    <tr className={isSelected ? 'selected' : ''}>
-        <td>
-            <input type="checkbox" checked={isSelected} onChange={() => onSelect(post.PostID)} />
-        </td>
+const PostRow = ({ index, post, onView }) => (
+    <tr>
         <td>{index + 1}</td>
         <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
         <td>{post.details.title}</td>
         <td>{post.details.price} RUB</td>
         <td>{formateDateTimestamp(post.posted_at._seconds)}</td>
-        {isSelected && (
-            <div className="floating-menu">
-                <button title="Voir l'annonce" onClick={() => onView(post.PostID)}>
-                    <FontAwesomeIcon icon={faEye} />
-                </button>
-            </div>
-        )}
+        <td>
+            <button title="Voir l'annonce" onClick={() => onView(post)}>
+                <FontAwesomeIcon icon={faEye} />
+            </button>
+        </td>
     </tr>
 );
 
 export default function PendingPosts() {
     const [postsPending, setPostsPending] = useState([]);
-    const [selectedPosts, setSelectedPosts] = useState([]);
+    const [selectedPost, setSelectedPost] = useState(null);
+    const [modalType, setModalType] = useState(null); // 'approve', 'reject', 'delete'
     const { currentUser, userData } = useContext(AuthContext);
+    const [confirm, setConfirm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    const [isOpen, setIsOpen] = useState(false);
-    const [confirm, setConfirm] = useState(false);
     const [refusalReason, setRefusalReason] = useState('');
-    const [selectedPostID, setSelectedPostID] = useState(null);
     const [currentPage, setCurrentPage] = useState(1);
     const pendingPostPerPage = 10;
 
     useEffect(() => {
         let isMounted = true;
-
         const fetchAllData = async () => {
             try {
                 const data = await fetchPosts();
@@ -62,73 +55,80 @@ export default function PendingPosts() {
         return () => { isMounted = false; };
     }, []);
 
-    const allSelected = useMemo(() => selectedPosts.length === postsPending.length, [selectedPosts, postsPending]);
+    const handleApprove = useCallback(async () => {
+        if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour approuver cette annonce.' });
+            return;
+        }
+        if (!selectedPost) return;
+        setIsLoading(true);
+        const result = await onApprovePost(selectedPost.PostID);
+        setIsLoading(false);
 
-    const toggleSelectAll = () => {
-        setSelectedPosts(allSelected ? [] : postsPending.map(post => post.PostID));
-    };
+        if (result.success) {
+            setPostsPending(postsPending.filter(post => post.PostID !== selectedPost.PostID));
+            setToast({ show: true, type: 'success', message: 'Annonce approuvée avec succès.' });
+            closeModal();
+        } else {
+            setToast({ show: true, type: 'error', message: result.message });
+        }
+    }, [selectedPost, postsPending, currentUser, userData]);
 
-    const handleSelect = (postID) => {
-        setSelectedPosts(prev => prev.includes(postID) ? prev.filter(id => id !== postID) : [...prev, postID]);
-    };
-
-    const handleApprove = useCallback(async (id) => {
-        if (!currentUser || !userData.permissions.includes('SUPER_ADMIN')) {
-            setToast({ show: true, type: 'error', message: "Vous n'avez pas les autorisations nécessaires." });
+    const handleReject = useCallback(async () => {
+        if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour approuver cette annonce.' });
+            return;
+        }
+        if (!selectedPost || refusalReason.trim() === '') {
+            setToast({ show: true, type: 'error', message: 'Veuillez fournir un motif avant de refuser l\'annonce.' });
             return;
         }
 
         setIsLoading(true);
-        const result = await onApprovePost(id);
+        const result = await onRefusePost(selectedPost.postID, refusalReason);
         setIsLoading(false);
 
         if (result.success) {
-            setToast({ show: true, type: 'success', message: result.message });
-            setPostsPending(postsPending.filter(post => post.id !== id));
-            handleCloseModal();
+            setPostsPending(postsPending.filter(post => post.postID !== selectedPost.postID));
+            setToast({ show: true, type: 'success', message: 'Annonce refusée avec succès.' });
+            closeModal();
         } else {
             setToast({ show: true, type: 'error', message: result.message });
         }
-    }, [currentUser, userData, postsPending]);
+    }, [selectedPost, postsPending, refusalReason, currentUser, userData]);
 
-    const handleReject = async () => {
-        // if (!selectedPostID) return;
-
-        if (refusalReason.trim() === '') {
-            setToast({ type: 'error', message: 'Veuillez fournir un motif avant de refuser l\'annonce.' });
+    const handleDelete = useCallback(async () => {
+        if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer cette annonce.' });
             return;
         }
 
-        handleCloseModal(); // Fermer le modal avant d'envoyer la requête
+        if (!selectedPost) return;
 
-        const result = await onRefusePost(selectedPostID, refusalReason);
+        setIsLoading(true);
+        const result = await adminDeletePost(selectedPost.postID);
+        setIsLoading(false);
 
-        if (result?.success) {
-            setToast({
-                show: true,
-                type: 'success',
-                message: 'Annonce refusée avec succès.',
-            });
+        if (result.success) {
+            setPostsPending(postsPending.filter(post => post.postID !== selectedPost.postID));
+            setToast({ show: true, type: 'success', message: 'Annonce supprimée avec succès.' });
+            closeModal();
         } else {
-            setToast({
-                show: true,
-                type: 'error',
-                message: result?.error || 'Erreur lors du refus de l\'annonce.',
-            });
+            setToast({ show: true, type: 'error', message: result.message });
         }
+    }, [currentUser, userData, selectedPost, postsPending]);
+
+    const openModal = (post, type) => {
+        setSelectedPost(post);
+        setModalType(type);
+        setRefusalReason("En vertu des règles de publication, votre annonce a été refusée car les images ne correspondent pas au titre.");
     };
 
-    const handleOpenModal = (postID) => {
-        setSelectedPostID(postID);
-        setRefusalReason("En vertu des règles de publication, votre annonce a été refusée car les images ne correspondent pas au titre."); // Texte par défaut
-        setToast({ show: false, type: '', message: '' }); // Réinitialiser les messages d'erreur
-        setIsOpen(true);
-    };
-
-    const handleCloseModal = () => {
-        setIsOpen(false);
+    const closeModal = () => {
+        setSelectedPost(null);
+        setModalType(null);
+        setRefusalReason('');
         setConfirm(false);
-        setRefusalReason(''); // Réinitialisation du champ motif
     };
 
     const currentPendingPosts = postsPending.slice((currentPage - 1) * pendingPostPerPage, currentPage * pendingPostPerPage);
@@ -140,25 +140,18 @@ export default function PendingPosts() {
                 <table>
                     <thead>
                         <tr>
-                            <th><input type="checkbox" checked={allSelected} onChange={toggleSelectAll} /></th>
                             <th>#</th>
                             <th>Photo</th>
                             <th>Titre</th>
                             <th>Prix</th>
                             <th>Date de Publication</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentPendingPosts.length > 0 ? (
                             currentPendingPosts.map((post, index) => (
-                                <PostRow
-                                    key={post.PostID}
-                                    index={index}
-                                    post={post}
-                                    isSelected={selectedPosts.includes(post.PostID)}
-                                    onSelect={handleSelect}
-                                    onView={setSelectedPostID}
-                                />
+                                <PostRow index={index} post={post} onView={() => openModal(post, 'view')} />
                             ))
                         ) : (
                             <tr>
@@ -169,37 +162,56 @@ export default function PendingPosts() {
                 </table>
             </div>
 
-            {selectedPostID && (
-                <Modal title="Détails de l'annonce" onShow={!!selectedPostID} onHide={() => setSelectedPostID(null)} isNext={false}>
-                    <div className='ad-details'>
-                        {postsPending.filter(ad => ad.PostID === selectedPostID).map(pendingAd => (
-                            <React.Fragment key={pendingAd.PostID}>
-                                <Tab formData={pendingAd} />
-                                <div className="ad-details-buttons">
-                                    <button className="modal-button approve-button" onClick={() => handleApprove(pendingAd.id)}>
-                                        {isLoading ? <Spinner /> : 'Approuver'}
-                                    </button>
-                                    <button className="modal-button reject-button" onClick={() => handleOpenModal(pendingAd.id)}>
-                                        Refuser
-                                    </button>
-                                </div>
-                            </React.Fragment>
-                        ))}
+            {selectedPost && (
+                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
+                    <Tab formData={selectedPost} />
+
+                    <div className="ad-details-buttons">
+                        <button className='modal-button approve-button' onClick={() => setModalType('approve', selectedPost)}>
+                            Approuver
+                        </button>
+
+                        <button className='modal-button reject-button' onClick={() => setModalType('refuse', selectedPost)}>
+                            Refuser
+                        </button>
+                        <button className='modal-button delete-button' onClick={() => setModalType('delete', selectedPost)}>
+                            Supprimer
+                        </button>
+                    </div>
+
+                </Modal>
+            )}
+
+            {modalType === 'approve' && (
+                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
+                    <p>Êtes-vous sûr de vouloir approuver cette annonce ?</p>
+                    <div className="ad-details-buttons">
+                        <button className='modal-button approve-button' onClick={handleApprove}>
+                            {isLoading ? <Spinner /> : 'Confirmer'}
+                        </button>
+                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
                     </div>
                 </Modal>
             )}
 
-            {isOpen && (
-                <Modal
-                    title={"Confirmation requise"}
-                    onShow={isOpen}
-                    onHide={handleCloseModal}
-                >
+            {modalType === 'delete' && (
+                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
+                    <p>Êtes-vous sûr de vouloir supprimer cette annonce définitivement ?</p>
+                    <div className="ad-details-buttons">
+                        <button className='modal-button approve-button' onClick={handleDelete}>
+                            {isLoading ? <Spinner /> : 'Confirmer'}
+                        </button>
+                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
+                    </div>
+                </Modal>
+            )}
+
+            {modalType === 'refuse' && (
+                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
                     {confirm ? (
                         <>
                             <p>
                                 Êtes-vous certain de vouloir refuser cette annonce ? Cette action est définitive et ne pourra pas être annulée.
-
                             </p>
                         </>
                     ) : (
@@ -216,19 +228,16 @@ export default function PendingPosts() {
                         </>
                     )}
                     <div className="ad-details-buttons">
-                        <button className="modal-button approve-button" onClick={() => {
+                        <button className='modal-button approve-button' onClick={() => {
                             if (confirm) {
                                 handleReject();
                             } else {
                                 setConfirm(true);
                             }
-                        }}
-                        >
-                            {isLoading ? <Spinner /> : 'Approuver'}
+                        }}>
+                            {confirm ? 'Confirmer' : isLoading ? <Spinner /> : 'Refuser'}
                         </button>
-                        <button className="modal-button reject-button" onClick={handleCloseModal}>
-                            Refuser
-                        </button>
+                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
                     </div>
                 </Modal>
             )}

@@ -1,6 +1,3 @@
-import { analytics } from "../firebaseConfig";
-import { logEvent } from "firebase/analytics";
-
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const fetchPosts = async () => {
@@ -128,11 +125,11 @@ const suspendPost = async (postID, reason) => {
 
 // Update Ads status
 const updatePostStatus = async (postID, newStatus) => {
-    
+
 };
 
 const onApprovePost = async (postID) => {
-    const response = await fetch(`${backendUrl}/api/posts/post/${postID}/approve`, {
+    const response = await fetch(`${backendUrl}/api/posts/post/${postID}/admin/approve`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -140,45 +137,38 @@ const onApprovePost = async (postID) => {
     });
 
     const result = await response.json();
-    logEvent(analytics, 'advertisment_approved');
     fetchPendingPosts();
-
     return result;
 };
 
 const onRefusePost = async (postID, reason) => {
+    console.log(postID, reason);
     try {
-        const response = await fetch(`${backendUrl}/api/posts/refuse`, {
+        const response = await fetch(`${backendUrl}/api/posts/post/${postID}/admin/refuse`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ postID, reason }),
+            body: JSON.stringify({ reason }),
         });
 
 
         const result = await response.json();
-
-        if (response.ok) {
-            console.log('Annonce refusée avec succès', result.message);
-            logEvent(analytics, 'advertisment_refused');
-            fetchPendingPosts(); // Rafraîchir la liste après approbation
-        } else {
-            console.error('Erreur lors du refus de l\'annonce:', result.error);
-        }
+        fetchPendingPosts(); // Rafraîchir la liste après approbation
+        return result;
     } catch (error) {
         console.error('Erreur lors du refus de l\'annonce:', error);
     }
 };
 
-const deletePost = async (postID, reason) => {
+const adminDeletePost = async (postID) => {
+    console.log(postID);
     try {
-        const response = await fetch(`${backendUrl}/api/posts/${postID}/delete`, {
+        const response = await fetch(`${backendUrl}/api/posts/post/${postID}/admin/delete`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ reason }),
         });
 
         const result = await response.json();
@@ -216,7 +206,7 @@ export {
     onApprovePost,
     onRefusePost,
     suspendPost,
-    deletePost,
+    adminDeletePost,
 
     updatePostStatus,
 };

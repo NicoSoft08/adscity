@@ -33,6 +33,23 @@ export default function CreateAdmin() {
         { value: 'SUPER_ADMIN', label: 'Super Admin' }
     ];
 
+    const formatSpecialFeatures = (features) => {
+        if (!features) return '';
+
+        if (Array.isArray(features)) {
+            return features.join(', ');
+        }
+
+        if (typeof features === 'object') {
+            const selectedFeatures = Object.entries(features)
+                .filter(([_, selected]) => selected)
+                .map(([feature]) => feature);
+            return selectedFeatures.join(', ');
+        }
+
+        return features;
+    };
+
     const validateInputs = () => {
         const formErrors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -322,7 +339,7 @@ export default function CreateAdmin() {
                 >
                     <p>
                         Confirmez-vous ajouter <strong>{formData.firstName} {formData.lastName}</strong> (<i>{formData.email}</i>)
-                        en tant qu'administrateur au niveau <strong>{formData.permissions}</strong> ?
+                        en tant qu'administrateur au niveau <strong>{formatSpecialFeatures(formData.permissions)}</strong> ?
                     </p>
                 </Modal>
             )}

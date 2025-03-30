@@ -1,16 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { fr } from "date-fns/locale";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { format, formatDistanceToNow } from "date-fns";
+import { fr } from "date-fns/locale";
 import { fetchDataByUserID } from "../../routes/userRoutes";
 import { fetchPosts } from "../../routes/postRoutes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChartPie, faEye, faFilter } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import Pagination from "../../components/pagination/Pagination";
 import Loading from "../../customs/Loading";
-import data from '../../json/data.json';
+import data from "../../json/data.json";
 import "../../styles/ManagePosts.scss";
 
+// Status des annonces avec icônes
 const STATUS_ICONS = {
     pending: "🟠 En attente",
     approved: "🟢 Accepté",
@@ -19,190 +20,135 @@ const STATUS_ICONS = {
     sold: "✅ Vendue"
 };
 
-const PostsFilter = ({ onFilterChange }) => {
-    const [filters, setFilters] = useState({
-        search: '',
-        status: 'all', // 
-        category: 'all', //
-        city: '',
-        date: '',
-        views: '',
-    });
+// 🔍 Composant Filtres
+const PostsFilter = ({ filters, onFilterChange }) => (
+    <div className="filters">
+        <input
+            type="text"
+            name="search"
+            placeholder="Rechercher par titre ou ID"
+            value={filters.search}
+            onChange={onFilterChange}
+        />
+        <select name="status" value={filters.status} onChange={onFilterChange}>
+            <option value="all">Tous les statuts</option>
+            {Object.keys(STATUS_ICONS).map(status => (
+                <option key={status} value={status}>{STATUS_ICONS[status]}</option>
+            ))}
+        </select>
+        <select name="category" value={filters.category} onChange={onFilterChange}>
+            <option value="all">Toutes les catégories</option>
+            {data.categories.map(category => (
+                <option key={category.key} value={category.categoryName}>
+                    {category.categoryTitles.fr}
+                </option>
+            ))}
+        </select>
+        <input type="text" name="city" placeholder="Ville" value={filters.city} onChange={onFilterChange} />
+        <input type="date" name="date" value={filters.date} onChange={onFilterChange} />
+        <input type="number" name="views" placeholder="Nombre de vues minimum" value={filters.views} onChange={onFilterChange} />
+    </div>
+);
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        const updatedFilters = { ...filters, [name]: value };
-        setFilters(updatedFilters);
-        onFilterChange(updatedFilters);
-    }
-
-
-    return (
-        <div className="filters">
-            <input
-                type="text"
-                name="search"
-                placeholder="Rechercher par titre ou ID"
-                value={filters.search}
-                onChange={handleChange}
-            />
-
-            <select name="status" value={filters.status} onChange={handleChange}>
-                <option value="all">Tous les statuts</option>
-                <option value="approved">Publiée</option>
-                <option value="pending">En attente</option>
-                <option value="refused">Refusée</option>
-                <option value="expired">Expirée</option>
-            </select>
-
-            <select name="category" value={filters.category} onChange={handleChange}>
-                <option value="all">Toutes les catégories</option>
-                {data.categories.map(category => (
-                    <option
-                        key={category.key}
-                        value={category.categoryName}>
-                        {category.categoryTitles.fr}
-                    </option>
-                ))}
-            </select>
-
-            <input
-                type="text"
-                name="city"
-                placeholder="Ville"
-                value={filters.city}
-                onChange={handleChange}
-            />
-
-            <input
-                type="date"
-                name="date"
-                value={filters.date}
-                onChange={handleChange}
-            />
-
-            <input
-                type="number"
-                name="views"
-                placeholder="Nombre de vues minimum"
-                value={filters.views}
-                onChange={handleChange}
-            />
-        </div>
-    );
-};
-
+// 📝 Composant Annonce (Ligne)
 const PostRow = ({ index, post, onAction, isSelected, onSelect }) => {
+    const menuRef = useRef(null);
     const [postOwner, setPostOwner] = useState(null);
+    const [showMenu, setShowMenu] = useState(false);
+
+    const fetchOwner = useCallback(async () => {
+        const result = await fetchDataByUserID(post.userID);
+        if (result.success) setPostOwner(result.data);
+    }, [post.userID]);
 
     useEffect(() => {
-        const fetchData = async () => {
-            const result = await fetchDataByUserID(post.userID);
-            if (result.success) setPostOwner(result.data);
+        fetchOwner();
+    }, [fetchOwner]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowMenu(false);
+            }
         };
 
-        if (post) {
-            fetchData();
-        }
-    }, [post]);
-
-
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     return (
-        <tr className={isSelected ? 'selected' : ''}>
-            <td>
-                <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => onSelect(post.PostID)}
-                />
-            </td>
+        <tr>
             <td>{index + 1}</td>
             <td>{post.PostID}</td>
-            <td><img src={post.images[0]} alt='' width={50} height={50} /></td>
+            <td><img src={post.images[0]} alt="" width={50} height={50} /></td>
             <td>{post.details?.title}</td>
             <td>{post.details?.price} RUB</td>
             <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
             <td>{STATUS_ICONS[post.status] || "⚪ Inconnu"}</td>
             <td>{postOwner?.displayName || "Inconnu"}</td>
-            {/* 📌 Div flottante affichée si l'annonce est sélectionnée */}
-            {isSelected && (
-                <div className="floating-menu">
-                    <button title="Voir l'annonce" onClick={() => onAction('view', post.PostID)}>
-                        <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button title='Statistiques' onClick={() => onAction('stats', post.PostID)}>
-                        <FontAwesomeIcon icon={faChartPie} />
-                    </button>
-                </div>
-            )}
+            <td>
+                <button title="Actions" onClick={() => setShowMenu(!showMenu)}>⋮</button>
+                {showMenu && (
+                    <div className="floating-menu" ref={menuRef}>
+                        <button title="Voir l'annonce" onClick={() => onAction("view", post.PostID)}>
+                            <FontAwesomeIcon icon={faEye} />
+                        </button>
+                        <button title="Statistiques" onClick={() => onAction("stats", post.PostID)}>
+                            <FontAwesomeIcon icon={faChartPie} />
+                        </button>
+                    </div>
+                )}
+            </td>
         </tr>
     );
 };
 
+
+// 🏡 Composant Principal
 export default function ManagePosts() {
-    const [selectedPosts, setSelectedPosts] = useState([]);
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
-    const [openFilter, setOpenFilter] = useState(false);
     const [postPerPage] = useState(10);
+    const [openFilter, setOpenFilter] = useState(false);
+    const [selectedPosts, setSelectedPosts] = useState([]);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        let isMounted = true;
-        setLoading(true);
+    // 🛠️ Initialisation des filtres
+    const [filters, setFilters] = useState({
+        search: "",
+        status: "all",
+        category: "all",
+        city: "",
+        date: "",
+        views: ""
+    });
 
+    // 📡 Récupération des annonces
+    useEffect(() => {
         const fetchAllData = async () => {
             try {
                 const data = await fetchPosts();
-
-                if (isMounted && data) {
+                if (data) {
                     setPosts(data.posts?.allAds || []);
                     setFilteredPosts(data.posts?.allAds || []);
-                    setLoading(false);
                 }
             } catch (error) {
-                console.error('Erreur lors de la récupération des annonces:', error);
+                console.error("Erreur lors de la récupération des annonces:", error);
+            } finally {
                 setLoading(false);
             }
         };
-
         fetchAllData();
-
-        return () => { isMounted = false; };
     }, []);
 
-
-    const indexOfLastPost = currentPage * postPerPage;
-    const indexOfFirstPost = indexOfLastPost - postPerPage;
-    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
-
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    const handleAction = (action, PostID) => {
-        const post_id = PostID?.toLowerCase();
-
-        switch (action) {
-            case 'view':
-                navigate(`${post_id}`);
-                break;
-            case 'stats':
-                navigate(`${post_id}/statistics`);
-                break;
-            default:
-                break;
-        }
-    };
-
-    // Fonction pour appliquer les filtres
-    const handleFilterChange = (filters) => {
+    // 📌 Filtrage des annonces
+    useEffect(() => {
         const filtered = posts.filter(post =>
             (filters.search === "" ||
                 post.details.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-                post.PostID.toLowerCase().includes(filters.search.toLowerCase())
-            ) &&
+                post.PostID.toLowerCase().includes(filters.search.toLowerCase())) &&
             (filters.status === "all" || post.status === filters.status) &&
             (filters.category === "all" || post.category === filters.category) &&
             (filters.city === "" || post.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
@@ -210,33 +156,34 @@ export default function ManagePosts() {
             (filters.views === "" || post.views >= Number(filters.views))
         );
         setFilteredPosts(filtered);
+    }, [filters, posts]);
+
+    // 📍 Gestion du changement de page
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
+    const indexOfLastPost = currentPage * postPerPage;
+    const indexOfFirstPost = indexOfLastPost - postPerPage;
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+
+    // 🚀 Gestion des actions (navigation)
+    const handleAction = (action, PostID) => {
+        navigate(`${PostID.toLowerCase()}${action === "stats" ? "/statistics" : ""}`);
     };
 
-    // Vérifier si tous les posts sont sélectionnés
-    const allSelected = useMemo(() => selectedPosts.length === posts.length, [selectedPosts, posts]);
+    // 🎯 Gestion des filtres
+    const handleFilterChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setFilters(prev => ({ ...prev, [name]: value }));
+    }, []);
 
-    // Sélectionner/Désélectionner tout
-    const toggleSelectAll = () => {
-        setSelectedPosts(allSelected ? [] : posts.map(post => post.PostID));
-    };
-
-    // Gérer la sélection d'une annonce
+    // 📌 Gestion de la sélection des annonces
     const handleSelect = (postID) => {
-        setSelectedPosts(prev => {
-            const newSelection = new Set(prev);
-            if (newSelection.has(postID)) {
-                newSelection.delete(postID);
-            } else {
-                newSelection.add(postID);
-            }
-            return Array.from(newSelection);
-        });
+        setSelectedPosts(prev => prev.includes(postID)
+            ? prev.filter(id => id !== postID)
+            : [...prev, postID]
+        );
     };
 
-
-    if (loading) {
-        return <Loading />
-    }
+    if (loading) return <Loading />;
 
     return (
         <div className="ads-section">
@@ -247,23 +194,14 @@ export default function ManagePosts() {
                 </div>
             </div>
 
-            {/* Filtres */}
-            {openFilter && (
-                <PostsFilter onFilterChange={handleFilterChange} />
-            )}
+            {/* 🔍 Filtres */}
+            {openFilter && <PostsFilter filters={filters} onFilterChange={handleFilterChange} />}
 
             <div className="ads-list">
                 <div className="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>
-                                    <input
-                                        type="checkbox"
-                                        checked={allSelected}
-                                        onChange={toggleSelectAll}
-                                    />
-                                </th>
                                 <th>#</th>
                                 <th>Post ID</th>
                                 <th>Image</th>
@@ -272,37 +210,26 @@ export default function ManagePosts() {
                                 <th>Expiration</th>
                                 <th>Statut</th>
                                 <th>Annonceur</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {currentPosts.length > 0 ? (
-                                currentPosts.map((post, index) => (
-                                    <PostRow
-                                        key={post.id}
-                                        index={index}
-                                        post={post}
-                                        onAction={handleAction}
-                                        isSelected={selectedPosts.includes(post.PostID)}
-                                        onSelect={handleSelect}
-                                    />
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="12">Aucune annonce trouvée.</td>
-                                </tr>
+                            {currentPosts.length ? currentPosts.map((post, index) => (
+                                <PostRow
+                                    key={post.postID}
+                                    index={index}
+                                    post={post}
+                                    isSelected={selectedPosts.includes(post.postID)}
+                                    onAction={handleAction}
+                                    onSelect={() => handleSelect(post.postID)}
+                                />
+                            )) : (
+                                <tr><td colSpan="9">Aucune annonce trouvée.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-
-                {posts.length > postPerPage && (
-                    <Pagination
-                        currentPage={currentPage}
-                        elements={posts}
-                        elementsPerPage={postPerPage}
-                        paginate={paginate}
-                    />
-                )}
+                <Pagination currentPage={currentPage} elements={filteredPosts} elementsPerPage={postPerPage} paginate={paginate} />
             </div>
         </div>
     );

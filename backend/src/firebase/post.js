@@ -1,8 +1,10 @@
 const { admin, firestore, auth } = require("../config/firebase-admin");
 const { sendUserAdsApprovedEmail, sendUserAdsRefusedEmail, sendEmailToAdmin } = require("../controllers/emailController");
 const { monthNames, generateSlug, formatRelativeDate } = require("../func");
+const { post } = require("../routes/apiRoutes");
 const { saveLocation } = require("./firestore");
 const { isPromotionActive } = require("./promotion");
+const { deleteImagesByPostID } = require("./storage");
 
 const makePost = async (postData, userID) => {
     try {
@@ -310,12 +312,13 @@ const rejectPost = async (postID, reason) => {
         await firestore.collection('POSTS').doc(postID).update({
             status: 'refused',
             refusal_reason: reason,
+            moderated_at: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         const postRef = firestore.collection('POSTS').doc(postID);
         const postDoc = await postRef.get();
 
-        if (!adDoc.exists) {
+        if (!postDoc.exists) {
             console.error('Annonce non trouvée.');
             return false;
         }
@@ -352,6 +355,26 @@ const rejectPost = async (postID, reason) => {
         return true;
     } catch (error) {
         console.error('Erreur lors de l\'approbation de l\'annonce :', error);
+        return false;
+    }
+};
+
+const adminDeletePostByID = async (postID) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.error('Annonce non trouvée.');
+            return false;
+        }
+
+        await deleteImagesByPostID(postID);
+        
+        await postRef.delete();
+        console.log('Annonce supprimée avec succès');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la suppression de l\'annonce :', error);
         return false;
     }
 };
@@ -862,6 +885,7 @@ const fetchNearbyPostsByLocation = async (country, city) => {
 };
 
 module.exports = {
+    adminDeletePostByID,
     collectActivePostsByUserID,
     collectApprovedPosts,
     collectApprovedPostsByUserID,

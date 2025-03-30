@@ -22,7 +22,8 @@ const {
     suspendPostByID,
     markPostSold,
     fetchNearbyPostsByLocation,
-    collectDataFromPostID
+    collectDataFromPostID,
+    adminDeletePostByID
 } = require("../firebase/post");
 
 const createPost = async (req, res) => {
@@ -49,7 +50,7 @@ const createPost = async (req, res) => {
     }
 };
 
-const approvePost = async (req, res) => {
+const adminApprovePost = async (req, res) => {
     const { postID } = req.params;
 
     try {
@@ -123,8 +124,9 @@ const reportPostByID = async (req, res) => {
     };
 };
 
-const refusePost = async (req, res) => {
-    const { postID, reason } = req.body;
+const adminRefusePost = async (req, res) => {
+    const { postID } = req.params;
+    const { reason } = req.body;
 
     try {
         isPostRefused = await rejectPost(postID, reason);
@@ -145,6 +147,30 @@ const refusePost = async (req, res) => {
             message: 'Erreur technique, réessayez plus tard'
         });
     };
+};
+
+const adminDeletePost = async (req, res) => {
+    const { postID } = req.params;
+
+    try {
+        const isPostDeleted = await adminDeletePostByID(postID);
+        if (!isPostDeleted) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la suppression de l\'annonce'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Annonce supprimée avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur pendant la suppression de l\'annonce:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+    }
 };
 
 const getPosts = async (req, res) => {
@@ -588,7 +614,7 @@ const deletePost = async (req, res) => {
     };
 };
 
-const suspendPost = async (req, res) => {
+const adminSuspendPost = async (req, res) => {
     const { postID } = req.params;
     const { reason } = req.body;
 
@@ -673,8 +699,9 @@ const fetchNearbyPosts = async (req, res) => {
 };
 
 module.exports = {
-    approvePost,
+    adminApprovePost,
     createPost,
+    adminDeletePost,
     deletePost,
     fetchNearbyPosts,
     getActivePostsByUserID,
@@ -693,9 +720,9 @@ module.exports = {
     getRefusedPosts,
     getRelatedPosts,
     markPostAsSold,
-    refusePost,
+    adminRefusePost,
     reportPostByID,
-    suspendPost,
+    adminSuspendPost,
     updatePost,
     getDataFromPostID,
 };

@@ -175,7 +175,7 @@ const createDefaultSuperAdmin = async () => {
             profilURL: profilURL,
             role: 'admin',
             userID: userRecord.uid,
-            permissions: ["SUPER_ADMIN", "MANAGE_USERS", "MANAGE_ADS", "MANAGE_PAYMENTS"],
+            permissions: ["SUPER_ADMIN", "MANAGE_USERS", "MANAGE_POSTS", "MANAGE_PAYMENTS"],
             createdAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 

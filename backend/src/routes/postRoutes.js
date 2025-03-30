@@ -3,8 +3,6 @@ const express = require('express');
 // Importation des controleurs
 const { 
     createPost, 
-    approvePost, 
-    refusePost, 
     getPostsData, 
     getPendingPosts, 
     getApprovedPosts, 
@@ -20,12 +18,15 @@ const {
     getRelatedPosts, 
     reportPostByID,
     updatePost,
-    deletePost,
     suspendPost,
     markPostAsSold,
     fetchNearbyPosts,
     getDataFromPostID,
-    getPosts
+    getPosts,
+    adminDeletePost,
+    adminRefusePost,
+    adminApprovePost,
+    adminSuspendPost
 } = require('../controllers/postController');
 // const { collectPostBySlug } = require('../firebase/post');
 
@@ -35,8 +36,10 @@ router.get('/', getPosts);
 
 router.post('/create', createPost);
 
-router.post('/post/:postID/approve', approvePost);
-router.post('/post/:postID/refuse', refusePost);
+router.post('/post/:postID/admin/approve', adminApprovePost);
+router.post('/post/:postID/admin/refuse', adminRefusePost);
+router.delete('/post/:postID/admin/delete', adminDeletePost);
+router.post('/post/:postID/admin/suspend', adminSuspendPost);
 router.post('/post/:postID/report', reportPostByID)
 
 router.get('/all', getPostsData);
@@ -59,8 +62,7 @@ router.post('/category', getPostsByCategoryName);
 router.post('/related-category', getRelatedPosts);
 
 router.put('/:postID/update', updatePost);
-router.delete('/:postID/delete', deletePost);
-router.post('/:postID/suspend', suspendPost);
+// router.delete('/:postID/delete', deletePost);
 router.post('/:PostID/mark/sold', markPostAsSold);
 
 router.get('/collect/nearby', fetchNearbyPosts);

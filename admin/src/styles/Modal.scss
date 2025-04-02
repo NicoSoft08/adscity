@@ -48,7 +48,9 @@
             .modal-title {
                 margin: 0;
                 font-size: 18px;
-                font-weight: bold;
+                font-weight: $font-regular;
+                text-transform: uppercase;
+                color: $dark;
             }
 
             .close-button {
@@ -62,6 +64,7 @@
 
         .modal-body {
             margin-top: 10px 0;
+            font-weight: $font-light;
         }
 
 

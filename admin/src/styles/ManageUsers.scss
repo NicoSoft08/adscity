@@ -206,5 +206,16 @@
             font-weight: $font-light;
             outline: none;
         }
+
+        button {
+            padding: 10px 15px;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 16px;
+            font-weight: $font-light;
+            cursor: pointer;
+            background: $two;
+            border: none;
+            color: $white;
+        }
     }
 }

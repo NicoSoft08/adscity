@@ -59,12 +59,12 @@ const fetchProfileByUserID = async (userID) => {
     }
 };
 
-const uploadProfilePhoto = async (file, userID) => {
+const uploadCoverPhoto = async (file, userID) => {
     const formData = new FormData();
-    formData.append('profilURL', file);
+    formData.append('coverURL', file);
     formData.append('userID', userID);
 
-    const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/profile`, {
+    const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/cover`, {
         method: 'POST',
         body: formData,
     });
@@ -73,12 +73,12 @@ const uploadProfilePhoto = async (file, userID) => {
     return result;
 };
 
-const uploadBannerPhoto = async (file, userID) => {
+const uploadProfilePhoto = async (file, userID) => {
     const formData = new FormData();
-    formData.append('coverURL', file);
+    formData.append('profilURL', file);
     formData.append('userID', userID);
 
-    const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/banner`, {
+    const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/profile`, {
         method: 'POST',
         body: formData,
     });
@@ -120,7 +120,7 @@ export {
     uploadImage,
     deleteProfilURLByUserID,
     fetchProfileByUserID,
-    uploadBannerPhoto,
-    uploadMedia,
     uploadProfilePhoto,
+    uploadMedia,
+    uploadCoverPhoto,
 };

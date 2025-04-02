@@ -62,7 +62,7 @@ export default function PendingPosts() {
         }
         if (!selectedPost) return;
         setIsLoading(true);
-        const result = await onApprovePost(selectedPost.PostID);
+        const result = await onApprovePost(selectedPost.postID);
         setIsLoading(false);
 
         if (result.success) {

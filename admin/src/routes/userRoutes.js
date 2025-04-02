@@ -32,6 +32,18 @@ const fetchAllUsersWithStatus = async () => {
     }
 }
 
+const fetchUsersLocations = async () => {
+    const response = await fetch(`${backendUrl}/api/users/locations`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+
+    const result = await response.json();
+    return result;
+}
+
 const fetchUsers = async () => {
     try {
         const response = await fetch(`${backendUrl}/api/users`, {
@@ -110,13 +122,13 @@ const setUserOnlineStatus = async (userID, isOnline) => {
     }
 };
 
-const updateUserFields = async (userID, updatedFields) => {
-    const response = await fetch(`${backendUrl}/api/users/${userID}/profile-fields/update`, {
+const updateUserField = async (userID, field) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/profile-field/update`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ updatedFields }),
+        body: JSON.stringify({ field }),
     });
 
     const result = await response.json();
@@ -218,6 +230,7 @@ const getUserIDLoginActivity = async (UserID) => {
 };
 
 export {
+    fetchUsersLocations,
     getUserLoginActivity,
     getUserIDLoginActivity,
     markAllNotificationsAsRead,
@@ -232,5 +245,5 @@ export {
     fetchNotifications,
     markNotificationAsRead,
     setUserOnlineStatus,
-    updateUserFields,
+    updateUserField,
 };

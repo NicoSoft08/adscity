@@ -7,6 +7,8 @@ import Loading from '../../customs/Loading';
 import UserCard from '../../components/card/UserCard';
 import { deleteUser, disableUser, restoreUser } from '../../routes/authRoutes';
 import '../../styles/ManageUserID.scss';
+import Modal from '../../customs/Modal';
+import Spinner from '../../customs/Spinner';
 
 export default function ManageUserID() {
     const menuRef = useRef(null);
@@ -15,6 +17,7 @@ export default function ManageUserID() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [showMenu, setShowMenu] = useState(false);
+    const [openModal, setOpenModal] = useState({ type: '', open: false });
 
     const handleBack = () => {
         navigate('/admin/dashboard/users');
@@ -54,7 +57,7 @@ export default function ManageUserID() {
         {
             label: 'Suspendre',
             icon: faPauseCircle, // Icône pour suspendre
-            action: () => handleSuspend(user?.userID)
+            action: () => setOpenModal({ type: 'suspend', open: true })
         },
         {
             label: 'Activités',
@@ -69,7 +72,7 @@ export default function ManageUserID() {
         {
             label: 'Supprimer',
             icon: faTrash,
-            action: () => handleDelete(user?.userID) // Assure-toi d'utiliser PostID
+            action: () => setOpenModal({ type: 'delete', open: true })
         },
     ];
 
@@ -132,6 +135,36 @@ export default function ManageUserID() {
             </div>
 
             <UserCard user={user} />
+
+            {openModal.open && (
+                <Modal
+                    onShow={openModal.open}
+                    onHide={() => setOpenModal({ ...openModal, open: false })}
+                    title={`${openModal.type === 'delete' ? "Supprimer" : "Suspendre"} l'utilisateur`}
+                    isHide={false}
+                    isNext={false}
+                    hideText="Annuler"
+                    nextText="Supprimer"
+                >
+                    <p>Êtes-vous sûr de vouloir {openModal.type === 'delete' ? "supprimer" : "suspendre"} cet utilisateur ?</p>
+                    <div className='modal-buttons'>
+                        <button className="modal-button approve" onClick={() => {
+                            if (openModal.type === 'delete') {
+                                handleDelete();
+                            } else if (openModal.type === 'suspend') {
+                                handleSuspend();
+                            }
+                        }}>
+                            {loading ? <Spinner /> : openModal.type === 'delete' ? 'Supprimer' : 'Suspendre'}
+                        </button>
+                        <button className="modal-button delete" onClick={handleDelete}>
+                            Annuler
+                        </button>
+
+                    </div>
+
+                </Modal>
+            )}
         </div>
     );
 };

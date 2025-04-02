@@ -8,9 +8,37 @@ import Toast from '../../customs/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusSquare } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from "chart.js";
-import { fetchUsers } from '../../routes/userRoutes';
+import { fetchUsers, fetchUsersLocations } from '../../routes/userRoutes';
 import { Bar, Pie } from 'react-chartjs-2';
 import '../../styles/DashboardPanel.scss';
+
+const CityChart = ({ data }) => {
+    const chartData = {
+        labels: data.map(item => item.city),
+        datasets: [
+            {
+                label: "Nombre d'utilisateurs",
+                data: data.map(item => item.count),
+                backgroundColor: "rgba(54, 162, 235, 0.2)",
+                borderColor: "rgba(54, 162, 235, 1)",
+                borderWidth: 1,
+            }
+        ]
+    };
+
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: { display: false },
+            title: { display: true, text: "Répartition des utilisateurs par ville" }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    };
+
+    return <Bar data={chartData} options={options} />;
+};
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
@@ -26,6 +54,26 @@ export default function DashboardPanel() {
     const [postsPending, setPostsPending] = useState([]);
     const [postsApproved, setPostsApproved] = useState([]);
     const [postsRefused, setPostsRefused] = useState([]);
+    const [usersLocations, setUsersLocations] = useState([]);
+
+    useEffect(() => {
+        let isMounted = true;
+        const fetchData = async () => {
+            try {
+                const data = await fetchUsersLocations();
+                if (isMounted && data) {
+                    setUsersLocations(data.locations);
+                    console.log('Data fetched successfully:', data.locations);
+                }
+            } catch (error) {
+                console.error("Erreur technique", error);
+            }
+        };
+
+        fetchData();
+
+        return () => { isMounted = false };
+    }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -138,11 +186,16 @@ export default function DashboardPanel() {
                 <Bar data={graphics.barData} />
             </div>
 
+            <div className="chart-container">
+                <h4>Statistiques des utilisateurs</h4>
+                <CityChart data={usersLocations} />
+            </div>
+
             <PaymentStats />
 
             <PendingPosts />
-            
-            
+
+
 
             <Toast
                 show={toast.show}

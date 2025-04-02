@@ -1,4 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { AuthContext } from '../../contexts/AuthContext';
 import { fetchUsers } from '../../routes/userRoutes';
 import Toast from '../../customs/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -6,24 +7,28 @@ import { faChartSimple, faCircleCheck, faCircleExclamation, faEye, faFilter } fr
 import { IconAvatar } from '../../config/images';
 import Pagination from '../../components/pagination/Pagination';
 import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 import '../../styles/ManageUsers.scss';
 
-const UsersFilter = ({ onFilterChange }) => {
+const UsersFilter = ({ onFilterChange, onClick }) => {
     const [filters, setFilters] = useState({
         search: "",
         role: "all", // "all", "admin", "user"
         status: "all", // "all", "active", "suspended", "banned"
         city: "",
         subscription: "all", // "all", "free", "pro", "business"
-        registrationDate: "",
+        startDate: "",  // Date de début du filtre
+        endDate: "",
         emailVerified: "all", // "all", "true", "false"
     });
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const updatedFilters = { ...filters, [name]: value };
-        setFilters(updatedFilters);
-        onFilterChange(updatedFilters);
+        setFilters(prev => ({
+            ...prev,
+            [name]: value
+        }));
+        onFilterChange({ ...filters, [name]: value });
     };
 
 
@@ -73,10 +78,17 @@ const UsersFilter = ({ onFilterChange }) => {
 
             <input
                 type="date"
-                name='registrationDate'
-                value={filters.registrationDate}
+                name="startDate"
+                value={filters.startDate}
                 onChange={handleChange}
             />
+            <input
+                type="date"
+                name="endDate"
+                value={filters.endDate}
+                onChange={handleChange}
+            />
+            <button onClick={onClick}>Exporter en CSV</button>
         </div>
     );
 };
@@ -99,7 +111,7 @@ const UserRow = ({ index, user, onAction, isSelected, onSelect }) => {
             <td>{index + 1}</td>
             <td>{user.UserID}</td>
             <td><img src={getProfilePicture(user)} alt={user.displayName} width="50" height="50" className="profile-img" /></td>
-            <td>{user.displayName}</td>
+            <td>{user.firstName} {user.lastName}</td>
             <td>{user.phoneNumber}</td>
             <td>{user.email}</td>
             <td><FontAwesomeIcon icon={user.emailVerified ? faCircleCheck : faCircleExclamation} color={user.emailVerified ? '#28a745' : '#00aaff'} /> Email</td>
@@ -120,6 +132,7 @@ const UserRow = ({ index, user, onAction, isSelected, onSelect }) => {
 }
 
 export default function ManageUsers() {
+    const { currentUser, userData } = useContext(AuthContext);
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -152,44 +165,44 @@ export default function ManageUsers() {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const parseCustomDate = (dateStr) => {
-        if (!dateStr || typeof dateStr !== "string") return new Date(NaN); // Vérifier si c'est bien une chaîne
-    
-        const months = {
-            "janvier": 0, "février": 1, "mars": 2, "avril": 3, "mai": 4, "juin": 5,
-            "juillet": 6, "août": 7, "septembre": 8, "octobre": 9, "novembre": 10, "décembre": 11
-        };
-    
-        const regex = /(\d{1,2}) (\w+) (\d{4}), (\d{2}):(\d{2}):(\d{2}) (AM|PM)/i;
-        const match = dateStr.match(regex);
-    
-        if (!match) return new Date(NaN); // Si le format ne correspond pas, renvoyer une date invalide
-    
-        let [, day, monthStr, year, hours, minutes, seconds, period] = match;
-        let month = months[monthStr.toLowerCase()];
-        
-        if (period.toUpperCase() === "PM" && hours < 12) {
-            hours = parseInt(hours) + 12;
-        } else if (period.toUpperCase() === "AM" && hours === 12) {
-            hours = 0;
-        }
-    
-        return new Date(year, month, day, hours, minutes, seconds);
-    };    
-
     // Application des filtres
     const handleFilterChange = (filters) => {
-        let filtered = users.filter(user => (
-            (filters.role === "all" || user.role === filters.role) &&
-            (filters.status === "all" || user.isActive === (filters.status === "active")) &&
-            (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
-            (filters.subscription === "all" || user.subscription === filters.subscription) &&
-            (filters.search === "" || user.displayName.toLowerCase().includes(filters.search.toLowerCase()) || user.email.toLowerCase().includes(filters.search.toLowerCase())) &&
-            (filters.emailVerified === "all" || user.emailVerified === (filters.emailVerified === "true")) &&
-            (filters.registrationDate === "" || (user.createdAt) === new Date(filters.registrationDate))
-        ));
+        let filtered = users.filter(user => {
+            const userDate = user.registrationDateISO; // Ex: "2025-03-30"
+
+            return (
+                (filters.role === "all" || user.role === filters.role) &&
+                (filters.status === "all" || user.isActive === (filters.status === "active")) &&
+                (filters.city === "" || user.city?.toLowerCase().includes(filters.city.toLowerCase())) &&
+                (filters.subscription === "all" || user.subscription === filters.subscription) &&
+                (filters.search === "" || user.firstName.toLowerCase().includes(filters.search.toLowerCase()) || user.lastName.toLowerCase().includes(filters.search.toLowerCase()) || user.email.toLowerCase().includes(filters.search.toLowerCase())) &&
+                (filters.emailVerified === "all" || user.emailVerified === (filters.emailVerified === "true")) &&
+                (filters.startDate === "" || userDate >= filters.startDate) &&
+                (filters.endDate === "" || userDate <= filters.endDate)
+            );
+        });
+
         setFilteredUsers(filtered);
-    };  
+    };
+
+    const exportToCSV = () => {
+        if (currentUser && !userData.permissions.includes('SUPER_ADMIN')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour exporter les utilisateurs.' });
+            return;
+        }
+
+        const headers = "Firstname,Lastname,Email,Verified,Phone,Ville,Pays,Date\n";
+        const rows = filteredUsers.map(user =>
+            `${user.firstName},${user.lastName},${user.email},${user.emailVerified ? 'True' : 'False' },${user.phoneNumber},${user.city},${user.country},${formatDistanceToNow(user.createdAt?._seconds * 1000 + user.createdAt?._nanoseconds / 1000000)}\n`
+        ).join("\n");
+
+        const blob = new Blob([headers + rows], { type: "text/csv" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = "utilisateurs.csv";
+        link.click();
+    };
+
 
     const handleAction = (action, UserID) => {
         const user_id = UserID.toLowerCase();
@@ -238,7 +251,7 @@ export default function ManageUsers() {
 
             {/* Filtres */}
             {openFilter && (
-                <UsersFilter onFilterChange={handleFilterChange} />
+                <UsersFilter onFilterChange={handleFilterChange} onClick={exportToCSV} />
             )}
 
             <div className='table-container'>

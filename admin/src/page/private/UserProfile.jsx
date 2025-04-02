@@ -1,227 +1,300 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {
-    faAddressCard, faCamera, faChartSimple, faCheck, faEnvelopeOpen,
-    faHome, faIdCard, faLocationDot,
-    faPhone, faSliders, faTimes, faUserAltSlash,
-    faUserCheck
-} from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useContext, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
-import { IconCover, IconAvatar } from '../../config/images';
-import { uploadProfilePhoto } from '../../routes/storageRoutes';
-import Toast from '../../customs/Toast';
+import { Camera, Home, Mail, MapPin, Pencil, PhoneCall, Search, User } from 'lucide-react';
+import { uploadCoverPhoto, uploadProfilePhoto } from '../../routes/storageRoutes';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartSimple, faCheck, faCircleCheck, faCircleExclamation, faSliders, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { getUserLoginActivity, updateUserField } from '../../routes/userRoutes';
+import cities from '../../data/ru.json';
+import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
-import { getUserLoginActivity } from '../../routes/userRoutes';
+import Toast from '../../customs/Toast';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../../firebaseConfig';
+import Settings from './Settings';
 import { differenceInDays, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import Settings from './Settings';
+import Pagination from '../../components/pagination/Pagination';
+import { IconAvatar } from '../../config/images';
 import '../../styles/UserProfile.scss';
 
-
 export default function UserProfile() {
-    const { currentUser, userRole, userData } = useContext(AuthContext);
+    const { currentUser, userData } = useContext(AuthContext);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const [activeSection, setActiveSection] = useState('activity'); // Section active par défaut, 'activity
+    const [loginActivity, setLoginActivity] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [imageType, setImageType] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [profilePreview, setProfilePreview] = useState(null);
-    const [activeSection, setActiveSection] = useState('info'); // Section active par défaut, 'activity
-    const [loginActivity, setLoginActivity] = useState([]);
+    const [previewImage, setPreviewImage] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [formData, setFormData] = useState({
+        displayName: userData.displayName || "",
+        bio: userData.bio || "Membre de la communauté AdsCity 🌍 | À la recherche de bonnes affaires et de nouvelles opportunités ! 🚀✨",
+        city: userData.city || "",
+        firstName: userData.firstName || "",
+        lastName: userData.lastName || "",
+        country: userData.country || "",
+        address: userData.address || "",
+        profilURL: userData.profilURL || IconAvatar,
+        coverURL: userData.coverURL || 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&q=80&w=1200',
+    });
+    const [showEdit, setShowEdit] = useState(false);
+    const [field, setField] = useState(null);
 
     useEffect(() => {
         if (!currentUser?.uid) return;
 
+        logEvent(analytics, 'profile_page_view', { page_path: '/user/dashboard/profile' });
+
         const fetchUserActivity = async () => {
             const result = await getUserLoginActivity(currentUser.uid);
-            if (result.success) {
+            if (result.success && Array.isArray(result.activity)) {
                 setLoginActivity(result.activity);
+            } else {
+                setLoginActivity([]);
             }
         };
 
         fetchUserActivity();
-    }, [currentUser?.uid]);
-
-    useEffect(() => {
-        return () => {
-            if (profilePreview) {
-                URL.revokeObjectURL(profilePreview);
-            }
-        };
-    }, [profilePreview]);
+    }, [currentUser]);
 
     const tabs = [
-        { id: 'info', icon: faIdCard, label: 'Données' },
         { id: 'activity', icon: faChartSimple, label: 'Activité' },
         { id: 'settings', icon: faSliders, label: 'Réglages' },
     ];
 
+
+    const filteredCities = cities.filter(i => i.city.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Validation du fichier (type et taille)
     const validateFile = (file) => {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        const maxSize = 2 * 1024 * 1024; // 2MB
+        const maxSize = 5 * 1024 * 1024; // 5MB
 
         if (!allowedTypes.includes(file?.type)) {
-            setToast({
-                show: true,
-                type: 'error',
-                message: 'Le fichier doit être au format JPEG, PNG ou JPG.',
-            });
+            setToast({ show: true, type: 'error', message: 'Le fichier doit être au format JPEG, PNG ou JPG.' });
             return false;
         }
 
         if (file?.size > maxSize) {
-            setToast({
-                show: true,
-                type: 'error',
-                message: 'La taille du fichier ne doit pas dépasser 2MB.',
-            });
+            setToast({ show: true, type: 'error', message: 'La taille du fichier ne doit pas dépasser 5MB.' });
             return false;
         }
 
         return true;
     };
 
-
-    const handleProfileChange = (e) => {
-        const file = e.target.files[0];
-
-        if (!validateFile(file)) {
-            return;
-        }
-
-        setSelectedFile(file);
-        const reader = new FileReader();
-        reader.onload = () => {
-            setProfilePreview(reader.result);
+    // Gestion du changement d'image (profil/couverture)
+    const handleImageChange = (event, type) => {
+        const file = event.target.files[0];
+        if (file && validateFile(file)) {
+            setPreviewImage(URL.createObjectURL(file));
+            setSelectedFile(file);
+            setImageType(type);
             setIsModalOpen(true);
-        };
-        reader.readAsDataURL(file);
+        }
     };
 
+    // Confirmation du changement d'image
     const handleConfirm = async () => {
-        const userID = currentUser?.uid;
+        if (!selectedFile || !imageType) return;
+
         setIsLoading(true);
-        if (selectedFile) {
-            const result = await uploadProfilePhoto(selectedFile, userID);
+        let result = null;
+        const userID = currentUser?.uid;
+
+        try {
+            if (imageType === "profile") {
+                const { count } = userData?.profilChanges;
+                if (count >= 3) {
+                    setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
+                    return;
+                }
+
+                result = await uploadProfilePhoto(selectedFile, userID);
+                if (result) setFormData(prevFormData => ({ ...prevFormData, profilURL: result.imageUrl }));
+            } else if (imageType === "cover") {
+                const { count } = userData?.coverChanges;
+                if (count >= 3) {
+                    setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
+                    return;
+                }
+
+                result = await uploadCoverPhoto(selectedFile, userID);
+                if (result) setFormData(prevFormData => ({ ...prevFormData, coverURL: result.imageUrl }));
+            }
+            setIsModalOpen(false); // Fermer la modale SEULEMENT si l'upload réussit
+        } catch (error) {
+            console.error('Erreur lors de la mise à jour de l\'image :', error);
+            setToast({ show: true, type: 'error', message: 'Une erreur est survenue, réessayez plus tard.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const toggleModal = (type, state) => {
+        if (type === 'image') {
+            setIsModalOpen(state);
+            setPreviewImage(null);
+        }
+        if (type === 'edit') {
+            setShowEdit(state);
+            setField(null);
+        }
+    };
+
+    const handleEdit = (fieldName) => {
+        setField(fieldName);
+        setShowEdit(true);
+    };
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevFormData) => ({
+            ...prevFormData,
+            [name]: value,
+        }));
+    };
+
+    const handleSearch = (e) => {
+        const term = e.target.value;
+        setSearchTerm(term);
+    };
+
+    const handleConfirmEdit = async () => {
+        setIsLoading(true);
+
+        try {
+            const userID = currentUser?.uid;
+            const result = await updateUserField(userID, { [field]: formData[field] });
             if (result.success) {
-                setToast({
-                    show: true,
-                    type: 'success',
-                    message: result.message,
-                });
-                setIsLoading(false);
-            } else {
-                setToast({
-                    show: true,
-                    type: 'error',
-                    message: result.message,
-                });
+                setToast({ show: true, type: 'info', message: 'Modification réussie.' });
+                setShowEdit(false);
+                setField(null);
                 setIsLoading(false);
             }
+        } catch (error) {
+            console.error('Erreur lors de la modification des données :', error);
+            setToast({ show: true, type: 'error', message: 'Une erreur est survenue, réessayez plus tard.' });
+        } finally {
+            setIsLoading(false);
         }
-
-        setIsModalOpen(false);
-        setProfilePreview(null);
-        setSelectedFile(null);
     };
 
-    const handleCancel = () => {
-        setIsModalOpen(false);
-        setProfilePreview(null);
-        setSelectedFile(null);
-    };
+    const renderEditForm = () => {
+        switch (field) {
+            case 'firstName':
+                return (
+                    <div className="displayName-field">
+                        <input
+                            type="text"
+                            name="firstName"
+                            value={formData.firstName}
+                            onChange={handleChange}
+                            placeholder="Prénom"
+                            className='input-field'
+                        />
+                    </div>
+                );
+            case 'lastName':
+                return (
+                    <div className="displayName-field">
+                        <input
+                            type="text"
+                            name="lastName"
+                            value={formData.lastName}
+                            onChange={handleChange}
+                            placeholder="Nom"
+                            className='input-field'
+                        />
+                    </div>
+                );
+            case 'bio':
+                return (
+                    <div className="bio-field">
+                        <textarea
+                            rows={4}
+                            className='input-field'
+                            name="bio"
+                            value={formData.bio}
+                            onChange={handleChange}
+                            placeholder="Écrivez quelque chose à propos de vous..."
+                        />
+                    </div>
+                );
+            case 'address':
+                return (
+                    <div className="address-field">
+                        <input
+                            type="text"
+                            name='address'
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Adresse"
+                            className='input-field'
+                        />
+                    </div>
+                );
+            case 'city':
+                return (
+                    <>
+                        <div className="search-field">
+                            <input
+                                type='text'
+                                name='searchTerm'
+                                className='input-field'
+                                placeholder='Rechercher une ville'
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
+                            <span className='search-icon'>
+                                <Search size={20} />
+                            </span>
+                        </div>
 
-    // Déterminer l'image de couverture à afficher
-    const coverImage =
-        currentUser && userRole === 'admin'
-            ? userData?.coverURL || IconCover // Si profilURL est null, utiliser l'image par défaut
-            : IconAvatar;
+                        <div className="city-field">
+                            <select
+                                name="city"
+                                value={formData.city}
+                                className='input-field'
+                                onChange={handleChange}
+                            >
+                                <option value="">Choisissez votre ville</option>
+                                {filteredCities.map((city, index) => (
+                                    <option key={index} value={city.city}>{city.city}</option>
+                                ))}
+                            </select>
 
-    // Déterminer l'image de profil à afficher
-    const profileImage =
-        currentUser && userRole === 'admin'
-            ? userData?.profilURL || IconAvatar // Si profilURL est null, utiliser l'image par défaut
-            : IconAvatar;
-
-    // const handleBannerChange = async (e) => {
-    //     const file = e.target.files[0];
-    //     console.log(file);
-    // }
-
-    const renderSection = () => {
-        switch (activeSection) {
-            case 'info':
-                return <PersonnalInfo />;
-            case 'activity':
-                return <Activity />;
-            case 'settings':
-                return <Settings />;
+                        </div>
+                    </>
+                );
             default:
                 return null;
         }
-    };
+    }
 
-    const PersonnalInfo = () => {
-        return (
-            <div className='user-data'>
-                <h2>{userData?.displayName}</h2>
-                <div className="seperator" />
-                <p>
-                    {userData?.profileNumber}
-                    <FontAwesomeIcon
-                        icon={faAddressCard}
-                        className='pen'
-                    />
-                </p>
-                <div className="seperator" />
-                <p>
-                    {userData?.isActive
-                        ? "Actif"
-                        : "Désactivé"
-                    }
-                    <FontAwesomeIcon
-                        icon={userData?.isActive
-                            ? faUserCheck
-                            : faUserAltSlash
-                        }
-                        className='pen'
-                    />
-                </p>
-                <div className="seperator" />
-                <p>
-                    {userData?.country}, {userData?.city}
-                    <FontAwesomeIcon
-                        icon={faLocationDot}
-                        className='pen'
-                    />
-                </p>
-                <div className="seperator" />
-                <p>
-                    {userData?.email}
-                    <FontAwesomeIcon
-                        icon={faEnvelopeOpen}
-                        className='pen'
-                    />
-                </p>
-                <div className="seperator" />
-                <p>{userData?.phoneNumber}
-                    <FontAwesomeIcon
-                        icon={faPhone}
-                        className='pen'
-                    />
-                </p>
-                <div className="seperator" />
-                <p>
-                    {userData?.address}
-                    <FontAwesomeIcon
-                        icon={faHome}
-                        className='pen'
-                    />
-                </p>
-            </div>
-        )
+    const renderSection = () => {
+        switch (activeSection) {
+            case 'activity': return <Activity />;
+            case 'settings': return <Settings userData={userData} />;
+            default: return null;
+        }
     };
 
     const Activity = () => {
+        const [itemsPerPage] = useState(10);
+        const [currentPage, setCurrentPage] = useState(1);
+
+        // Fonction pour paginer les activités
+        const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+        // Extraire les activités pour la page actuelle
+        const currentActivity = loginActivity.slice(
+            (currentPage - 1) * itemsPerPage,
+            currentPage * itemsPerPage
+        );
 
         const formatDateTimestamp = (adTimestamp) => {
             if (!adTimestamp) return "Date inconnue";
@@ -260,7 +333,7 @@ export default function UserProfile() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loginActivity.map((activity, index) => (
+                            {currentActivity.map((activity, index) => (
                                 <tr key={index}>
                                     <td>{activity.deviceInfo.browser}</td>
                                     <td>{activity.deviceInfo.os}</td>
@@ -271,46 +344,96 @@ export default function UserProfile() {
                         </tbody>
                     </table>
                 </div>
+                {loginActivity.length > itemsPerPage && (
+                    <Pagination elements={loginActivity} elementsPerPage={itemsPerPage} currentPage={currentPage} paginate={paginate} />
+                )}
             </div>
         );
     };
 
     return (
-        <div className='user-profile'>
-            <div className="banner-content">
-                <img
-                    src={coverImage}
-                    alt="User Banner"
-                    className="banner-image"
-                />
-                {/* <label className="update-icon banner-update">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleBannerChange}
-                        style={{ display: 'none' }}
-                    />
-                    <FontAwesomeIcon icon={faCamera} />
-                </label> */}
-            </div>
-            <div className="profile-content">
-                <img
-                    src={profileImage}
-                    alt="User Profile"
-                    className="profile-image"
-                />
-                <label className="update-icon profile-update">
-                    <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleProfileChange}
-                        style={{ display: 'none' }}
-                    />
-                    <FontAwesomeIcon icon={faCamera} />
-                </label>
-            </div>
+        <div className="profile-container">
+            <div className="profile-card">
+                {/* Photo de couverture */}
+                <div className="profile-cover" style={{ backgroundImage: `url(${formData.coverURL})` }}>
+                    <input type="file" name='coverURL' accept="image/*" id="coverUpload" onChange={(e) => handleImageChange(e, 'cover')} hidden />
+                    <label htmlFor="coverUpload" className="edit-cover-btn"><Camera size={20} /></label>
+                </div>
+                {/* Informations du profil */}
+                <div className="profile-content">
+                    <div className="profile-header">
+                        <div className="profile-info">
+                            <div className="profile-avatar-container">
+                                <img src={formData.profilURL} alt="Profile" className="profile-avatar" />
+                                <input type="file" name='profilURL' accept="image/*" id="avatarUpload" onChange={(e) => handleImageChange(e, 'profile')} hidden />
+                                <label htmlFor="avatarUpload" className="edit-avatar-btn"><Camera size={16} /></label>
+                            </div>
+                            <div className="profile-details">
+                                <h1 className="profile-name">
+                                    {userData.firstName} {userData.lastName}
+                                </h1>
+                                {/* <p className="profile-username">{dummyUser.short_name_link}</p> */}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="profile-bio">
+                        <p>
+                            {formData.bio}
+                            <span title="Modifier ma bio" onClick={() => handleEdit("bio")}>
+                                <Pencil size={16} />
+                            </span>
+                        </p>
 
-            {/* SWITCHER */}
+                        <div className="profile-links">
+                            <div className="profile-location">
+                                <User className="icon-sm" />
+                                <span>{formData.firstName}</span>
+                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("firstName")}>
+                                    <Pencil size={16} />
+                                </span>
+                            </div>
+                            <div className="profile-location">
+                                <User className="icon-sm" />
+                                <span>{formData.lastName}</span>
+                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("lastName")}>
+                                    <Pencil size={16} />
+                                </span>
+                            </div>
+                            <div className="profile-location">
+                                <Mail className="icon-sm" />
+                                <span>{userData.email}</span>
+                                <span
+                                    title={userData.emailVerified ? 'Vérifié' : 'Non vérifié'}
+                                    className='edit-icon'
+                                >
+                                    <FontAwesomeIcon
+                                        icon={userData.emailVerified ? faCircleCheck : faCircleExclamation}
+                                        color={userData.emailVerified ? '#28a745' : '#00aaff'}
+                                    />
+                                </span>
+                            </div>
+                            <div className="profile-location">
+                                <PhoneCall className="icon-sm" />
+                                <span>{userData.phoneNumber}</span>
+                            </div>
+                            <div className="profile-location">
+                                <MapPin className="icon-sm" />
+                                <span>{formData.city}, {formData.country}</span>
+                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("city")}>
+                                    <Pencil size={16} />
+                                </span>
+                            </div>
+                            <div className="profile-location">
+                                <Home className="icon-sm" />
+                                <span>{formData.address}</span>
+                                <span className="edit-icon" title="Modifier mon adresse" onClick={() => handleEdit("address")}>
+                                    <Pencil size={16} />
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div className="switcher">
                 <div className="switcher-tabs">
                     {tabs.map((tab) => (
@@ -331,33 +454,48 @@ export default function UserProfile() {
                 </div>
             </div>
 
-            <div style={{ height: '50px' }} />
-
-
-
             {isModalOpen && (
-                <div className="modal">
-                    <div className="modal-content">
-                        <h3>Aperçu de la nouvelle photo</h3>
-                        <img src={profilePreview} alt="Preview" className="modal-preview" />
+                <Modal
+                    onShow={isModalOpen}
+                    onHide={() => toggleModal('image', false)}
+                    title={`Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`}
+                >
+                    <div>
+                        <img src={previewImage} alt="Aperçu" className="modal-preview" />
                         <div className="modal-actions">
                             <button className="btn btn-confirm" onClick={handleConfirm}>
-                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} />Valider</>}
+                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
                             </button>
-                            <button className="btn btn-cancel" onClick={handleCancel}>
+                            <button className="btn btn-cancel" onClick={() => toggleModal('image', false)}>
                                 <FontAwesomeIcon icon={faTimes} /> Annuler
                             </button>
                         </div>
                     </div>
-                </div>
+                </Modal>
             )}
 
-            <Toast
-                show={toast.show}
-                type={toast.type}
-                message={toast.message}
-                onClose={() => setToast({ ...toast, show: false })}
-            />
+            {showEdit && field && (
+                <Modal
+                    onShow={showEdit}
+                    onHide={() => toggleModal('edit', false)}
+                    title={`Modifier ${field === "bio" ? "ma bio" : field === "city" ? "ma localisation" : field === "address" ? "mon adresse" : field === "lastName" ? "mon nom" : field === "firstName" ? "mon prénom" : ""}`}
+                >
+                    <div className="edit-form">
+                        {renderEditForm()}
+                    </div>
+                    <div className="modal-actions">
+                        <button className="btn btn-confirm" onClick={handleConfirmEdit}>
+                            {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
+                        </button>
+                        <button className="btn btn-cancel" onClick={() => toggleModal('edit', false)}>
+                            <FontAwesomeIcon icon={faTimes} /> Annuler
+                        </button>
+                    </div>
+
+                </Modal>
+            )}
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
 };

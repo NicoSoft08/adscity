@@ -53,7 +53,7 @@ import StatsPostID from './pages/private/StatsPostID';
 import ManageFavorites from './pages/private/ManageFavorites';
 
 export default function AppRouter() {
-    const { currentUser } = useContext(AuthContext);
+    const { currentUser, userData } = useContext(AuthContext);
 
     return (
         <Router>
@@ -98,7 +98,7 @@ export default function AppRouter() {
                     <Route path='/auth/signin' element={<LoginPage />} />
                     <Route path='/auth/signin/:email?' element={<LoginPage />} />
                     <Route path='/auth/create-user' element={<SignupPage />} />
-                    <Route path='/auth/signup-success' element={<SignupSuccess />} />
+                    <Route path='/auth/validate-email' element={<SignupSuccess />} />
                     <Route path='/auth/reset-password/:email?' element={<ForgotPasswordPage />} />
                     <Route path="/auth/verify-device/:deviceID/:verificationToken" element={<VerifyDevice />} />
                     <Route path="/auth/decline-device/:deviceID/:verificationToken" element={<DeclineDevice />} />
@@ -109,7 +109,7 @@ export default function AppRouter() {
                     <Route path="favoris" element={<ManageFavorites currentUser={currentUser} />} />
                     <Route path="posts" element={<ManagePosts currentUser={currentUser} />} />
                     <Route path='posts/:post_id' element={<ManagePostID currentUser={currentUser} />} />
-                    <Route path='posts/:post_id/edit' element={<EditPostID currentUser={currentUser} />} />
+                    <Route path='posts/:post_id/edit' element={<EditPostID currentUser={currentUser} userData={userData} />} />
                     <Route path='posts/:post_id/statistics' element={<StatsPostID />} />
                     <Route path="payments" element={<ManagePayments userID={currentUser?.uid} />} />
                     {/* <Route path="messages" element={<Messages currentUser={currentUser} />} /> */}

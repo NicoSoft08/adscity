@@ -21,7 +21,7 @@
     .login-form {
         display: flex;
         flex-direction: column;
-        width: 400px;
+        max-width: 400px;
         padding: 2rem;
         border-radius: 8px;
         border: 1px solid $gray;
@@ -29,13 +29,9 @@
         box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px,
             rgba(0, 0, 0, 0.24) 0px 1px 2px;
 
-        @media (max-width: 768px) {
-            width: 300px;
-        }
-
-        @media (max-width: 576px) {
-            width: 250px;
-        }
+            @media (max-width: 768px) {
+                max-width: 300px;
+            }
 
 
         h2 {

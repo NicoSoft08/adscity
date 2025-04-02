@@ -48,14 +48,21 @@
             .modal-title {
                 margin: 0;
                 font-size: 18px;
-                font-weight: bold;
+                font-weight: $font-regular;
+                text-transform: uppercase;
             }
             
             .close-button {
-                background: none;
+                background: transparent;
                 border: none;
                 font-size: 24px;
                 cursor: pointer;
+                color: #6c757d;
+                
+                &:hover {
+                    color: #343a40;
+                    background: #f8f9fa;
+                }
             }
         }
 

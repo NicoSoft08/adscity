@@ -28,7 +28,7 @@ export default function Header() {
                     <AppLogo source={letterBlueBgWhite} />
                 </div>
                 <div className="actions">
-                    <div className='display-name'>{userData?.displayName}</div>
+                    <div className='display-name'>{userData.firstName} {userData.lastName}</div>
                     <div className="user-icon" onClick={toggleDropdown}>
                         <UserIsOnline
                             width={'40px'}

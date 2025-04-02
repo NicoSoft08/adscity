@@ -2,9 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { formateDateTimestamp } from '../../func';
 import { fetchUserPaymentInfo } from '../../routes/paymentRoutes';
 import Pagination from '../pagination/Pagination';
-import './ManagePayments.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisH } from '@fortawesome/free-solid-svg-icons';
+import './ManagePayments.scss';
 
 
 const formatPaymentMethod = (paymentMethod) => {

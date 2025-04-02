@@ -63,7 +63,7 @@ const OwnerProfileCard = ({ owner, userID, city }) => {
             </div>
             <span className='profile-type'> {owner?.profileType} </span>
             <p className='member-since'>Membre depuis: {formatDate(owner.createdAt)}</p>
-            <h2 className='name'>{owner.displayName}</h2>
+            <h2 className='name'>{owner.firstName} {owner.lastName}</h2>
             <p className='review'>{owner.ratings?.total || 0} ⭐ {owner.reviews?.totalReviews || 0} avis</p>
             <div className='contact-info'>
                 <button onClick={handlePhoneClick} className='contact-button'>

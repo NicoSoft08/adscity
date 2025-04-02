@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import formFields from '../../json/formFields.json';
 import InputField from '../input-field/InputField';
-import './Details.scss';
 import Toast from '../../customs/Toast';
+import './Details.scss';
 
 export default function Details({ formData, setFormData, onChange, onNext, onBack }) {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -10,32 +10,63 @@ export default function Details({ formData, setFormData, onChange, onNext, onBac
     useEffect(() => {
         if (formData.subcategory) {
             const fields = formFields.fields[formData.subcategory] || [];
-            
+
             setFormData(prev => {
                 const currentDetails = prev.details || {};
-                const initialData = fields.reduce((acc, field) => {
+                const updatedDetails = fields.reduce((acc, field) => {
                     acc[field.name] = currentDetails[field.name] ?? 
-                        (field.type === "checkbox" ? [] : field.type === "file" ? [] : "");
+                        (field.type === "checkbox" || field.type === "file" ? [] : "");
                     return acc;
                 }, {});
 
-                return { ...prev, details: { ...currentDetails, ...initialData } };
+                return { ...prev, details: { ...currentDetails, ...updatedDetails } };
             });
         }
     }, [formData.subcategory, setFormData]);
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+
+        if (!name) return;
+
+        setFormData((prev) => {
+            const updatedFormData = { ...prev };
+
+            if (!updatedFormData.details) {
+                updatedFormData.details = {}; // ✅ Assurer que `details` existe
+            }
+
+            if (type === "checkbox") {
+                updatedFormData.details[name] = checked
+                    ? [...(updatedFormData.details[name] || []), value]
+                    : updatedFormData.details[name].filter((v) => v !== value);
+            } else {
+                updatedFormData.details[name] = value;
+            }
+
+            return updatedFormData;
+        });
+
+    };
 
     // Vérifie si tous les champs requis sont remplis avant de permettre la navigation
     const handleNext = () => {
         const fields = formFields.fields[formData.subcategory] || [];
         const missingFields = fields
-            .filter(field => field.required) // On prend uniquement les champs obligatoires
+            .filter(field => field.required)
             .filter(field => {
                 const value = formData.details[field.name];
                 return !value || (Array.isArray(value) && value.length === 0);
             });
 
         if (missingFields.length > 0) {
-           setToast({ show: true, type: 'error', message: `Veuillez remplir tous les champs obligatoires.` });
+            setToast({ show: true, type: 'error', message: `Veuillez remplir tous les champs obligatoires.` });
+
+            // Auto-hide Toast après 3 secondes
+            setTimeout(() => {
+                setToast({ show: false, type: '', message: '' });
+            }, 3000);
+
             return;
         }
 
@@ -55,7 +86,7 @@ export default function Details({ formData, setFormData, onChange, onNext, onBac
                     multiple={multiple}
                     options={options}
                     value={formData.details[name]}
-                    onChange={onChange}
+                    onChange={handleChange}
                 />
             ))}
 
@@ -64,7 +95,7 @@ export default function Details({ formData, setFormData, onChange, onNext, onBac
                 <button type="button" className='next-button' onClick={handleNext}>Suivant</button>
             </div>
 
-            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, type: '', message: '' })} />
+            {toast.show && <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, type: '', message: '' })} />}
         </div>
     );
 };

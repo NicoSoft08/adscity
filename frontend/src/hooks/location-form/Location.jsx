@@ -1,42 +1,69 @@
-import React, { useState } from 'react';
-import locationFields from '../../json/locationForm.json';
+import React, { useState, useEffect, useRef } from 'react';
+import citiesData from '../../data/ru.json';
 import './Location.scss';
 
-export default function Location({ onNext, onBack, onChange, formData, useUserAddress, setUseUserAddress }) {
+export default function Location({ onNext, onBack, formData, setFormData }) {
     const [errors, setErrors] = useState({});
+    const [filteredCities, setFilteredCities] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const citySelectRef = useRef(null);
 
-    // Validation dynamique des champs
-    const validateForm = () => {
-        const newErrors = {};
-        locationFields.location.forEach(field => {
-            if (field.required && !formData.location?.[field.name]) {
-                newErrors[field.name] = `${field.label} est requis.`;
-            }
-        });
-        return newErrors;
+    // Initialisation du pays à "Russie"
+    useEffect(() => {
+        if (!formData?.location?.country) {
+            setFormData(prev => ({
+                ...prev,
+                location: { ...prev.location, country: 'Russie' }
+            }));
+        }
+    }, [formData, setFormData]);
+
+    // Filtrer les villes en fonction de la recherche
+    useEffect(() => {
+        if (searchTerm.length > 0) {
+            const results = citiesData.filter(city =>
+                city.city.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+            setFilteredCities(results);
+        } else {
+            setFilteredCities([]);
+        }
+    }, [searchTerm]);
+
+    // Met à jour le formulaire en cas de changement des champs
+    const handleAddressChange = (e) => {
+        setFormData(prev => ({
+            ...prev,
+            location: { ...prev.location, address: e.target.value }
+        }));
     };
 
-    // Gestion des changements de saisie
-    const handleLocationChange = (e) => {
-        if (!e || !e.target) return;
+    // Sélection automatique de la ville lors du changement dans la liste
+    const handleCityChange = (e) => {
+        setFormData(prev => ({
+            ...prev,
+            location: { ...prev.location, city: e.target.value }
+        }));
+        // setSearchTerm(''); // Réinitialiser le champ de recherche après la sélection
+    };
 
-        const { name, value } = e.target;
-        if (!name) return;
+    // Validation des champs
+    const validateForm = () => {
+        const newErrors = {};
+        if (!formData?.location?.city) {
+            newErrors.city = 'La ville est requise';
+        }
+        if (!formData?.location?.address) {
+            newErrors.address = "L'adresse est requise";
+        }
 
-        onChange({
-            ...formData,
-            location: {
-                ...formData.location,
-                [name]: value
-            }
-        });
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     // Vérification et passage à l'étape suivante
     const handleNext = () => {
-        const formErrors = validateForm();
-        if (Object.keys(formErrors).length > 0) {
-            setErrors(formErrors);
+        if (!validateForm()) {
             return;
         }
         onNext();
@@ -44,27 +71,67 @@ export default function Location({ onNext, onBack, onChange, formData, useUserAd
 
     return (
         <div className="location-form">
-            {locationFields.location.map(({ name, label, type, placeholder, required }) => (
+            {/* Pays */}
+            <div className="input-group">
+                <label className="input-label">Pays <strong className='compulsory'>*</strong></label>
+                <input
+                    className="input-field"
+                    type="text"
+                    name="location.country"
+                    value="Russie"
+                    readOnly
+                />
+            </div>
+
+            {/* Recherche de ville */}
+            <div className="input-group">
+                <label className="input-label">Rechercher une ville</label>
+                <input
+                    className="input-field"
+                    type="text"
+                    placeholder="Tapez le nom de votre ville..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
+
+            {/* Sélection de la ville */}
+            {filteredCities.length > 0 && (
                 <div className="input-group">
-                    <label className="input-label">{label}{required && <strong className='compulsory'>*</strong>}</label>
-                    <input
-                        className={`input-field ${errors[name] ? 'error' : ''}`}
-                        type={type}
-                        name={name}
-                        placeholder={placeholder}
-                        value={formData.location?.[name] || ''}
-                        onChange={handleLocationChange}
-                        disabled={useUserAddress}
-                    />
-                    {errors[name] && <p className="error-message">{errors[name]}</p>}
+                    <label className="input-label">Ville <strong className='compulsory'>*</strong></label>
+                    <select
+                        ref={citySelectRef}
+                        className={`input-field ${errors.city ? 'error' : ''}`}
+                        name="location.city"
+                        value={formData?.location?.city || ''}
+                        onChange={handleCityChange}
+                    >
+                        <option value="">Sélectionner une ville</option>
+                        {filteredCities.map((city, index) => (
+                            <option key={index} value={city.city}>
+                                {city.city}
+                            </option>
+                        ))}
+                    </select>
+                    {errors.city && <p className="error-message">{errors.city}</p>}
                 </div>
-            ))}
+            )}
 
-            <label className="checkbox-label">
-                <input type="checkbox" name='useUserAddress' checked={useUserAddress} onChange={onChange} />
-                Utiliser les informations de mon compte
-            </label>
+            {/* Adresse */}
+            <div className="input-group">
+                <label className="input-label">Adresse <strong className='compulsory'>*</strong></label>
+                <input
+                    className={`input-field ${errors.address ? 'error' : ''}`}
+                    type="text"
+                    name="location.address"
+                    placeholder="Adresse complète"
+                    value={formData?.location?.address || ''}
+                    onChange={handleAddressChange}
+                />
+                {errors.address && <p className="error-message">{errors.address}</p>}
+            </div>
 
+            {/* Navigation */}
             <div className="form-navigation">
                 <button className="back-button" onClick={onBack}>Retour</button>
                 <button className="next-button" onClick={handleNext}>Suivant</button>

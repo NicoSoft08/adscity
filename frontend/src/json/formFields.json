@@ -825,7 +825,8 @@
                     "Chargeur",
                     "Écouteurs",
                     "Coque",
-                    "Film protecteur"
+                    "Film protecteur",
+                    "Aucun"
                 ],
                 "required": true
             },

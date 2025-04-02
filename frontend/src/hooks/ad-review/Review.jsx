@@ -4,8 +4,8 @@ import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import data from '../../json/data.json';
-import './Review.scss';
 import FormData from '../FormData';
+import './Review.scss';
 
 export default function Review({ formData, onBack, onSubmit, isLoading }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -68,7 +68,7 @@ export default function Review({ formData, onBack, onSubmit, isLoading }) {
             <div className="review-section">
                 <h3>Photos</h3>
                 <div className="image-grid">
-                    {formData.images && formData.images.length > 0 ? (
+                    {formData.images && formData.images?.length > 0 ? (
                         formData.images.flat().map((image, index) => (
                             <img src={image} alt={`photo-${index}`} key={index} className="review-image" />
                         ))

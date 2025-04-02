@@ -115,20 +115,20 @@ const fetchUserInactivePosts = async (userID) => {
     }
 };
 
-const updateUserFields = async (userID, updatedFields) => {
-    const response = await fetch(`${backendUrl}/api/users/${userID}/profile-fields/update`, {
+const updateUserField = async (userID, field) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/profile-field/update`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ updatedFields }),
+        body: JSON.stringify({ field }),
     });
 
     const result = await response.json();
     return result;
 };
 
-const toggleFavorites = async (postID, userID) => { 
+const toggleFavorites = async (postID, userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}/favorites/add-remove`, {
             method: 'POST',
@@ -143,7 +143,6 @@ const toggleFavorites = async (postID, userID) => {
         }
 
         const result = await response.json();
-        console.log(result)
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour des favoris:', error);
@@ -210,7 +209,7 @@ const deleteNotification = async (userID, notificationID) => {
         headers: {
             'Content-Type': 'application/json',
         },
-    }); 
+    });
 
     const result = await response.json();
     return result;
@@ -334,7 +333,7 @@ export {
     rateUser,
     setUserOnlineStatus,
     toggleFavorites,
-    updateUserFields,
+    updateUserField,
     updateUserWithDeviceToken,
     updateSearchHistory,
 };

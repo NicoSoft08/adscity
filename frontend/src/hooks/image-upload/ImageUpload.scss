@@ -2,180 +2,85 @@
 @import '../../styles/variables';
 
 .image-upload-form {
+    text-align: center;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
 
-    .image-uploader {
+    .upload-instructions {
+        font-size: 16px;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 10px;
+    }
+
+    .upload-area {
+        width: 100%;
+        max-width: 400px;
+        height: 200px;
+        border: 2px dashed #bbb;
+        border-radius: 12px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 20px;
-        padding: 20px;
-        border: 2px dashed $four;
-        border-radius: 8px;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease-in-out;
     
+        &:hover {
+            background-color: #f9f9f9;
+        }
     
-        .upload-area {
-            width: 100%;
-            max-width: 400px;
-            height: 50px;
-            // border: 2px dashed #8cb7df;
-            border-radius: 10px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
+        .upload-icon {
+            font-size: 50px;
+            color: $dark;
+        }
+    
+        .upload-text {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+    }
+
+    .image-upload-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+        width: 100%;
+        max-width: 500px;
+   
+        .image-container {
             position: relative;
-    
-    
-            .upload-icon {
-                font-size: 2rem;
-            }
-    
-    
-            p {
-                color: $two;
-                font-size: 16px;
-            }
-    
-    
-            .upload-input {
-                opacity: 0;
-                position: absolute;
-                top: 0;
-                left: 0;
+            width: 100px;
+            height: 100px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+        
+            .uploaded-image {
                 width: 100%;
                 height: 100%;
+                object-fit: cover;
+                border-radius: 10px;
+            }
+        
+            .remove-icon {
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                font-size: 18px;
+                color: red;
+                background: white;
+                border-radius: 50%;
                 cursor: pointer;
-            }
-        }
-    
-        .error-message {
-            color: $danger;
-            font-size: 14px;
-            font-weight: $font-light;
-        }
-    
-    
-        .image-upload-grid {
-            justify-content: center;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-    
-    
-            @media (max-width: 678px) {
-                grid-template-columns: repeat(4, 1fr);
-            }
-    
-            @media (max-width: 599px) {
-                grid-template-columns: repeat(3, 1fr);
-            }
-    
-    
-            .image-upload-box {
-                width: 100px;
-                height: 100px;
-                border: 2px dashed $three;
-                border-radius: 5px;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                position: relative;
-                cursor: pointer;
-    
-    
-                .image-container {
-                    width: 100%;
-                    height: 100%;
-                    position: relative;
-    
-                    .remove-icon {
-                        top: -10px;
-                        right: -10px;
-                        position: absolute;
-                        color: $danger;
-                        font-size: 24px;
-                    }
-                }
-    
-    
-                @media (max-width: 576px) {
-                    width: 90px;
-                    height: 90px;
-                }
-    
-    
-                @media (max-width: 390px) {
-                    width: 70px;
-                    height: 70px;
-                }
-    
-    
-                .uploaded-image {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: cover;
-                    border-radius: 5px;
-                }
-    
-    
-                .plus-icon {
-                    color: $two;
-                    font-size: 24px;
-                    transition: all 0.3s ease-in-out;
-                }
-    
-    
-                input {
-                    opacity: 0;
-                    position: absolute;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    cursor: pointer;
-                }
-            }
-    
-    
-            .image-upload-box:hover {
-                .plus-icon {
-                    color: $two;
-                    font-size: 28px;
-                }
-            }
-        }
-    
-        .form-navigation {
-            display: flex;
-            justify-content: space-between;
-            margin: 10px 0;
-    
-            button {
-                padding: 5px 10px;
-                font-family: 'Ubuntu', sans-serif;
-                font-size: 15px;
-                font-weight: $font-light;
-                color: $white;
-    
+                transition: transform 0.2s ease-in-out;
+        
                 &:hover {
-                    opacity: 0.8;
-                }
-    
-                &.back-button {
-                    background-color: $danger;
-                    cursor: pointer;
-                    border-radius: 5px;
-                    border: none;
-                    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-                }
-    
-                &.next-button {
-                    background-color: $two;
-                    cursor: pointer;
-                    border-radius: 5px;
-                    border: none;
-                    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+                    transform: scale(1.2);
                 }
             }
         }
@@ -184,34 +89,34 @@
     .form-navigation {
         display: flex;
         justify-content: space-between;
-        margin: 10px 0;
-
-        button {
-            padding: 5px 10px;
+        width: 100%;
+        max-width: 400px;
+        margin-top: 15px;
+    
+        .back-button,
+        .next-button {
             font-family: 'Ubuntu', sans-serif;
-            font-size: 15px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
             font-weight: $font-light;
-            color: $white;
-
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+    
             &:hover {
                 opacity: 0.8;
             }
-
-            &.back-button {
-                background-color: $danger;
-                cursor: pointer;
-                border-radius: 5px;
-                border: none;
-                box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-            }
-
-            &.next-button {
-                background-color: $two;
-                cursor: pointer;
-                border-radius: 5px;
-                border: none;
-                box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-            }
+        }
+    
+        .back-button {
+            background-color: #ccc;
+            color: #333;
+        }
+    
+        .next-button {
+            background-color: $two;
+            color: $white;
         }
     }
 }

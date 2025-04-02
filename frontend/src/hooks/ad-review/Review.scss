@@ -40,34 +40,33 @@
     .form-navigation {
         display: flex;
         justify-content: space-between;
-        margin: 10px 0;
-
-        button {
-            padding: 5px 10px;
+        width: 100%;
+        margin-top: 15px;
+    
+        .back-button,
+        .next-button {
             font-family: 'Ubuntu', sans-serif;
-            font-size: 15px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
             font-weight: $font-light;
-            color: $white;
-
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+    
             &:hover {
                 opacity: 0.8;
             }
-
-            &.back-button {
-                background-color: $danger;
-                cursor: pointer;
-                border-radius: 5px;
-                border: none;
-                box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-            }
-
-            &.next-button {
-                background-color: $two;
-                cursor: pointer;
-                border-radius: 5px;
-                border: none;
-                box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
-            }
+        }
+    
+        .back-button {
+            background-color: #ccc;
+            color: #333;
+        }
+    
+        .next-button {
+            background-color: $two;
+            color: $white;
         }
     }
 }

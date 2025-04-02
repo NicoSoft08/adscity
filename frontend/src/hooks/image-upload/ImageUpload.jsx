@@ -1,25 +1,14 @@
-import React, { useState } from 'react';
-import { faCirclePlus, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useRef } from 'react';
+import { faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Toast from '../../customs/Toast';
 import './ImageUpload.scss';
+import { uploadImage } from '../../routes/storageRoutes';
 
-export default function ImageUpload({ onNext, onBack, onChange, userData, selectedImages, handleRemoveImage }) {
+export default function ImageUpload({ onNext, onBack, formData, setFormData, userData, currentUser }) {
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
-
-    const validateImages = () => {
-        if (!selectedImages.some(img => img !== null)) {
-            setToast({ type: 'error', message: 'Veuillez télécharger au moins une image.', show: true });
-            return false;
-        }
-        return true;
-    };
-
-    const handleNext = () => {
-        if (validateImages()) {
-            onNext();
-        }
-    };
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     const getUserPlanMaxPhotos = () => {
         if (!userData?.plans) return 3;
@@ -27,49 +16,113 @@ export default function ImageUpload({ onNext, onBack, onChange, userData, select
         return userPlan ? userPlan.max_photos : 3;
     };
 
+    const handleImageUpload = async (filesArray) => {
+        if (!filesArray || filesArray.length === 0) return;
+
+        const maxPhotos = getUserPlanMaxPhotos();
+        const currentImages = formData.images || [];
+        if (currentImages.length + filesArray.length > maxPhotos) {
+            setToast({ show: true, message: `Maximum ${maxPhotos} images autorisées.`, type: 'error' });
+            return;
+        }
+
+        setIsUploading(true);
+        setToast({ show: true, message: 'Téléchargement en cours...', type: 'info' });
+
+        try {
+            const userID = currentUser?.uid;
+            const uploadPromises = filesArray.map(file => uploadImage(file, userID));
+            const results = await Promise.all(uploadPromises);
+
+            const uploadedImages = results.filter(res => res.success).map(res => res.imageUrl);
+            if (uploadedImages.length) {
+                const newImages = [...currentImages, ...uploadedImages].slice(0, maxPhotos);
+                setFormData(prev => ({ ...prev, images: newImages }));
+                setToast({ show: true, message: 'Images téléchargées avec succès !', type: 'success' });
+            } else {
+                setToast({ show: true, message: 'Échec du téléchargement.', type: 'error' });
+            }
+        } catch (error) {
+            console.error("Erreur lors de l'upload :", error);
+            setToast({ show: true, message: 'Une erreur est survenue.', type: 'error' });
+        }
+
+        setIsUploading(false);
+    };
+
+    const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files);
+        handleImageUpload(files);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        handleImageUpload(files);
+    };
+
+    const handleRemoveImage = (index) => {
+        setFormData(prev => {
+            const updatedImages = [...prev.images];
+            updatedImages.splice(index, 1);
+            return { ...prev, images: updatedImages };
+        });
+    };
+
+    const handleNext = () => {
+        if (!formData.images || formData.images.length === 0) {
+            setToast({ type: 'error', message: 'Veuillez télécharger au moins une image.', show: true });
+            return;
+        }
+        onNext();
+    };
+
     return (
         <div className="image-upload-form">
-            <div className="image-uploader">
-                <div className="upload-area">
-                    <FontAwesomeIcon icon={faCloudUpload} className="upload-icon" />
-                    <label htmlFor="upload-input" className="upload-button">Télécharger des Images</label>
-                </div>
+            <div className="upload-instructions">
+                Cliquez ou glissez jusqu'à {getUserPlanMaxPhotos()} images
+            </div>
 
-                <div className="image-upload-grid">
-                    {[...Array(getUserPlanMaxPhotos())].map((_, index) => (
-                        <div className="image-upload-box" key={index}>
-                            {selectedImages[index] ? (
-                                <div className="image-container">
-                                    <img src={selectedImages[index]} alt={`upload-${index}`} className="uploaded-image" />
-                                    <FontAwesomeIcon 
-                                        icon={faCircleXmark} 
-                                        className="remove-icon" 
-                                        onClick={() => handleRemoveImage(index)} 
-                                    />
-                                </div>
-                            ) : (
-                                <label htmlFor={`image-input-${index}`} className="image-placeholder">
-                                    <FontAwesomeIcon icon={faCirclePlus} className="plus-icon" size="2x" />
-                                </label>
-                            )}
-                            <input
-                                type="file"
-                                accept="image/*"
-                                id={`image-input-${index}`}
-                                style={{ display: 'none' }}
-                                onChange={(e) => onChange(e, index)} 
-                            />
-                        </div>
-                    ))}
-                </div>
+            <div 
+                className={`upload-area ${isUploading ? 'uploading' : ''}`} 
+                onClick={() => fileInputRef.current.click()}
+                onDrop={handleDrop}
+                onDragOver={(e) => e.preventDefault()}
+                tabIndex={0} 
+                role="button"
+                onKeyPress={(e) => e.key === 'Enter' && fileInputRef.current.click()}
+            >
+                <FontAwesomeIcon icon={faCloudUpload} className="upload-icon" />
+                <p className="upload-text">{isUploading ? 'Téléchargement...' : 'Cliquez ou glissez vos images ici'}</p>
+                <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    ref={fileInputRef}
+                    style={{ display: "none" }}
+                    onChange={handleFileSelect}
+                />
+            </div>
+
+            <div className="image-upload-grid">
+                {formData.images && formData.images.map((image, index) => (
+                    <div className="image-container" key={index}>
+                        <img src={image} alt={`upload-${index}`} className="uploaded-image" />
+                        <FontAwesomeIcon
+                            icon={faCircleXmark}
+                            className="remove-icon"
+                            onClick={() => handleRemoveImage(index)}
+                        />
+                    </div>
+                ))}
             </div>
 
             <div className="form-navigation">
                 <button className="back-button" onClick={onBack}>Retour</button>
-                <button className="next-button" onClick={handleNext}>Suivant</button>
+                <button className="next-button" onClick={handleNext} disabled={isUploading}>Suivant</button>
             </div>
 
-            <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ ...toast, show: false })} />
+            {toast.show && <Toast type={toast.type} message={toast.message} show={toast.show} onClose={() => setToast({ show: false })} />}
         </div>
     );
 }

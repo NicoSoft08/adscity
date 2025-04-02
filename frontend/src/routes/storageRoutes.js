@@ -19,7 +19,7 @@ const deletePostImagesFromStorage = async (postID) => {
 
 const deleteProfilURLByUserID = async (userID) => {
     try {
-        const response = await fetch(`${process.env.BACKEND_URL}/api/delete-profile/${userID}`, {
+        const response = await fetch(`${backendUrl}/api/delete-profile/${userID}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -74,12 +74,12 @@ const uploadProfilePhoto = async (file, userID) => {
     return result;
 };
 
-const uploadBannerPhoto = async (file, userID) => {
+const uploadCoverPhoto = async (file, userID) => {
     const formData = new FormData();
     formData.append('coverURL', file);
     formData.append('userID', userID);
 
-    const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/banner`, {
+    const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/cover`, {
         method: 'POST',
         body: formData,
     });
@@ -108,6 +108,6 @@ export {
     uploadImage,
     deleteProfilURLByUserID,
     fetchProfileByUserID,
-    uploadBannerPhoto,
+    uploadCoverPhoto,
     uploadProfilePhoto,
 };

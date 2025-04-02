@@ -145,7 +145,63 @@ const deletionReminder = async () => {
     });
 };
 
+const formatDate = (date) => {
+    const options = { day: "numeric", month: "long", year: "numeric" };
+    return date.toLocaleDateString('fr-FR', options); // Format FR
+};
+
+const formatDateISO = (date) => {
+    return date.toISOString().split("T")[0]; // YYYY-MM-DD
+};
+
+const formatRegisterDate = async () => {
+    try {
+        const usersSnapshot = await firestore.collection('USERS').get();
+        const batch = firestore.batch();
+        let count = 0;
+
+        usersSnapshot.forEach((doc) => {
+            const userData = doc.data();
+
+            console.log(`User: ${doc.id}, CreatedAt: ${userData.createdAt}`);
+
+            // Vérifier si les champs existent déjà
+            if (!userData.createdAt || userData.registrationDateISO) return;
+
+            // Convertir Firestore Timestamp en Date
+            const createdAtDate = userData.createdAt.toDate();
+            const formattedDate = formatDate(createdAtDate); // Ex: "30 mars 2025"
+            const formattedDateISO = formatDateISO(createdAtDate); // Ex: "2025-03-30"
+
+            // Vérifier si la date est bien générée
+            console.log(`Mise à jour de ${doc.id} → ISO: ${formattedDateISO}, Affichage: ${formattedDate}`);
+
+            batch.update(doc.ref, { 
+                registrationDate: formattedDate,
+                registrationDateISO: formattedDateISO,
+            });
+
+            count++;
+
+            // Firestore limite 500 opérations par batch
+            if (count % 500 === 0) {
+                batch.commit();
+            }
+        });
+
+        await batch.commit();
+        console.log(`✅ ${count} utilisateurs mis à jour.`);
+
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour des dates d'inscription :", error);
+        throw error;
+    }
+};
+
 module.exports = {
+    formatDate,
+    formatDateISO,
+    formatRegisterDate,
     checkFreeTrialExpiry,
     deleteOldExpiredPosts,
     deletionReminder,

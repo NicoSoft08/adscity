@@ -24,7 +24,8 @@ const {
     readAdminAllNotifications,
     deleteAdminNotification,
     deleteAdminAllNotifications,
-    getUserIDLoginActivity
+    getUserIDLoginActivity,
+    getUserLocations
 } = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 
@@ -32,6 +33,7 @@ const router = express.Router();
 
 // Route liées à l'uttilisateur
 router.get('/', getUsers);
+router.get('/locations', getUserLocations);
 router.get('/all/status', getAllUsersWithStatus);
 router.get('/:userID', getUserData);
 router.get('/user/:user_id', getDataFromUserID);
@@ -39,7 +41,7 @@ router.get('/user/:userID', getAnyUserData);
 // router.get('/:interlocutorID', fetchInterlocutorProfile);
 router.post('/user/status', setUserOnline);
 router.get('/:userID/favorites', getUserFavorites);
-router.put('/:userID/profile-fields/update', modifyUserFields);
+router.put('/:userID/profile-field/update', modifyUserFields);
 router.post('/:userID/favorites/add-remove', toggleFavorites);
 
 router.get('/:userID/admin/notifications', getAdminNotifications);

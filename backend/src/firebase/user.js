@@ -32,6 +32,28 @@ const getUsersData = async () => {
     }
 };
 
+const fetchUserLocations = async () => {
+    try {
+        const usersCollection = firestore.collection('USERS');
+        const querySnapshot = await usersCollection.get();
+        let cityCounts = {};
+
+        querySnapshot.forEach(doc => {
+            const userData = doc.data();
+            const city = userData.city || 'Inconnu';
+            if (cityCounts[city]) {
+                cityCounts[city]++;
+            } else {
+                cityCounts[city] = 1;
+            }
+        });
+        return Object.entries(cityCounts).map(([city, count]) => ({ city, count }));
+    } catch (error) {
+        console.error('Erreur lors de la récupération des utilisateurs:', error);
+        throw error;
+    }
+}
+
 const getUser = async (userID) => {
     try {
         const userRecord = await auth.getUser(userID);
@@ -127,7 +149,7 @@ const setUserOnlineStatus = async (userID, isOnline) => {
     }
 };
 
-const updateUserFields = async (userID, updatedFields) => {
+const updateUserFields = async (userID, field) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
@@ -135,7 +157,11 @@ const updateUserFields = async (userID, updatedFields) => {
             console.log("Utilisateur non trouvé");
             return false;
         };
-        await userRef.update(updatedFields);
+
+        await userRef.update({
+            ...field,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+        })
         return true;
     } catch (error) {
         console.error("Erreur lors de la mise à jour des champs de l'utilisateur :", error);
@@ -538,7 +564,7 @@ const clearUserAllNotifications = async (userID) => {
 
 const clearAdminAllNotifications = async (userID) => {
     try {
-        const  userRef = firestore.collection('USERS').doc(userID);
+        const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
         if (!userDoc.exists) {
             console.log("Utilisateur non trouvé");
@@ -707,6 +733,8 @@ module.exports = {
     getUsersData,
     collectUserData,
     collectAllUsersWithStatus,
+
+    fetchUserLocations,
 
     collectAdminNotifications,
     collectUserNotifications,

@@ -1,4 +1,4 @@
-const { uploadPostImage, uploadUserProfilePicture, uploadUserBannerPicture, collectUserProfilePhoto, deleteImagesByPostID, uploadMediaURL } = require('../firebase/storage');
+const { uploadPostImage, uploadUserProfilePicture, collectUserProfilePhoto, deleteImagesByPostID, uploadMediaURL, uploadUserCoverPicture } = require('../firebase/storage');
 
 const getUserProfilePicture = async (req, res) => {
     const { userID } = req.params;
@@ -52,8 +52,8 @@ const uploadImage = async (req, res) => {
 };
 
 const uploadProfileURL = async (req, res) => {
+    const { userID } = req.params;
     const file = req.file;
-    const { userID } = req.body;
 
     try {
         const publicUrl = await uploadUserProfilePicture(file, userID);
@@ -77,12 +77,19 @@ const uploadProfileURL = async (req, res) => {
     };
 };
 
-const uploadBannerURL = async (req, res) => {
-    const file = req.file;
+const uploadCoverURL = async (req, res) => {
     const { userID } = req.body;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ 
+            success: false, 
+            message: "Aucun fichier reçu." 
+        });
+    }
 
     try {
-        const publicUrl = await uploadUserBannerPicture(file, userID);
+        const publicUrl = await uploadUserCoverPicture(file, userID);
         if (!publicUrl) {
             return res.status(400).json({
                 success: false,
@@ -156,7 +163,7 @@ module.exports = {
     deletePostImages,
     getUserProfilePicture,
     uploadImage,
-    uploadBannerURL,
+    uploadCoverURL,
     uploadMedia,
     uploadProfileURL,
 };

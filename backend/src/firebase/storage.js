@@ -34,6 +34,7 @@ const uploadUserProfilePicture = async (file, userID) => {
         const userData = userDoc.data();
         const profilChanges = userData.profilChanges || { count: 0, lastUpdated: null };
 
+        const now = new Date();
         const lastUpdateDate = profilChanges.lastUpdated ? new Date(profilChanges.lastUpdated) : null;
         const isSameMonth = lastUpdateDate && now.getMonth() === lastUpdateDate.getMonth() && now.getFullYear() === lastUpdateDate.getFullYear();
 
@@ -46,7 +47,6 @@ const uploadUserProfilePicture = async (file, userID) => {
         };
 
         // Formatage de la date et de l'heure
-        const now = new Date();
         const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
         const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
         const uniqueFolderID = userID;
@@ -90,7 +90,7 @@ const uploadUserProfilePicture = async (file, userID) => {
     };
 };
 
-const uploadUserBannerPicture = async (file, userID) => {
+const uploadUserCoverPicture = async (file, userID) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
@@ -122,7 +122,7 @@ const uploadUserBannerPicture = async (file, userID) => {
         const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
         const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
         const uniqueFolderID = userID;
-        const folderPath = `PHOTOS/BANNER/${formattedDate}_${formattedTime}/${uniqueFolderID}/`;
+        const folderPath = `PHOTOS/COVERS/${formattedDate}_${formattedTime}/${uniqueFolderID}/`;
 
         // Définir le chemin et le fichier dans Firebase Storage
         const storageRef = storage.bucket().file(`${folderPath}${file.originalname}`);
@@ -243,7 +243,7 @@ module.exports = {
     deleteImagesByPostID,
     collectUserProfilePhoto,
     uploadPostImage,
-    uploadUserBannerPicture,
+    uploadUserCoverPicture,
     uploadMediaURL,
     uploadUserProfilePicture,
 };

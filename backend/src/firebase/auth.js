@@ -1,5 +1,6 @@
 const { auth, firestore, admin } = require('../config/firebase-admin');
 const { sendCode, sendAdminEmail, sendNewDeviceAlert } = require('../controllers/emailController');
+const { formatDate, formatDateISO } = require('../cron');
 const { monthNames, generateVerificationCode, getUserProfileNumber } = require('../func');
 const { trackUserDevice } = require('../services/apiServices');
 
@@ -117,6 +118,8 @@ const createUser = async (address, city, country, email, password, firstName, la
                 distribution: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
             },
             reportingCount: 0,
+            registrationDate: formatDate(new Date()),
+            registrationDateISO: formatDateISO(new Date()),
             role: 'user',
             reviews: {
                 received: [],

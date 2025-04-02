@@ -25,7 +25,8 @@ const {
     markAllAdminNotificationsAsRead,
     clearAdminNotification,
     clearAdminAllNotifications,
-    collectUserIDLoginActivity
+    collectUserIDLoginActivity,
+    fetchUserLocations
 } = require("../firebase/user");
 
 const getAllUsersWithStatus = async (req, res) => {
@@ -69,6 +70,29 @@ const getUsers = async (req, res) => {
         });
     }
 };
+
+const getUserLocations = async (req, res) => {
+    try {
+        const locations = await fetchUserLocations();
+        if (!locations) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune localisation trouvée"
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: "Données de localisation des utilisateurs récupérées avec succès",
+            locations: locations
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données de localisation des utilisateurs :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur lors de la récupération des données de localisation des utilisateurs"
+        });
+    }
+}
 
 const getDataFromUserID = async (req, res) => {
     const { user_id } = req.params;
@@ -264,10 +288,10 @@ const getUserPermissions = async (req, res) => {
 
 const modifyUserFields = async (req, res) => {
     const { userID } = req.params;
-    const { updatedFields } = req.body;
+    const { field } = req.body;
 
     try {
-        const fieldsUpdated = await updateUserFields(userID, updatedFields);
+        const fieldsUpdated = await updateUserFields(userID, field);
         if (!fieldsUpdated) {
             return res.status(404).json({
                 success: false,
@@ -730,6 +754,7 @@ const getUserIDLoginActivity = async (req, res) => {
 };
 
 module.exports = {
+    getUserLocations,
     getAdminNotifications,
     getAnyUserData,
     getDataFromUserID,

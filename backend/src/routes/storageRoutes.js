@@ -5,10 +5,10 @@ const { upload } = require('../func');
 const { 
     uploadImage, 
     uploadProfileURL, 
-    uploadBannerURL, 
     getUserProfilePicture, 
     deletePostImages,
-    uploadMedia
+    uploadMedia,
+    uploadCoverURL
 } = require('../controllers/storageController');
 
 const router = express.Router();
@@ -16,7 +16,7 @@ const router = express.Router();
 // Route liées stockage
 router.post('/upload/image', upload.single('image'), uploadImage);
 router.post('/upload/:userID/profile', upload.single('profilURL'), uploadProfileURL);
-router.post('/upload/:userID/banner', upload.single('coverURL'), uploadBannerURL);
+router.post('/upload/:userID/cover', upload.single('coverURL'), uploadCoverURL);
 router.get('/user/:userID/profilURL', getUserProfilePicture);
 router.delete('/delete/post-images/:postID', deletePostImages);
 router.post('/upload/media', upload.single('file'), uploadMedia);

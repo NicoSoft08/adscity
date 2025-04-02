@@ -1,96 +1,192 @@
 import React, { useEffect, useState } from 'react';
-import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faCirclePlus, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchPostById, updatePost } from '../../routes/postRoutes';
 import Loading from '../../customs/Loading';
 import InputField from '../../hooks/input-field/InputField';
-import { typeOfPrice } from '../../data/database';
+import formFields from '../../json/formFields.json';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import '../../styles/EditPostID.scss';
 
-export default function EditPostID({ currentUser }) {
+export default function EditPostID({ currentUser, userData }) {
     const { post_id } = useParams();
     const navigate = useNavigate();
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [loading, setLoading] = useState(true);
-    const [formData, setFormData] = useState({ condition: "", description: "", price: "", priceType: "" });
+    const [formData, setFormData] = useState({});
+    const [fields, setFields] = useState([]);
+    const [selectedImages, setSelectedImages] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             const result = await fetchPostById(post_id);
             if (result.success) {
-                setLoading(false);
-                setFormData({
-                    condition: result.data.details.condition || "",
-                    description: result.data.details.description || "",
-                    price: result.data.details.price || "",
-                    price_type: result.data.details.price_type || "",
-                })
+                const postDetails = result.data;
+                const { subcategory } = postDetails || {};
+
+                setSelectedImages(postDetails.images || []);
+
+                const categoryFields = formFields.fields[subcategory] || [];
+                setFields(categoryFields);
+
+                const initialFormData = { ...postDetails };
+                categoryFields.forEach(field => {
+                    if (!(field.name in initialFormData.details)) {
+                        initialFormData.details[field.name] =
+                            field.type === "checkbox" ? [] :
+                                field.type === "file" ? [] : "";
+                    }
+                });
+
+                setFormData(initialFormData);
             }
+            setLoading(false);
         };
 
-        if (post_id) {
-            fetchData();
-        }
+        if (post_id) fetchData();
     }, [post_id]);
 
+    const handleImageChange = (e, index) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-    // Mettre à jour les champs du formulaire
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const reader = new FileReader();
+        reader.onload = () => {
+            setSelectedImages(prevImages => {
+                const newImages = [...prevImages];
+                newImages[index] = reader.result; // Remplace l'image à l'index donné
+                return newImages;
+            });
+        };
+        reader.readAsDataURL(file);
     };
 
-    // Sauvegarder les modifications dans Firestore
+    const handleRemoveImage = (index) => {
+        setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked, files } = e.target;
+
+        setFormData(prev => {
+            let newValue = value;
+            if (type === "checkbox") {
+                newValue = checked ? [...(prev.details?.[name] || []), value] :
+                    prev.details?.[name]?.filter(v => v !== value) || [];
+            }
+            if (type === "file") {
+                newValue = files ? [...files] : [];
+            }
+
+            return {
+                ...prev,
+                details: { ...prev.details, [name]: newValue }
+            };
+        });
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
 
         try {
-            const userID = currentUser?.uid;
-            const result = await updatePost(post_id, formData, userID);
+            const result = await updatePost(post_id, formData, currentUser?.uid);
             if (result.success) {
                 setToast({ show: true, message: result.message, type: 'success' });
                 logEvent(analytics, 'update_post');
                 setTimeout(() => {
                     setToast({ show: false, message: '', type: '' });
-                    handleBack();
+                    navigate('/user/dashboard/posts');
                 }, 2000);
-                setLoading(false);
             } else {
                 setToast({ show: true, message: result.error, type: 'error' });
-                setLoading(false);
             }
         } catch (error) {
             console.error('Erreur lors de la mise à jour de l\'annonce:', error);
             setToast({ show: true, message: 'Erreur lors de la mise à jour de l\'annonce', type: 'error' });
-            setLoading(false);
         }
+        setLoading(false);
     };
 
-    const handleBack = () => {
-        navigate('/user/dashboard/posts');
+    const validateImages = () => {
+        if (!selectedImages.some(img => img !== null)) {
+            setToast({ type: 'error', message: 'Veuillez télécharger au moins une image.', show: true });
+            return false;
+        }
+        return true;
     };
 
-    if (loading) {
-        return <Loading />;
-    }
+    const getUserPlanMaxPhotos = () => {
+        if (!userData?.plans) return 3;
+        const userPlan = Object.values(userData.plans).find(plan => plan.max_photos !== undefined);
+        return userPlan ? userPlan.max_photos : 3;
+    };
+
+    if (loading) return <Loading />;
 
     return (
         <div className='edit-post-id'>
             <div className="head">
-                <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
-                <h2>Modifier: {post_id.toLocaleUpperCase()}</h2>
-
+                <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={() => navigate('/user/dashboard/posts')} />
+                <h2>Modifier: {post_id.toUpperCase()}</h2>
             </div>
 
             <form onSubmit={handleSubmit} className="edit-form">
-                <InputField label={"Condition"} name={"condition"} value={formData.condition} onChange={handleChange} />
-                <InputField label={"Description"} name={"description"} value={formData.description} onChange={handleChange} />
-                <InputField label={"Prix"} type='number' name={"price"} value={formData.price} onChange={handleChange} />
-                <InputField label={"Type de prix"} type='select' name={"priceType"} value={formData.priceType} onChange={handleChange} options={typeOfPrice.fr} />
+                <div className="image-upload-form">
+                    <div className="image-uploader">
+                        <div className="upload-area">
+                            <FontAwesomeIcon icon={faCloudUpload} className="upload-icon" />
+                            <label htmlFor="upload-input" className="upload-button">Télécharger des Images</label>
+                        </div>
+
+                        <div className="image-upload-grid">
+                            {[...Array(getUserPlanMaxPhotos())].map((_, index) => (
+                                <div className="image-upload-box" key={index}>
+                                    {selectedImages[index] ? (
+                                        <div className="image-container">
+                                            <img src={selectedImages[index]} alt={`upload-${index}`} className="uploaded-image" />
+                                            <FontAwesomeIcon
+                                                icon={faCircleXmark}
+                                                className="remove-icon"
+                                                onClick={() => handleRemoveImage(index)}
+                                            />
+                                        </div>
+                                    ) : (
+                                        <label htmlFor={`image-input-${index}`} className="image-placeholder">
+                                            <FontAwesomeIcon icon={faCirclePlus} className="plus-icon" size="2x" />
+                                        </label>
+                                    )}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        id={`image-input-${index}`}
+                                        style={{ display: 'none' }}
+                                        onChange={(e) => handleImageChange(e, index)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {fields.map(({ name, label, type, multiple, placeholder, options, required }) => (
+                    <InputField
+                        key={name}
+                        label={label}
+                        name={name}
+                        placeholder={placeholder}
+                        type={type}
+                        required={required}
+                        multiple={multiple}
+                        options={options}
+                        value={formData.details?.[name] || (type === "checkbox" ? [] : "")}
+                        onChange={handleChange}
+                    />
+                ))}
                 <button type="submit">Enregistrer</button>
             </form>
 

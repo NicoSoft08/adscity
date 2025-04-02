@@ -152,7 +152,7 @@ export default function LoginPage() {
                         checked={formData.agree}
                         onChange={handleChange}
                     />
-                    J'accepte les termes et conditions
+                    En continuant, vous acceptez les Conditions d'utilisation
                 </label>
                 {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
 

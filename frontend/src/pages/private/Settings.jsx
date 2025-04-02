@@ -6,7 +6,6 @@ import {
     logoutUser,
     updateUserPassword,
 } from '../../routes/authRoutes';
-import { updateUserFields } from '../../routes/userRoutes';
 import Spinner from '../../customs/Spinner';
 import Modal from '../../customs/Modal';
 import { facebook, instagram, whatsapp } from '../../config/images';
@@ -25,14 +24,6 @@ export default function Settings() {
         whatsapp: "",
         instagram: "",
     });
-    const [personalInfo, setPersonalInfo] = useState({
-        firstName: userData?.firstName || "",
-        lastName: userData?.lastName || "",
-        phoneNumber: userData?.phoneNumber || "",
-        country: userData?.country || "",
-        city: userData?.city || "",
-        address: userData?.address || "",
-    });
     const [securityInfo, setSecurityInfo] = useState({
         email: userData?.email || "",
         newEmail: "",
@@ -40,10 +31,7 @@ export default function Settings() {
         password: "",
     });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setPersonalInfo({ ...personalInfo, [name]: value });
-    };
+
 
     const handleSocialInputChange = (e) => {
         const { name, value } = e.target;
@@ -52,51 +40,6 @@ export default function Settings() {
             [name]: value
         }));
     };
-
-    const handlePersonalInfoUpdate = async () => {
-        const userID = currentUser?.uid;
-        setIsLoading(true);
-
-        // Détecter les champs modifiés
-        const updatedFields = {};
-        for (const key in personalInfo) {
-            if (personalInfo[key] !== userData[key]) {
-                updatedFields[key] = personalInfo[key];
-            }
-        }
-
-        if (Object.keys(updatedFields).length === 0) {
-            setToast({
-                show: true,
-                message: "Aucun champ n'a été modifié.",
-                type: 'error',
-            });
-            return;
-        }
-
-        const result = await updateUserFields(userID, updatedFields);
-        if (result.error) {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'error',
-            });
-        } else {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'success',
-            });
-            setPersonalInfo({
-                firstName: userData?.firstName || "",
-                lastName: userData?.lastName || "",
-                phoneNumber: userData?.phoneNumber || "",
-                country: userData?.country || "",
-                city: userData?.city || "",
-                address: userData?.address || "",
-            });
-        }
-    }
 
 
     const handleSecurityInfoUpdate = async () => {
@@ -131,21 +74,21 @@ export default function Settings() {
 
     const handleLogout = async () => {
         setIsLoading(true);
-    
+
         const response = await logoutUser();
-    
+
         setIsLoading(false);
-    
+
         if (response.success) {
             setToast({
                 show: true,
                 message: response.message,
                 type: 'success',
             });
-    
+
             navigate('/');  // 🔹 Redirection vers la page d'accueil après la déconnexion
             setOpen(false);
-    
+
         } else {
             setToast({
                 show: true,
@@ -196,55 +139,6 @@ export default function Settings() {
     return (
         <div className='user-settings'>
             <h2>Paramètres</h2>
-
-            <section className="personal-info">
-                <h2>Informations personnelles</h2>
-                <form onSubmit={(e) => e.preventDefault()}>
-                    <input
-                        type="text"
-                        name='firstName'
-                        value={personalInfo.firstName}
-                        onChange={handleInputChange}
-                        placeholder="Prénom"
-                    />
-                    <input
-                        type="text"
-                        name='lastName'
-                        value={personalInfo.lastName}
-                        onChange={handleInputChange}
-                        placeholder="Nom"
-                    />
-                    <input
-                        type="tel"
-                        name='phoneNumber'
-                        value={personalInfo.phoneNumber}
-                        onChange={handleInputChange}
-                        placeholder="Téléphone"
-                    />
-                    {/* <input
-                        type="text"
-                        name='country'
-                        value={personalInfo.country}
-                        onChange={handleInputChange}
-                        placeholder="Pays"
-                    /> */}
-                    {/* <input
-                        type="text"
-                        name='city'
-                        value={personalInfo.city}
-                        onChange={handleInputChange}
-                        placeholder="Ville"
-                    />
-                    <input
-                        type="text"
-                        name='address'
-                        value={personalInfo.address}
-                        onChange={handleInputChange}
-                        placeholder="Adresse"
-                    /> */}
-                    <button onClick={handlePersonalInfoUpdate}>Enregistrer</button>
-                </form>
-            </section>
 
             {/* PERSONNALISATION POUR LES COMPTES  ENTREPRISES ET PROFESSIONNELS */}
             {currentUser && (userData.profileType === 'Professionnel' || userData.profileType === 'Entreprise') && (

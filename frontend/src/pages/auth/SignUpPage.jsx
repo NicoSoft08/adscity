@@ -1,409 +1,251 @@
-import React, { useEffect, useState } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import Toast from '../../customs/Toast';
-import { Link, useNavigate } from 'react-router-dom';
-import Spinner from '../../customs/Spinner';
-import { createUser } from '../../routes/authRoutes';
-import SignupSuccessModal from '../../customs/SignupSuccessModal';
-// import PhoneInput from '../../components/phone-input/PhoneInput';
+import React, { useState } from 'react';
+import zxcvbn from 'zxcvbn';
 import { countries } from '../../data/countries';
-import citiesData from '../../data/ru.json'
+import { Eye, EyeOff, Search } from 'lucide-react';
+import cities from '../../data/ru.json';
+import { Link } from 'react-router-dom';
+import Toast from '../../customs/Toast';
 import '../../styles/SignUpPage.scss';
-import '../../components/phone-input/PhoneInput.scss';
 
+const steps = ['Informations', 'Contact', 'Location', 'Sécurité'];
+const strengthColors = ['red', 'orange', 'yellow', 'green'];
 
 export default function SignUpPage() {
-    const navigate = useNavigate();
-    const [step, setStep] = useState(1);
-    const [errors, setErrors] = useState({});
-    const [message, setMessage] = useState("");
+    const [step, setStep] = useState(0);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
-    const [isSignupSuccess, setIsSignupSuccess] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [selectedCountry, setSelectedCountry] = useState(countries[0]);
-    const [cities, setCities] = useState([]);
-    const [selectedLetter, setSelectedLetter] = useState('');
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [selectedCountry] = useState(countries[0]);
+    const [searchTerm, setSearchTerm] = useState('');
+
     const [formData, setFormData] = useState({
-        firstName: '', lastName: '',
-        email: '', phoneNumber: '',
-        country: selectedCountry.name, city: '', address: '',
-        password: '', agree: false,
+        firstName: '',
+        lastName: '',
+        country: selectedCountry.name,
+        city: '',
+        address: '',
+        email: '',
+        phoneNumber: '',
+        password: '',
+        confirmPassword: '',
+        agree: false,
     });
 
-    useEffect(() => {
-        if (selectedCountry) {
-            setCities(citiesData.filter(city => city.countryCode === selectedCountry.code));
+    const [errors, setErrors] = useState({});
+
+    const validate = (currentStep) => {
+        const newErrors = {};
+        const { firstName, lastName, email, phoneNumber, password, confirmPassword, city, address, agree } = formData;
+
+        if (currentStep === 0) {
+            if (!firstName.trim()) newErrors.firstName = 'Prénom requis';
+            if (!lastName.trim()) newErrors.lastName = 'Nom requis';
         }
-    }, [selectedCountry]);
-
-    const validateStep = () => {
-        let errors = {};
-        if (step === 1) {
-            if (!formData.firstName.trim()) errors.firstName = "Le prénom est requis";
-            if (!formData.lastName.trim()) errors.lastName = "Le nom est requis";
+        if (currentStep === 1) {
+            if (!email.trim()) newErrors.email = 'Email requis';
+            else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email invalide';
+            if (!phoneNumber.trim()) newErrors.phoneNumber = 'Numéro requis';
+            else if (!phoneNumber.trim() || phoneNumber.length < 10) newErrors.phoneNumber = 'Numéro invalide';
         }
-        if (step === 2) {
-            if (!formData.email.includes("@")) errors.email = "Email invalide";
-            if (!formData.phoneNumber.trim()) errors.phoneNumber = "Numéro requis";
+        if (currentStep === 2) {
+            if (!city.trim()) newErrors.city = 'Ville requise';
+            if (!address.trim()) newErrors.address = 'Adresse requise';
         }
-        if (step === 3) {
-            if (!formData.city) errors.city = "Ville requise";
-            if (!formData.address.trim()) errors.address = "Adresse requise";
-        }
-        if (step === 4) {
-            if (formData.password.length < 6) errors.password = "Mot de passe trop court";
-        }
-    
-        setErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
-    
-    const nextStep = () => {
-        if (validateStep()) setStep(step + 1);
-    };
-    const prevStep = () => setStep(step - 1);
-
-    const toggleShowPassword = () => {
-        setShowPassword(!showPassword);
-    };
-
-
-    const validateForm = () => {
-        const errors = {};
-
-        if (formData.agree === false) {
-            errors.agree = "Vous devez accepter les termes et conditions.";
-        } else {
-            if (!formData.firstName) {
-                errors.firstName = "Prénoms requis";
-            }
-
-            if (!formData.lastName) {
-                errors.lastName = "Nom de famille requis";
-            }
-
-            if (!formData.phoneNumber) {
-                errors.phoneNumber = "Numéro de téléphone requis";
-            }
-
-            if (!formData.email) {
-                errors.email = "Email requis";
-            }
-
-            if (!formData.password) {
-                errors.password = "Mot de passe requis";
-            }
-
-            if (!formData.country) {
-                errors.country = "Pays requis";
-            }
-
-            if (!formData.city) {
-                errors.city = "Ville requise";
-            }
-
-            if (!formData.address) {
-                errors.address = "Adresse requise";
-            }
+        if (currentStep === 3) {
+            if (!agree) newErrors.agree = 'Vous devez accepter les conditions.';
+            if (!password.trim() || password.length < 6) newErrors.password = 'Mot de passe trop court';
+            if (password !== confirmPassword) newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
         }
 
-        return errors;
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleChange = (e) => {
-        const { name, value, checked, type } = e.target;
-
-        // Autoriser uniquement les lettres latines et les espaces
-        const latinOnlyRegex = /^[A-Za-z\s']*$/;
-
-        // Vérification pour firstName et lastName
-        if ((name === 'firstName' || name === 'lastName') && !latinOnlyRegex.test(value)) {
-            setToast({ show: true, type: 'error', message: 'Ne sont autorisés que des caractères latins' });
-            return; // Ignore l'entrée si elle contient des caractères cyrilliques
-        }
-
-        if (name === 'phoneNumber') {
-            // Keep only digits for phone numbers
-            const numericValue = value.replace(/\D/g, '');
-            setFormData({
-                ...formData,
-                [name]: numericValue,
-            });
-        } else {
-            setFormData({
-                ...formData,
-                [name]: type === 'checkbox' ? checked : value,
-            });
-        }
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
     };
 
-    const handleCountryChange = (e) => {
-        const countryCode = e.target.value;
-        const selectedCountry = countries.find(country => country.code === countryCode);
-        setSelectedCountry(selectedCountry);
-    };
-
-    const getFullPhoneNumber = () => {
-        return `${selectedCountry.dialCode}${formData.phoneNumber}`;
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        setErrors({});  // Réinitialisation des erreurs
-        setLoading(true);
-
-
-        const errors = validateForm();
-        if (Object.keys(errors).length > 0) {
-            setErrors(errors);
-            setLoading(false);
-            return;
-        }
-
-        const fullPhoneNumber = getFullPhoneNumber();
-
-
-        try {
-            setLoading(true);
-            const { address, city, country, email, password, firstName, lastName } = formData;
-
-            const displayName = `${firstName} ${lastName}`;
-            const result = await createUser(address, city, country, email, password, firstName, lastName, fullPhoneNumber, displayName);
-
-            const userData = { email, displayName };
-
-            if (result.success) {
-                setIsSignupSuccess(true);
-                setLoading(false);
-                setFormData({
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    phoneNumber: '',
-                    country: '',
-                    city: '',
-                    address: '',
-                    password: '',
-                    agree: false,
-                });
-                setToast({ show: true, type: 'success', message: 'Inscription réussie' });
-                setTimeout(() => {
-                    navigate('/auth/signup-success', { state: { userData: userData } });
-                }, 3000);
-            } else {
-                setMessage(result.message);
-                setLoading(false);
-                setToast({ show: true, type: 'error', message: result.message });
-            }
-        } catch (error) {
-            console.error('Inscription échouée: ', error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue. Veuillez réessayer.' });
-        } finally {
-            setLoading(false);
-        }
+    const handleSearch = (e) => {
+        const term = e.target.value;
+        setSearchTerm(term);
     }
 
-    const handleLetterChange = (event) => {
-        const letter = event.target.value.toUpperCase();
-        setSelectedLetter(letter);
-        setCities(citiesData.filter(city => city.city.toUpperCase().startsWith(letter)));
+    const filteredCities = cities.filter(i => i.city.toLowerCase().includes(searchTerm.toLowerCase()));
+    const passwordStrength = zxcvbn(formData.password).score;
+
+    const nextStep = () => {
+        if (validate(step)) setStep(prev => prev + 1);
     };
-
-    const renderStep = () => {
-        switch (step) {
-            case 1:
-                return (
-                    <div className="step-content">
-                        <h2>Information Personnelle</h2>
-                        <input
-                            className={`input-field ${errors.firstName ? 'error' : ''}`}
-                            type="text"
-                            name='firstName'
-                            placeholder='Prénoms'
-                            value={formData.firstName}
-                            onChange={handleChange}
-                        />
-                        {errors.firstName && <div className="error-text">{errors.firstName}</div>}
-                        <input
-                            className={`input-field ${errors.lastName ? 'error' : ''}`}
-                            type="text"
-                            name='lastName'
-                            placeholder='Nom de famille'
-                            value={formData.lastName}
-                            onChange={handleChange}
-                        />
-                        {errors.lastName && <div className="error-text">{errors.lastName}</div>}
-                    </div>
-                )
-            case 2:
-                return (
-                    <div className="step-content">
-                        <h2>Informations de Contact</h2>
-                        <input
-                            className={`input-field ${errors.email ? 'error' : ''}`}
-                            type='email'
-                            name='email'
-                            placeholder='Email'
-                            value={formData.email}
-                            onChange={handleChange}
-                        />
-
-                        {errors.email && <div className="error-text">{errors.email}</div>}
-
-                        <div className="phone-input-container">
-                            <div className="select-wrapper">
-                                <select
-                                    className="country-select"
-                                    value={selectedCountry.code}
-                                    onChange={handleCountryChange}
-                                >
-                                    {countries.map((country) => (
-                                        <option key={country.code} value={country.code}>
-                                            {country.code} ({country.dialCode})
-                                        </option>
-                                    ))}
-                                </select>
-                                <img
-                                    src={selectedCountry.flag}
-                                    alt={`${selectedCountry.name} flag`}
-                                    className="selected-flag"
-                                />
-                            </div>
-                            <input
-                                title='Téléphone (sans préfix)'
-                                type='tel'
-                                name='phoneNumber'
-                                placeholder='Téléphone (sans préfix)'
-                                value={formData.phoneNumber}
-                                onChange={handleChange}
-                                className={`input-field ${errors.phoneNumber ? 'error' : ''}`}
-                            />
-                        </div>
-                        {errors.phoneNumber && <div className="error-text">{errors.phoneNumber}</div>}
-                    </div>
-                )
-            case 3:
-                return (
-                    <div className="step-content">
-                        <h2>Lieu de résidence</h2>
-                        <input
-                            className={`input-field ${errors.country ? 'error' : ''}`}
-                            type="text"
-                            name="country"
-                            placeholder="Pays"
-                            value={formData.country}
-                            readOnly
-                            onChange={handleChange}
-                        />
-                        {errors.country && <div className="error-text">{errors.country}</div>}
-
-                        <select onChange={handleLetterChange}>
-                            <option value="">Lettre initiale de la ville</option>
-                            {[...Array(26)].map((_, index) => {
-                                const letter = String.fromCharCode(65 + index);
-                                return <option key={letter} value={letter}>{letter}</option>;
-                            })}
-                        </select>
-
-                        {selectedLetter && (
-                            <select
-                                id="city-select"
-                                name='city'
-                                className={`input-field ${errors.city ? 'error' : ''}`}
-                                value={formData.city}
-                                onChange={handleChange}
-                            >
-                                <option value="">Ville</option>
-                                {cities.map((city, index) => (
-                                    <option key={index} value={city.city}>
-                                        {city.city}
-                                    </option>
-                                ))}
-                            </select>
-                        )}
-                        {errors.city && <div className="error-text">{errors.city}</div>}
-
-                        <input
-                            className={`input-field ${errors.address ? 'error' : ''}`}
-                            type="text"
-                            name="address"
-                            placeholder="Adresse"
-                            value={formData.address}
-                            onChange={handleChange}
-                        />
-                        {errors.address && <div className="error-text">{errors.address}</div>}
-                    </div>
-                )
-            case 4:
-                return (
-                    <div className="step-content password-toggle">
-                        <h2>Sécurité</h2>
-                        <input
-                            className={`input-field ${errors.password ? 'error' : ''}`}
-                            type={showPassword ? 'text' : 'password'}
-                            id="password"
-                            name='password'
-                            placeholder='Mot de passe'
-                            value={formData.password}
-                            onChange={handleChange}
-                        />
-                        <span onClick={toggleShowPassword}>
-                            {
-                                showPassword
-                                    ? <FontAwesomeIcon icon={faEyeSlash} title={"Cacher"} />
-                                    : <FontAwesomeIcon icon={faEye} title={"Afficher"} />
-                            }
-                        </span>
-                        {errors.password && <div className="error-text">{errors.password}</div>}
-                    </div>
-                )
-            default:
-                return null;
-        }
-    }
+    const prevStep = () => setStep(step - 1);
 
     return (
-        <div className='signup-page'>
+        <div className="signup-page">
             <div className="signup-form">
+                {/* Progress Bar */}
                 <div className="progress-bar">
-                    {[1, 2, 3, 4].map((num) => (
-                        <div
-                            key={num}
-                            className={`step-indicator ${step >= num ? 'active' : ''}`}
-                        >
-                            {num}
+                    {steps.map((label, index) => (
+                        <div key={index} className="step">
+                            <div className={`bulb ${index <= step ? 'active' : ''}`}>{index + 1}</div>
+                            <div className={`label ${index <= step ? 'active' : ''}`}>{label}</div>
                         </div>
                     ))}
                 </div>
 
-                {renderStep()}
+                {/* Form Steps */}
+                <div className="form-group">
+                    {step === 0 && (
+                        <div className='form-group-item'>
+                            <input
+                                type='text'
+                                name='firstName'
+                                value={formData.firstName}
+                                onChange={handleChange}
+                                placeholder='Prénom'
+                                className={`input-field ${errors.firstName ? 'error' : ''}`}
+                            />
+                            {errors.firstName && <span className='error-message'>{errors.firstName}</span>}
 
-                <label className="checkbox-label">
-                    <input
-                        type="checkbox"
-                        name="agree"
-                        checked={formData.agree}
-                        onChange={handleChange}
-                    />
-                    J'accepte les termes et conditions
-                </label>
+                            <input
+                                type='text'
+                                name='lastName'
+                                value={formData.lastName}
+                                onChange={handleChange}
+                                placeholder='Nom'
+                                className={`input-field ${errors.lastName ? 'error' : ''}`}
+                            />
+                            {errors.lastName && <span className='error-message'>{errors.lastName}</span>}
+                        </div>
+                    )}
 
-                {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
-                {message && (<div className='error'>{message}</div>)}
-                <div className="navigation-buttons">
-                    {step > 1 && (
-                        <button className='prev' onClick={prevStep}>Retour</button>
+                    {step === 1 && (
+                        <div className='form-group-item'>
+                            <input
+                                type='email'
+                                name='email'
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder='Email'
+                                className={`input-field ${errors.email ? 'error' : ''}`}
+                            />
+                            {errors.email && <span className='error-message'>{errors.email}</span>}
+
+                            <input
+                                type='tel'
+                                name='phoneNumber'
+                                value={formData.phoneNumber}
+                                onChange={handleChange}
+                                placeholder='Numéro de téléphone'
+                                className={`input-field ${errors.phoneNumber ? 'error' : ''}`}
+                            />
+                            {errors.phoneNumber && <span className='error-message'>{errors.phoneNumber}</span>}
+                        </div>
                     )}
-                    {step < 4 ? (
-                        <button className='next' onClick={nextStep}>Suivant</button>
-                    ) : (
-                        <button onClick={handleSubmit} className='submit'>
-                            {loading ? <Spinner /> : "S'inscrire"}
-                        </button>
+
+                    {step === 2 && (
+                        <div className='form-group-item'>
+                            <input
+                                type='text'
+                                name='country'
+                                value={formData.country}
+                                onChange={handleChange}
+                                placeholder='Pays'
+                                className={`input-field ${errors.country ? 'error' : ''}`}
+                            />
+                            {errors.country && <span className='error-message'>{errors.country}</span>}
+
+                            <div className="search-field">
+                                <input
+                                    type='text'
+                                    name='searchTerm'
+                                    placeholder='Rechercher une ville'
+                                    value={searchTerm}
+                                    className={`input-field ${errors.searchTerm ? 'error' : ''}`}
+                                    onChange={handleSearch}
+                                />
+                                <span className='search-icon'>
+                                    <Search size={20} />
+                                </span>
+                            </div>
+
+                            <select
+                                name="city"
+                                value={formData.city}
+                                onChange={handleChange}
+                                className={`input-field ${errors.city ? 'error' : ''}`}
+                            >
+                                <option value="">Choisissez votre ville</option>
+                                {filteredCities.map((city, index) => (
+                                    <option key={index} value={city.city}>{city.city}</option>
+                                ))}
+                            </select>
+                            {errors.city && <span className='error-message'>{errors.city}</span>}
+
+                            <input
+                                type='text'
+                                name='address'
+                                value={formData.address}
+                                onChange={handleChange}
+                                placeholder='Adresse'
+                                className={`input-field ${errors.address ? 'error' : ''}`}
+                            />
+                            {errors.address && <span className='error-message'>{errors.address}</span>}
+                        </div>
                     )}
+
+                    {step === 3 && (
+                        <div className='form-group-item'>
+                            <div className="password-field">
+                                <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    name="password"
+                                    value={formData.password}
+                                    onChange={handleChange}
+                                    placeholder="Mot de passe"
+                                    className={`input-field ${errors.password ? 'error' : ''}`}
+                                />
+                                <span className='eye-icon' onClick={() => setShowPassword(!showPassword)}>
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </span>
+                            </div>
+
+                            <div className="password-strength">
+                                <div className="strength-bar" style={{ backgroundColor: strengthColors[passwordStrength] }}>
+                                    {['Faible', 'Moyen', 'Bon', 'Fort'][passwordStrength]}
+                                </div>
+                            </div>
+                            {errors.password && <span className='error-message'>{errors.password}</span>}
+
+                            <div className="confirm-password-field">
+                                <input
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    name="confirmPassword"
+                                    value={formData.confirmPassword}
+                                    onChange={handleChange}
+                                    placeholder="Confirmez le mot de passe"
+                                    className={`input-field ${errors.confirmPassword ? 'error' : ''}`}
+                                />
+                                <span className='eye-icon' onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                    {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </span>
+                            </div>
+                            {errors.confirmPassword && <span className='error-message'>{errors.confirmPassword}</span>}
+                        </div>
+                    )}
+                </div>
+
+                <input type='checkbox' id='agree' name='agree' value={formData.agree} onChange={handleChange} />
+                <label htmlFor="agree" className="agree-label">En continuant, vous acceptez les Conditions d'utilisation</label>
+                {errors.agree && <span className='error-message'>{errors.agree}</span>}
+
+                {/* Navigation Buttons */}
+                <div className="form-navigation">
+                    {step > 0 && <button className="back-button" onClick={prevStep}>Retour</button>}
+                    {step < steps.length - 1 && <button className="next-button" onClick={() => nextStep(step)}>Suivant</button>}
+                    {step === steps.length - 1 && <button className="submit">S'inscrire</button>}
                 </div>
 
                 <p>Avez-vous déjà un compte utilisateur ? <Link to={'/auth/signin'}>Se connecter</Link></p>
@@ -416,25 +258,8 @@ export default function SignUpPage() {
                     </p>
                 </div>
             </div>
+            <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
 
-            {
-                isSignupSuccess && (
-                    <SignupSuccessModal
-                        email={formData.email}
-                        isSignupSuccess={isSignupSuccess}
-                        setIsSignupSuccess={setIsSignupSuccess}
-                    />
-                )
-            }
-
-            {toast &&
-                <Toast
-                    show={toast.show}
-                    message={toast.message}
-                    type={toast.type}
-                    onClose={() => setToast({ ...toast, show: false })}
-                />
-            }
-        </div >
-    )
+        </div>
+    );
 }

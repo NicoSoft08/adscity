@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ReactCodeInput from 'react-code-input';
 import { checkCode } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
+import Modal from '../../customs/Modal';
 import '../../styles/SignupSuccess.scss';
-
-
 
 export default function SignupSuccess() {
     const location = useLocation();
+    const navigate = useNavigate();
     const userData = location.state?.userData;
-    // const [showPopup, setShowPopup] = useState(true);
-    const [isVerified, setIsVerified] = useState(false);
+
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
-    const [code, setCode] = useState(0);
+    const [code, setCode] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-
-
+    const [showModal, setShowModal] = useState(false);
 
     const handleChange = (value) => {
         const sanitizedValue = value.replace(/\D/g, '');
@@ -30,20 +28,17 @@ export default function SignupSuccess() {
         }
     };
 
-
     const handleSubmit = async (code) => {
-
         try {
             const result = await checkCode(userData?.email, code);
 
             if (result.error) {
-                setError('Erreur lors de la vérification du code');
+                setError('Erreur lors de la vérification du code.');
                 setSuccess('');
-                setIsVerified(false);
             } else {
-                setSuccess('Code vérifié avec succès !');
+                setSuccess('Votre code a été vérifié avec succès !');
                 setError('');
-                setIsVerified(true);
+                setShowModal(true); // Afficher le Modal en cas de succès
             }
         } catch (error) {
             setError('Une erreur est survenue. Veuillez réessayer.');
@@ -51,14 +46,17 @@ export default function SignupSuccess() {
         }
     };
 
+    const handleCloseModal = () => {
+        setShowModal(false);
+        navigate(`/auth/signin/${userData?.email}`); // Redirige vers la connexion après succès
+    };
 
     if (!userData) {
-        // Gestion de l'erreur ou redirection si les données sont manquantes
         setToast({
             show: true,
             type: 'error',
             message: 'Aucune donnée utilisateur trouvée',
-        })
+        });
         return <div>Erreur: Aucune donnée utilisateur trouvée</div>;
     }
 
@@ -66,11 +64,9 @@ export default function SignupSuccess() {
 
     return (
         <div className='signup-success-page'>
-            <h1>Inscription Réussie ! Bienvenue chez AdsCity</h1>
-            <p>Merci pour votre inscription, <strong>{displayName}</strong> ! Nous sommes ravis de vous compter parmi nous.</p>
-            <p>Veuillez vérifier votre boîte de réception email, un code de vérification vous a été envoyé à <strong>{email}</strong>.</p>
-            <p>Si vous ne trouvez pas l'email, vérifiez vos spams et ajoutez notre adresse à votre liste de contacts pour éviter cela à l’avenir.</p>
-            <p>Entrez le code à 6 chiffres</p>
+            <h1>Confirmation du mail, <strong>{displayName}</strong> !</h1>
+            <p>Un code de vérification a été envoyé à <strong>{email}</strong>. Entrez le code à 6 chiffres.</p>
+
             <ReactCodeInput
                 value={code}
                 type='text'
@@ -78,32 +74,35 @@ export default function SignupSuccess() {
                 className="code-input"
                 onChange={handleChange}
             />
+
             {error && <div className="error">{error}</div>}
-            {success && <div className="success">{success}</div>}
-            {isVerified && (
-                <>
-                    <p>Vous pouvez maintenant accéder à votre compte en utilisant vos identifiants. Cliquez sur le bouton ci-dessous pour vous connecter et commencer à explorer nos services.</p>
-                    <Link to={`/auth/signin/${email}`} className="button">Accéder à Mon Compte</Link>
-                </>
+
+            {/* ✅ Modal s'affiche quand le code est validé */}
+            {showModal && (
+                <Modal onShow={showModal} onHide={handleCloseModal}>
+                    <h2>Succès ✅</h2>
+                    <p>{success} Vous pouvez maintenant vous connecter.</p>
+                    <button className="modal-button" onClick={handleCloseModal}>
+                        Accéder à Mon Compte
+                    </button>
+                </Modal>
             )}
 
             <h2>Premiers Pas</h2>
             <ul>
                 <li><Link to="/start-guide">Guide de démarrage rapide</Link></li>
-                <li><a href="https://youtube.com/@AdsCity24" >Tutoriels vidéo</a></li>
+                <li><a href="https://youtube.com/@AdsCity24">Tutoriels vidéo</a></li>
                 <li><Link to="/faqs">FAQ</Link></li>
             </ul>
+
             <h2>Contactez-nous</h2>
-            <p>Si vous avez des questions ou besoin d'assistance, n'hésitez pas à nous contacter via notre <Link to={"/contact-us"}>page de support</Link> ou à envoyer un email à <a href="mailto:support@adscity.net">support@adscity.net</a>.</p>
+            <p>Pour toute question, contactez-nous via notre <Link to={"/contact-us"}>page de support</Link> ou par email à <a href="mailto:support@adscity.net">support@adscity.net</a>.</p>
+
             <div className="links">
                 <Link to={'/'}>Retour à l'Accueil</Link>
-                {/* <Link to="#">Consulter notre Blog</Link> */}
-                <Link to={'/pricing'}>Découvrir Nos Offres</Link>
             </div>
-            <p>Merci de faire confiance à AdsCity. Nous sommes impatients de vous accompagner et de vous aider à atteindre vos objectifs.</p>
-            <a href="https://mail.google.com/" className="button">Vérifier ma boîte Gmail</a>
-            {/* {showPopup && <InstallAppModal onClose={handleClosePopup} requestNotificationPermission={requestNotificationPermission} userID={userID} />} */}
-           <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} /> 
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
         </div>
     );
-};
+}

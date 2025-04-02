@@ -65,7 +65,7 @@ export default function PublicProfil({ profile }) {
                 <div className="profile-info">
                     <img className='avatar' src={profilURL} alt="Profile" />
                     <div className="info">
-                        <h2 className='name'>{profile.displayName}</h2>
+                        <h2 className='name'>{profile.firstName} {profile.lastName}</h2>
                         {/* <FontAwesomeIcon icon={faCheckCircle} size='1x' color='skyblue' /> */}
                         <div className="detail">
                             <small className='location'><FontAwesomeIcon icon={faMapMarkerAlt} /> {profile.city}, {profile.country}</small>

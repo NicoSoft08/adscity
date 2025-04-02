@@ -38,11 +38,13 @@
                 flex-direction: column;
                 align-items: center;
                 margin: 0 20px;
+                color: $black;
 
                 .name {
                     font-size: 24px;
                     margin-bottom: 5px;
                     font-weight: $font-regular;
+                    color: $black;
                 }
 
 
@@ -71,9 +73,10 @@
             display: flex;
             justify-content: center;
             gap: 20px;
+            color: $black;
 
             a {
-                color: $white;
+                color: $black;
                 text-decoration: none;
 
                 img {
@@ -148,6 +151,7 @@
                     width: 35px;
                     height: 35px;
                     border: 0.5px solid $white;
+                    color: $black;
 
                     svg {
                         font-size: 12px;
@@ -157,10 +161,11 @@
 
                 .show-phone-btn {
                     margin: 0 20px;
+                    color: $black;
 
                     small {
-                        font-weight: $font-light;
-                        font-size: 12px;
+                        font-weight: $font-regular;
+                        font-size: 13px;
                     }
                 }
             }

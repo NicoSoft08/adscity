@@ -15,6 +15,8 @@ export default function UserCard({ user }) {
     const {
         profilURL,
         displayName,
+        firstName,
+        lastName,
         profileNumber,
         profileType,
         location,
@@ -50,7 +52,7 @@ export default function UserCard({ user }) {
             {/* Photo de profil */}
             <div className="profile-pic">
                 <img src={getProfilePicture()} alt={displayName} />
-                <p>{displayName}</p>
+                <p>{firstName} {lastName}</p>
             </div>
 
             {/* Infos principales */}

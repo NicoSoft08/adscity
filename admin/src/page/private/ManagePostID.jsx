@@ -8,13 +8,14 @@ import PostCard from '../../components/card/PostCard';
 import { AuthContext } from '../../contexts/AuthContext';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
+import { logAdminAction } from '../../routes/apiRoutes';
 import '../../styles/ManagePostID.scss';
 
 export default function ManagePostID() {
     const { post_id } = useParams();
     const menuRef = useRef(null);
     const navigate = useNavigate();
-    const {  userData } = useContext(AuthContext);
+    const {  currentUser, userData } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [confirm, setConfirm] = useState({ willDelete: false });
     const [post, setPost] = useState(null);
@@ -79,10 +80,32 @@ export default function ManagePostID() {
     };
 
     // Suspendre une annonce
-    const handleSuspend = async () => { };
+    const handleSuspend = async () => { 
+        if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour suspendre les annonces.' });
+            return;
+        }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Suspension d'annonce", 
+            "L'admin a suspendu une annonce."
+        );
+    };
 
     // Restaurer une annonce
-    const handleRestore = async () => { };
+    const handleRestore = async () => { 
+        if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour restaurer les annonces.' });
+            return;
+        }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Restauration d'annonce", 
+            "L'admin a restauré une annonce."
+        );
+    };
 
     // Voir les statistiques d'une annonce
     const handleStatistics = async () => {
@@ -91,10 +114,16 @@ export default function ManagePostID() {
 
     // Supprimer une annonce
     const handleDelete = useCallback(async () => {
-        if (!userData?.permissions?.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Permission refusée.' });
+        if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer les annonces.' });
             return;
         }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Suppression d'annonce", 
+            "L'admin a supprimé une annonce."
+        );
 
         if (!post) return;
 
@@ -112,7 +141,7 @@ export default function ManagePostID() {
         } finally {
             setLoading(false);
         }
-    }, [userData, post]);
+    }, [userData, post, currentUser]);
 
     // Confirmer la suppression
     const confirmDeletePost = () => {

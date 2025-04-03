@@ -9,6 +9,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { faEye } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Pagination from '../../components/pagination/Pagination';
+import { logAdminAction } from '../../routes/apiRoutes';
 import '../../styles/PendingPosts.scss';
 
 const PostRow = ({ index, post, onView }) => (
@@ -57,9 +58,16 @@ export default function PendingPosts() {
 
     const handleApprove = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour approuver cette annonce.' });
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour approuver les annonces.' });
             return;
         }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Validation d'annonce'", 
+            "L'admin a validé une annonce."
+        );
+
         if (!selectedPost) return;
         setIsLoading(true);
         const result = await onApprovePost(selectedPost.postID);
@@ -74,11 +82,19 @@ export default function PendingPosts() {
         }
     }, [selectedPost, postsPending, currentUser, userData]);
 
+
     const handleReject = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour approuver cette annonce.' });
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour refuser les annonces.' });
             return;
         }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Refus d'annonce'", 
+            "L'admin a refusé une annonce."
+        );
+
         if (!selectedPost || refusalReason.trim() === '') {
             setToast({ show: true, type: 'error', message: 'Veuillez fournir un motif avant de refuser l\'annonce.' });
             return;
@@ -97,11 +113,18 @@ export default function PendingPosts() {
         }
     }, [selectedPost, postsPending, refusalReason, currentUser, userData]);
 
+
     const handleDelete = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer cette annonce.' });
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour supprimer les annonces.' });
             return;
         }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Suppression d'annonce'", 
+            "L'admin a supprimé une annonce."
+        );
 
         if (!selectedPost) return;
 

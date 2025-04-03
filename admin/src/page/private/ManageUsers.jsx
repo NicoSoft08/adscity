@@ -9,6 +9,7 @@ import Pagination from '../../components/pagination/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import '../../styles/ManageUsers.scss';
+import { logAdminAction } from '../../routes/apiRoutes';
 
 const UsersFilter = ({ onFilterChange, onClick }) => {
     const [filters, setFilters] = useState({
@@ -185,11 +186,17 @@ export default function ManageUsers() {
         setFilteredUsers(filtered);
     };
 
-    const exportToCSV = () => {
-        if (currentUser && !userData.permissions.includes('SUPER_ADMIN')) {
+    const exportToCSV = async () => {
+        if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
             setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour exporter les utilisateurs.' });
             return;
         }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Exportation utilisateurs", 
+            "L'admin a exporté la liste des utilisateurs."
+        );
 
         const headers = "Firstname,Lastname,Email,Verified,Phone,Ville,Pays,Date\n";
         const rows = filteredUsers.map(user =>

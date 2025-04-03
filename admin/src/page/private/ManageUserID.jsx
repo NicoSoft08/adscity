@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { faChartSimple, faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -9,15 +9,20 @@ import { deleteUser, disableUser, restoreUser } from '../../routes/authRoutes';
 import '../../styles/ManageUserID.scss';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
+import { AuthContext } from '../../contexts/AuthContext';
+import { logAdminAction } from '../../routes/apiRoutes';
+import Toast from '../../customs/Toast';
 
 export default function ManageUserID() {
     const menuRef = useRef(null);
+    const { currentUser, userData } = useContext(AuthContext);
     const { user_id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [showMenu, setShowMenu] = useState(false);
     const [openModal, setOpenModal] = useState({ type: '', open: false });
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     const handleBack = () => {
         navigate('/admin/dashboard/users');
@@ -77,6 +82,17 @@ export default function ManageUserID() {
     ];
 
     const handleDelete = async () => {
+        if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer les utilisateurs.' });
+            return;
+        }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Suppression de compte utilisateur", 
+            "L'admin a supprimé le compte d'un utilisateur."
+        );
+
         try {
             const result = await deleteUser(user?.userID);
             if (result.success) {
@@ -88,6 +104,17 @@ export default function ManageUserID() {
     };
 
     const handleSuspend = async () => {
+        if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour suspendre les utilisateurs.' });
+            return;
+        }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Suspension de compte utilisateur", 
+            "L'admin a suspendu le compte d'un utilisateur."
+        );
+
         try {
             const result = await disableUser(user?.userID);
             if (result.success) {
@@ -99,6 +126,17 @@ export default function ManageUserID() {
     };
 
     const handleRestore = async () => {
+        if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
+            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour restaurer les utilisateurs.' });
+            return;
+        }
+
+        await logAdminAction(
+            currentUser.uid, 
+            "Restauration de compte utilisateur", 
+            "L'admin a restauré le compte d'un utilisateur."
+        );
+
         try {
             const result = await restoreUser(user?.userID);
             if (result.success) {
@@ -165,6 +203,8 @@ export default function ManageUserID() {
 
                 </Modal>
             )}
+
+            <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, ...toast })} />
         </div>
     );
 };

@@ -16,6 +16,7 @@ import { differenceInDays, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Pagination from '../../components/pagination/Pagination';
 import { IconAvatar } from '../../config/images';
+import { logAdminAction } from '../../routes/apiRoutes';
 import '../../styles/UserProfile.scss';
 
 export default function UserProfile() {
@@ -115,6 +116,13 @@ export default function UserProfile() {
 
                 result = await uploadProfilePhoto(selectedFile, userID);
                 if (result) setFormData(prevFormData => ({ ...prevFormData, profilURL: result.imageUrl }));
+
+                await logAdminAction(
+                    currentUser.uid, 
+                    "Mise à jour du profile", 
+                    "L'admin a mis à jour sa photo de profile."
+                );
+
             } else if (imageType === "cover") {
                 const { count } = userData?.coverChanges;
                 if (count >= 3) {
@@ -124,6 +132,12 @@ export default function UserProfile() {
 
                 result = await uploadCoverPhoto(selectedFile, userID);
                 if (result) setFormData(prevFormData => ({ ...prevFormData, coverURL: result.imageUrl }));
+
+                await logAdminAction(
+                    currentUser.uid, 
+                    "Mise à jour du profile", 
+                    "L'admin a mis à jour sa photo de couverture."
+                );
             }
             setIsModalOpen(false); // Fermer la modale SEULEMENT si l'upload réussit
         } catch (error) {

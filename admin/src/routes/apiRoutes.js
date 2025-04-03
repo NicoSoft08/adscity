@@ -50,8 +50,27 @@ const fetchPubs = async () => {
     }
 };
 
+const logAdminAction = async (userID, action, details) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/do/log/${userID}/action`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({action, details})
+        });
+
+        const result = await response.json();
+        console.log(result);
+        return result;
+    } catch (error) {
+        console.error(error)
+    }
+};
+
 export {
     createPub,
     fetchPubs,
     fetchPubById,
+    logAdminAction,
 };

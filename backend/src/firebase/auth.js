@@ -1,7 +1,7 @@
 const { auth, firestore, admin } = require('../config/firebase-admin');
 const { sendCode, sendAdminEmail, sendNewDeviceAlert } = require('../controllers/emailController');
 const { formatDate, formatDateISO } = require('../cron');
-const { monthNames, generateVerificationCode, getUserProfileNumber } = require('../func');
+const { monthNames, generateVerificationCode, getUserProfileNumber, logAdminAction } = require('../func');
 const { trackUserDevice } = require('../services/apiServices');
 
 

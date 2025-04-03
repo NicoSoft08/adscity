@@ -113,5 +113,5 @@ app.listen(PORT, async () => {
     console.log(`Server started at http://localhost:${PORT}`);
     // await createDefaultAdmin(); // Créer un compte administrateur par défaut
     await createDefaultSuperAdmin(); // Créer un compte super administrateur par défaut
-    await formatRegisterDate(); // Mettre à jour la date de création des utilisateurs
+    // await formatRegisterDate(); // Mettre à jour la date de création des utilisateurs
 });

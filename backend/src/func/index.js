@@ -220,6 +220,7 @@ const formatRelativeDate = (dateString) => {
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long' }); // Ex: "13 mars"
 };
 
+
 module.exports = {
     formatRelativeDate,
     createNodemailerTransport,

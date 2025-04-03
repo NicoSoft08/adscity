@@ -95,6 +95,23 @@ const searchQuery = async (query) => {
     }
 };
 
+const logAdminIDAction = async (userID, action, details) => {
+    try {
+        const logRef = firestore.collection('ADMIN_LOGS').doc();
+        await logRef.set({
+            id: logRef.id,
+            action,
+            userID,
+            details,
+            timestamp: new Date().toISOString(),
+        });
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la journalisation de l\'action:', error);
+        return false;
+    }
+}
+
 const updateInteraction = async (postID, userID, category) => {
     try {
         const userRef = firestore.collection('USERS').doc(userID);
@@ -638,6 +655,7 @@ const collectViewCount = async (postID) => {
 }
 
 module.exports = {
+    logAdminIDAction,
     advancedItemSearch,
     collectLocations,
     collectPubs,

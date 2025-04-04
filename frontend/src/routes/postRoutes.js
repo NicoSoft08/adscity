@@ -146,7 +146,6 @@ const updatePost = async (postID, updatedData, userID) => {
         });
 
         const result = await response.json();
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'annonce:', error);
@@ -165,7 +164,6 @@ const deletePost = async (postID, userID) => {
         });
 
         const result = await response.json();
-        // console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la suppression de l\'annonce:', error);
@@ -174,7 +172,6 @@ const deletePost = async (postID, userID) => {
 };
 
 const markAsSold = async (userID, PostID) => {
-    console.log(userID)
     try {
         const response = await fetch(`${backendUrl}/api/posts/${PostID}/mark/sold`, {
             method: 'POST',
@@ -185,7 +182,6 @@ const markAsSold = async (userID, PostID) => {
         });
 
         const result = await response.json();
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'annonce:', error);

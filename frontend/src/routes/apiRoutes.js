@@ -230,7 +230,25 @@ const fetchPubs = async () => {
     }
 };
 
+const logClientAction = async (userID, action, details) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/do/log/${userID}/client/action`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({action, details})
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error(error)
+    }
+}
+
 export {
+    logClientAction,
     advancedSearch,
     collectLocations,
     contactSupportClient,

@@ -16,6 +16,7 @@ import Location from '../location-form/Location';
 import Details from '../post-ad-form/Details';
 import SelectCategory from '../category-selection/SelectCategory';
 import ImageUpload from '../image-upload/ImageUpload';
+import { logClientAction } from '../../routes/apiRoutes';
 
 const createSearchableItem = (text) => {
     if (!text) return [];
@@ -103,6 +104,11 @@ export default function CreatePostFlow() {
                     type: 'success',
                     message: 'Annonce créée avec succès'
                 });
+                await logClientAction(
+                    userID,
+                    "Publication d'annonce",
+                    "Vous avez publié une annonce sur le site.",
+                )
                 logEvent(analytics, 'post_created');
                 setHasSucceed(true);
             } else {

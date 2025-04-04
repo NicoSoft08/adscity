@@ -568,6 +568,8 @@ const updatePost = async (req, res) => {
     const { postID } = req.params;
     const { updatedData, userID } = req.body;
 
+    console.log(postID);
+
     try {
         const isUpdated = await updatePostByID(postID, updatedData, userID);
         if (!isUpdated) {
@@ -640,11 +642,11 @@ const adminSuspendPost = async (req, res) => {
 };
 
 const markPostAsSold = async (req, res) => {
-    const { PostID } = req.params;
+    const { postID } = req.params;
     const { userID } = req.body;
 
     try {
-        const isMarkedAsSold = await markPostSold(userID, PostID);
+        const isMarkedAsSold = await markPostSold(userID, postID);
         if (!isMarkedAsSold) {
             return res.status(404).json({
                 success: false,

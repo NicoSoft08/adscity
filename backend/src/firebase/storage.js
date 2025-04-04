@@ -105,6 +105,7 @@ const uploadUserCoverPicture = async (file, userID) => {
 
         const userData = userDoc.data();
         const coverChanges = userData.coverChanges || { count: 0, lastUpdated: null };
+        const now = new Date();
 
         const lastUpdateDate = coverChanges.lastUpdated ? new Date(coverChanges.lastUpdated) : null;
         const isSameMonth = lastUpdateDate && now.getMonth() === lastUpdateDate.getMonth() && now.getFullYear() === lastUpdateDate.getFullYear();
@@ -118,7 +119,6 @@ const uploadUserCoverPicture = async (file, userID) => {
         };
 
         // Formatage de la date et de l'heure
-        const now = new Date();
         const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
         const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
         const uniqueFolderID = userID;

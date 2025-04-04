@@ -45,7 +45,7 @@ router.put('/:userID/profile-field/update', modifyUserFields);
 router.post('/:userID/favorites/add-remove', toggleFavorites);
 
 router.get('/:userID/admin/notifications', getAdminNotifications);
-router.get('/:userID/admin/notifications/:notificationID/read', readAdminNotification);
+router.post('/:userID/admin/notifications/:notificationID/read', readAdminNotification);
 router.post('/:userID/admin/notifications/read-all', readAdminAllNotifications);
 
 router.get('/:userID/notifications', getUserNotifications);

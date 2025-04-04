@@ -64,7 +64,7 @@ router.post('/related-category', getRelatedPosts);
 
 router.put('/:postID/update', updatePost);
 router.delete('/:postID/delete', deletePost);
-router.post('/:PostID/mark/sold', markPostAsSold);
+router.post('/:postID/mark/sold', markPostAsSold);
 
 router.get('/collect/nearby', fetchNearbyPosts);
 

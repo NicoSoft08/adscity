@@ -369,7 +369,7 @@ const adminDeletePostByID = async (postID) => {
         }
 
         await deleteImagesByPostID(postID);
-        
+
         await postRef.delete();
         console.log('Annonce supprimée avec succès');
         return true;
@@ -768,8 +768,10 @@ const updatePostByID = async (postID, updateData, userID) => {
 
         await postRef.update({
             ...updateData,
-            updated_at: admin.firestore.FieldValue.serverTimestamp(),
+            updated_at: admin.firestore.FieldValue.serverTimestamp()
         });
+
+        console.log('Annonce mise à jour avec succès.');
         return true;
     } catch (error) {
         console.error('Erreur lors de la mise à jour de l\'annonce:', error);
@@ -823,32 +825,26 @@ const suspendPostByID = async (postID, reason) => {
     };
 };
 
-const markPostSold = async (userID, PostID) => {
-    console.log(PostID);
+const markPostSold = async (userID, postID) => {
+    console.log(postID);
     try {
-        const postQuery = firestore.collection('POSTS').where('PostID', '==', PostID).limit(1);
-        const postSnapshot = await postQuery.get();
-
-        if (postSnapshot.empty) {
-            console.log('Annonce introuvable');
-            return false;
-        }
-
-        const postDoc = postSnapshot.docs[0];
-        const postData = postDoc.data();
-
-        if (postData.userID !== userID) {
-            console.error('Non autorisé à modifier cette annonce.');
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.error('Annonce non trouvée.');
             return false;
         };
 
-        await postDoc.ref.update({
+        const postData = postDoc.data();
+        if (postData.userID !== userID) {
+            console.error('Vous n\'êtes pas autorisé à marquer cette annonce comme vendue.');
+            return false;
+        };
+        await postRef.update({
             isSold: true,
             updated_at: admin.firestore.FieldValue.serverTimestamp(),
         });
-
         console.log('Annonce marquée comme vendue');
-
         return true;
     } catch (error) {
         console.log('Erreur lors de la mise à jor de l\'annonce:', error);

@@ -54,26 +54,26 @@ export default function DashboardPanel() {
     const [postsPending, setPostsPending] = useState([]);
     const [postsApproved, setPostsApproved] = useState([]);
     const [postsRefused, setPostsRefused] = useState([]);
-    const [usersLocations, setUsersLocations] = useState([]);
+    // const [usersLocations, setUsersLocations] = useState([]);
 
-    useEffect(() => {
-        let isMounted = true;
-        const fetchData = async () => {
-            try {
-                const data = await fetchUsersLocations();
-                if (isMounted && data) {
-                    setUsersLocations(data.locations);
-                    console.log('Data fetched successfully:', data.locations);
-                }
-            } catch (error) {
-                console.error("Erreur technique", error);
-            }
-        };
+    // useEffect(() => {
+    //     let isMounted = true;
+    //     const fetchData = async () => {
+    //         try {
+    //             const data = await fetchUsersLocations();
+    //             if (isMounted && data) {
+    //                 setUsersLocations(data.locations);
+    //                 console.log('Data fetched successfully:', data.locations);
+    //             }
+    //         } catch (error) {
+    //             console.error("Erreur technique", error);
+    //         }
+    //     };
 
-        fetchData();
+    //     fetchData();
 
-        return () => { isMounted = false };
-    }, []);
+    //     return () => { isMounted = false };
+    // }, []);
 
     useEffect(() => {
         let isMounted = true;
@@ -186,10 +186,10 @@ export default function DashboardPanel() {
                 <Bar data={graphics.barData} />
             </div>
 
-            <div className="chart-container">
+{/*             <div className="chart-container">
                 <h4>Statistiques des utilisateurs</h4>
                 <CityChart data={usersLocations} />
-            </div>
+            </div> */}
 
             <PaymentStats />
 

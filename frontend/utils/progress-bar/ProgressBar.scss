@@ -1,0 +1,28 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.progress-container {
+    width: 100%;
+    height: 14px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    margin: 20px 0;
+    overflow: hidden;
+
+    .progress-bar {
+        height: 100%;
+        background-color: $two;
+        transition: width 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .progress-text {
+            color: $white;
+            font-size: 12px;
+            font-weight: $font-medium;
+            font-family: 'Ubuntu', sans-serif;
+        }
+    }
+}

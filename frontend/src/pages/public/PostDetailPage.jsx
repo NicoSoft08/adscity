@@ -11,12 +11,12 @@ import { AuthContext } from '../../contexts/AuthContext';
 // import MessageToAnnouncer from '../../components/contact-announcer/MessageToAnnouncer';
 // import { sendMessage } from '../../routes/chatRoutes';
 import Toast from '../../customs/Toast';
-import '../../styles/PostDetailPage.scss';
 import Loading from '../../customs/Loading';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import FormData from '../../hooks/FormData';
 import data from '../../json/data.json';
+import '../../styles/PostDetailPage.scss';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);

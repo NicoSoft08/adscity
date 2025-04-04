@@ -2,22 +2,29 @@ import React, { useState } from 'react';
 import zxcvbn from 'zxcvbn';
 import { countries } from '../../data/countries';
 import { Eye, EyeOff, Search } from 'lucide-react';
+import PhoneInput from "react-phone-input-2";
 import cities from '../../data/ru.json';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Toast from '../../customs/Toast';
+import { createUser } from '../../routes/authRoutes';
+import Spinner from '../../customs/Spinner';
 import '../../styles/SignUpPage.scss';
+import "react-phone-input-2/lib/style.css";
 
 const steps = ['Informations', 'Contact', 'Location', 'Sécurité'];
 const strengthColors = ['red', 'orange', 'yellow', 'green'];
 
 export default function SignUpPage() {
+    const navigate = useNavigate();
     const [step, setStep] = useState(0);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [selectedCountry] = useState(countries[0]);
     const [searchTerm, setSearchTerm] = useState('');
-
+    const [filteredCities, setFilteredCities] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -35,7 +42,7 @@ export default function SignUpPage() {
 
     const validate = (currentStep) => {
         const newErrors = {};
-        const { firstName, lastName, email, phoneNumber, password, confirmPassword, city, address, agree } = formData;
+        const { firstName, lastName, email, phoneNumber, password, confirmPassword, city, address } = formData;
 
         if (currentStep === 0) {
             if (!firstName.trim()) newErrors.firstName = 'Prénom requis';
@@ -52,13 +59,19 @@ export default function SignUpPage() {
             if (!address.trim()) newErrors.address = 'Adresse requise';
         }
         if (currentStep === 3) {
-            if (!agree) newErrors.agree = 'Vous devez accepter les conditions.';
             if (!password.trim() || password.length < 6) newErrors.password = 'Mot de passe trop court';
             if (password !== confirmPassword) newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
         }
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
+    };
+
+    const handlePhoneChange = (value) => {
+        setFormData(prev => ({
+            ...prev,
+            phoneNumber: value
+        }));
     };
 
     const handleChange = (e) => {
@@ -70,17 +83,68 @@ export default function SignUpPage() {
     };
 
     const handleSearch = (e) => {
-        const term = e.target.value;
-        setSearchTerm(term);
-    }
+        const value = e.target.value;
+        setSearchTerm(value);
 
-    const filteredCities = cities.filter(i => i.city.toLowerCase().includes(searchTerm.toLowerCase()));
+        if (value.length >= 2) {
+            const filtered = cities.filter(city =>
+                city.city.toLowerCase().startsWith(value.toLowerCase())
+            );
+            setFilteredCities(filtered);
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+
     const passwordStrength = zxcvbn(formData.password).score;
 
     const nextStep = () => {
         if (validate(step)) setStep(prev => prev + 1);
     };
     const prevStep = () => setStep(step - 1);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!formData.agree === true) {
+            setToast({ show: true, type: 'error', message: 'Veuillez accepter les conditions d\'utilisation' });
+            return;
+        }
+        setIsLoading(true);
+
+        // S'assurer que le numéro est bien formaté en E.164
+        const phoneNumber = formData.phoneNumber.startsWith('+') ? formData.phoneNumber : `+${formData.phoneNumber}`;
+
+        try {
+            const displayName = `${formData.firstName} ${formData.lastName}`;
+            const { address, city, country, email, password, firstName, lastName } = formData;
+            const result = await createUser(address, city, country, email, password, firstName, lastName, phoneNumber, displayName);
+
+            if (result.success) {
+                setTimeout(() => {
+                    navigate(`/auth/validate-email`, { state: { userData: formData } });
+                }, 5000);
+                setIsLoading(false);
+            } else {
+                setToast({ show: true, type: 'error', message: result.message });
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'inscription :', error);
+            setToast({ show: true, type: 'error', message: 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleCitySelect = (city) => {
+        setFormData(prev => ({
+            ...prev,
+            city: city.city // Stocke uniquement le nom de la ville
+        }));
+        setSearchTerm(city.city); // Mettre à jour l'input avec la ville sélectionnée
+        setShowSuggestions(false);
+    };
 
     return (
         <div className="signup-page">
@@ -133,13 +197,12 @@ export default function SignUpPage() {
                             />
                             {errors.email && <span className='error-message'>{errors.email}</span>}
 
-                            <input
-                                type='tel'
-                                name='phoneNumber'
+                            <PhoneInput
+                                country={"ru"} // Pays par défaut (Russie ici)
+                                onlyCountries={['ru']}
                                 value={formData.phoneNumber}
-                                onChange={handleChange}
-                                placeholder='Numéro de téléphone'
-                                className={`input-field ${errors.phoneNumber ? 'error' : ''}`}
+                                onChange={handlePhoneChange}
+                                inputStyle={{ width: "100%" }}
                             />
                             {errors.phoneNumber && <span className='error-message'>{errors.phoneNumber}</span>}
                         </div>
@@ -159,29 +222,28 @@ export default function SignUpPage() {
 
                             <div className="search-field">
                                 <input
-                                    type='text'
-                                    name='searchTerm'
-                                    placeholder='Rechercher une ville'
+                                    type="text"
+                                    name="searchTerm"
+                                    placeholder="Rechercher une ville"
                                     value={searchTerm}
-                                    className={`input-field ${errors.searchTerm ? 'error' : ''}`}
+                                    className={`input-field ${errors.searchTerm ? "error" : ""}`}
                                     onChange={handleSearch}
                                 />
-                                <span className='search-icon'>
+                                <span className="search-icon">
                                     <Search size={20} />
                                 </span>
+
+                                {showSuggestions && (
+                                    <ul className="suggestions-list">
+                                        {filteredCities.map((city, index) => (
+                                            <li key={index} onClick={() => handleCitySelect(city)}>
+                                                {city.city}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )}
                             </div>
 
-                            <select
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                className={`input-field ${errors.city ? 'error' : ''}`}
-                            >
-                                <option value="">Choisissez votre ville</option>
-                                {filteredCities.map((city, index) => (
-                                    <option key={index} value={city.city}>{city.city}</option>
-                                ))}
-                            </select>
                             {errors.city && <span className='error-message'>{errors.city}</span>}
 
                             <input
@@ -245,7 +307,9 @@ export default function SignUpPage() {
                 <div className="form-navigation">
                     {step > 0 && <button className="back-button" onClick={prevStep}>Retour</button>}
                     {step < steps.length - 1 && <button className="next-button" onClick={() => nextStep(step)}>Suivant</button>}
-                    {step === steps.length - 1 && <button className="submit">S'inscrire</button>}
+                    {step === steps.length - 1 && <button className="submit" onClick={handleSubmit}>
+                        {isLoading ? <Spinner /> : "Suivant"}
+                    </button>}
                 </div>
 
                 <p>Avez-vous déjà un compte utilisateur ? <Link to={'/auth/signin'}>Se connecter</Link></p>

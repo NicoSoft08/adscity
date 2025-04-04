@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ReactCodeInput from 'react-code-input';
 import { checkCode } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
-import Modal from '../../customs/Modal';
+import { CheckCircle } from 'lucide-react';
 import '../../styles/SignupSuccess.scss';
 
 export default function SignupSuccess() {
@@ -60,11 +60,11 @@ export default function SignupSuccess() {
         return <div>Erreur: Aucune donnée utilisateur trouvée</div>;
     }
 
-    const { email, displayName } = userData;
+    const { email, firstName, lastName } = userData;
 
     return (
         <div className='signup-success-page'>
-            <h1>Confirmation du mail, <strong>{displayName}</strong> !</h1>
+            <h1>Confirmation du mail, <strong>{firstName} {lastName}</strong> !</h1>
             <p>Un code de vérification a été envoyé à <strong>{email}</strong>. Entrez le code à 6 chiffres.</p>
 
             <ReactCodeInput
@@ -78,14 +78,20 @@ export default function SignupSuccess() {
             {error && <div className="error">{error}</div>}
 
             {/* ✅ Modal s'affiche quand le code est validé */}
+            
             {showModal && (
-                <Modal onShow={showModal} onHide={handleCloseModal}>
-                    <h2>Succès ✅</h2>
-                    <p>{success} Vous pouvez maintenant vous connecter.</p>
-                    <button className="modal-button" onClick={handleCloseModal}>
-                        Accéder à Mon Compte
-                    </button>
-                </Modal>
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <div className="success-container">
+                            <CheckCircle size={50} className="success-icon" />
+                            <h2>Succès</h2>
+                            <p>{success} Vous pouvez maintenant vous connecter.</p>
+                            <button className="modal-button" onClick={handleCloseModal}>
+                                Accéder à Mon Compte
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
             <h2>Premiers Pas</h2>

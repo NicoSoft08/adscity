@@ -14,7 +14,8 @@ const {
     collectPubs,
     collectPubById,
     collectViewCount,
-    logAdminIDAction
+    logAdminIDAction,
+    logClientIDAction
 } = require("../firebase/api");
 
 const searchItems = async (req, res) => {
@@ -55,6 +56,38 @@ const logAdminAction = async (req, res) => {
 
     try {
         const isLogged = await logAdminIDAction(userID, action, details);
+        if (!isLogged) {
+            return res.status(404).json({
+                success: false,
+                message: 'Action non trouvée'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Action enregistrée avec succès'
+        });
+    } catch (error) {
+        console.error('Erreur lors de la gestion de l\'action:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plustard'
+        });  
+    };
+};
+
+const logClientAction = async (req, res) => {
+    const { userID } = req.params;
+    const { action, details } = req.body;
+
+    if (!userID || !action || !details) {
+        return res.status(400).json({
+            success: false,
+            message: 'Informations manquantes'
+        });
+    }
+
+    try {
+        const isLogged = await logClientIDAction(userID, action, details);
         if (!isLogged) {
             return res.status(404).json({
                 success: false,
@@ -444,6 +477,7 @@ module.exports = {
     manageInteraction,
     manageContactClick,
     logAdminAction,
+    logClientAction,
     rateUser,
     searchItems,
     updateUserSocialLinks,

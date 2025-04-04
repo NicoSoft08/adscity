@@ -17,7 +17,8 @@ const {
     fetchPubs,
     fetchPubById,
     getViewCount,
-    logAdminAction
+    logAdminAction,
+    logClientAction
 } = require('../controllers/apiController');
 
 const router = express.Router();
@@ -26,7 +27,8 @@ router.get('/search/items', searchItems);
 router.get('/search/filtered', fetchFilteredPosts);
 router.get('/search/advanced', advancedSearch);
 
-router.post('/log/:userID/action', logAdminAction);
+router.post('/log/:userID/admin/action', logAdminAction);
+router.post('/log/:userID/client/action', logClientAction);
 
 router.post('/update/interaction', manageInteraction);
 router.post('/update/contact-click', manageContactClick);

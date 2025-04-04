@@ -110,7 +110,24 @@ const logAdminIDAction = async (userID, action, details) => {
         console.error('Erreur lors de la journalisation de l\'action:', error);
         return false;
     }
-}
+};
+
+const logClientIDAction = async (userID, action, details) => {
+    try {
+        const logRef = firestore.collection('CLIENT_LOGS').doc();
+        await logRef.set({
+            id: logRef.id,
+            action,
+            userID,
+            details,
+            timestamp: new Date().toISOString(),
+        });
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la journalisation de l\'action:', error);
+        return false;
+    }
+};
 
 const updateInteraction = async (postID, userID, category) => {
     try {
@@ -656,6 +673,7 @@ const collectViewCount = async (postID) => {
 
 module.exports = {
     logAdminIDAction,
+    logClientIDAction,
     advancedItemSearch,
     collectLocations,
     collectPubs,

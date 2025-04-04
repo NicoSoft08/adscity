@@ -26,7 +26,8 @@ const {
     adminDeletePost,
     adminRefusePost,
     adminApprovePost,
-    adminSuspendPost
+    adminSuspendPost,
+    deletePost
 } = require('../controllers/postController');
 // const { collectPostBySlug } = require('../firebase/post');
 
@@ -62,7 +63,7 @@ router.post('/category', getPostsByCategoryName);
 router.post('/related-category', getRelatedPosts);
 
 router.put('/:postID/update', updatePost);
-// router.delete('/:postID/delete', deletePost);
+router.delete('/:postID/delete', deletePost);
 router.post('/:PostID/mark/sold', markPostAsSold);
 
 router.get('/collect/nearby', fetchNearbyPosts);

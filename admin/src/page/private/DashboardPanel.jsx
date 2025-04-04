@@ -8,37 +8,37 @@ import Toast from '../../customs/Toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusSquare } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from "chart.js";
-import { fetchUsers, fetchUsersLocations } from '../../routes/userRoutes';
+import { fetchUsers } from '../../routes/userRoutes';
 import { Bar, Pie } from 'react-chartjs-2';
 import '../../styles/DashboardPanel.scss';
 
-const CityChart = ({ data }) => {
-    const chartData = {
-        labels: data.map(item => item.city),
-        datasets: [
-            {
-                label: "Nombre d'utilisateurs",
-                data: data.map(item => item.count),
-                backgroundColor: "rgba(54, 162, 235, 0.2)",
-                borderColor: "rgba(54, 162, 235, 1)",
-                borderWidth: 1,
-            }
-        ]
-    };
+// const CityChart = ({ data }) => {
+//     const chartData = {
+//         labels: data.map(item => item.city),
+//         datasets: [
+//             {
+//                 label: "Nombre d'utilisateurs",
+//                 data: data.map(item => item.count),
+//                 backgroundColor: "rgba(54, 162, 235, 0.2)",
+//                 borderColor: "rgba(54, 162, 235, 1)",
+//                 borderWidth: 1,
+//             }
+//         ]
+//     };
 
-    const options = {
-        responsive: true,
-        plugins: {
-            legend: { display: false },
-            title: { display: true, text: "Répartition des utilisateurs par ville" }
-        },
-        scales: {
-            y: { beginAtZero: true }
-        }
-    };
+//     const options = {
+//         responsive: true,
+//         plugins: {
+//             legend: { display: false },
+//             title: { display: true, text: "Répartition des utilisateurs par ville" }
+//         },
+//         scales: {
+//             y: { beginAtZero: true }
+//         }
+//     };
 
-    return <Bar data={chartData} options={options} />;
-};
+//     return <Bar data={chartData} options={options} />;
+// };
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);

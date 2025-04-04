@@ -9,6 +9,19 @@
     text-align: center;
     font-family: 'Ubuntu', sans-serif;
 
+    .sold-badge {
+        background-color: red;
+        color: $white;
+        padding: 5px 10px;
+        text-align: center;
+        font-size: 12px;
+        font-weight: $font-regular;
+        font-family: 'Ubuntu', sans-serif;
+        text-transform: uppercase;
+        border-radius: 5px;
+        width: 100%;
+    }
+
     .image-gallery {
         display: flex;
         flex-direction: column;

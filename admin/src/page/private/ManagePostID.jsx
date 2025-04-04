@@ -117,13 +117,7 @@ export default function ManagePostID() {
         if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
             setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer les annonces.' });
             return;
-        }
-
-        await logAdminAction(
-            currentUser.uid, 
-            "Suppression d'annonce", 
-            "L'admin a supprimé une annonce."
-        );
+        };
 
         if (!post) return;
 
@@ -131,6 +125,11 @@ export default function ManagePostID() {
         try {
             const result = await adminDeletePost(post.postID);
             if (result.success) {
+                await logAdminAction(
+                    currentUser.uid, 
+                    "Suppression d'annonce", 
+                    "L'admin a supprimé une annonce."
+                );
                 setToast({ show: true, type: 'success', message: 'Annonce supprimée avec succès.' });
                 closeModal();
                 navigate('/admin/dashboard/posts');

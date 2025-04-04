@@ -8,8 +8,8 @@ import { IconAvatar } from '../../config/images';
 import Pagination from '../../components/pagination/Pagination';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-import '../../styles/ManageUsers.scss';
 import { logAdminAction } from '../../routes/apiRoutes';
+import '../../styles/ManageUsers.scss';
 
 const UsersFilter = ({ onFilterChange, onClick }) => {
     const [filters, setFilters] = useState({

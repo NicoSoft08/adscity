@@ -12,6 +12,7 @@ import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import '../../styles/ManagePostID.scss';
+import { logClientAction } from '../../routes/apiRoutes';
 
 export default function ManagePostID({ currentUser }) {
     const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
@@ -112,8 +113,13 @@ export default function ManagePostID({ currentUser }) {
                 setToast({
                     show: true,
                     type: 'success',
-                    message: 'L\'annonce a été marquée comme lue avec succès.'
+                    message: 'L\'annonce a été marquée comme vendue avec succès.'
                 });
+                await logClientAction(
+                    currentUser?.uid,
+                    "Annonce  vendue.",
+                    "Vous avez marqué l'annonce comme vendue."
+                );
                 logEvent(analytics, 'mark_as_sold');
                 setConfirm({ ...confirm, willMarkAsSold: false });
                 setLoading(false);
@@ -146,6 +152,11 @@ export default function ManagePostID({ currentUser }) {
                 message: 'Le lien a été copié dans le presse-papiers.'
             });
             logEvent(analytics, 'share_link');
+            logClientAction(
+                currentUser?.uid,
+                "Partage de lien.",
+                "Vous avez partagé le lien de l'annonce."
+            );
         }).catch((error) => {
             console.error('Erreur lors de la copie dans le presse-papiers :', error);
             setToast({
@@ -177,6 +188,12 @@ export default function ManagePostID({ currentUser }) {
             if (result.success) {
                 setToast({ show: true, type: 'info', message: result.message });
                 logEvent(analytics, 'delete_post');
+                logClientAction(
+                    currentUser?.uid,
+                    "Suppression d'annonce.",
+                    "Vous avez supprimé une annonce."
+                );
+                handleBack();
             } else {
                 setToast({ show: true, type: 'error', message: result.message });
             }

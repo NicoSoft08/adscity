@@ -18,6 +18,7 @@ import { differenceInDays, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Pagination from '../../components/pagination/Pagination';
 import '../../styles/UserProfile.scss';
+import { logClientAction } from '../../routes/apiRoutes';
 
 export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -110,7 +111,7 @@ export default function UserProfile() {
 
         try {
             if (imageType === "profile") {
-                const { count } = userData?.profilChanges;
+                const count = userData?.profilChanges?.count ?? 0;
                 if (count >= 3) {
                     setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
                     return;
@@ -118,8 +119,15 @@ export default function UserProfile() {
 
                 result = await uploadProfilePhoto(selectedFile, userID);
                 if (result) setFormData(prevFormData => ({ ...prevFormData, profilURL: result.imageUrl }));
+
+                await logClientAction(
+                    currentUser.uid,
+                    "Mise à jour du profile",
+                    "Vous avez mis à jour sa photo de profile."
+                );
+
             } else if (imageType === "cover") {
-                const { count } = userData?.coverChanges;
+                const count = userData?.coverChanges?.count ?? 0;
                 if (count >= 3) {
                     setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
                     return;
@@ -127,6 +135,12 @@ export default function UserProfile() {
 
                 result = await uploadCoverPhoto(selectedFile, userID);
                 if (result) setFormData(prevFormData => ({ ...prevFormData, coverURL: result.imageUrl }));
+
+                await logClientAction(
+                    currentUser.uid,
+                    "Mise à jour du profile",
+                    "Vous avez mis à jour sa photo de couverture."
+                );
             }
             setIsModalOpen(false); // Fermer la modale SEULEMENT si l'upload réussit
         } catch (error) {

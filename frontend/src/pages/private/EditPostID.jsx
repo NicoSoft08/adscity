@@ -10,6 +10,7 @@ import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import '../../styles/EditPostID.scss';
+import { logClientAction } from '../../routes/apiRoutes';
 
 export default function EditPostID({ currentUser, userData }) {
     const { post_id } = useParams();
@@ -98,6 +99,11 @@ export default function EditPostID({ currentUser, userData }) {
             if (result.success) {
                 setToast({ show: true, message: result.message, type: 'success' });
                 logEvent(analytics, 'update_post');
+                await logClientAction(
+                    currentUser?.uid,
+                    'Mise à jour de l\'annonce',
+                    "Vous avez mis à jour l'annonce avec succès.",
+                )
                 setTimeout(() => {
                     setToast({ show: false, message: '', type: '' });
                     navigate('/user/dashboard/posts');

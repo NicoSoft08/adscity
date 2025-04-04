@@ -186,7 +186,7 @@ export default function DashboardPanel() {
                 <Bar data={graphics.barData} />
             </div>
 
-{/*             <div className="chart-container">
+            {/* <div className="chart-container">
                 <h4>Statistiques des utilisateurs</h4>
                 <CityChart data={usersLocations} />
             </div> */}

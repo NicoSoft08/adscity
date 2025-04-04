@@ -108,7 +108,7 @@ export default function UserProfile() {
 
         try {
             if (imageType === "profile") {
-                const { count } = userData?.profilChanges;
+                const count = userData?.profilChanges?.count ?? 0;
                 if (count >= 3) {
                     setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
                     return;
@@ -118,13 +118,13 @@ export default function UserProfile() {
                 if (result) setFormData(prevFormData => ({ ...prevFormData, profilURL: result.imageUrl }));
 
                 await logAdminAction(
-                    currentUser.uid, 
-                    "Mise à jour du profile", 
+                    currentUser.uid,
+                    "Mise à jour du profile",
                     "L'admin a mis à jour sa photo de profile."
                 );
 
             } else if (imageType === "cover") {
-                const { count } = userData?.coverChanges;
+                const count = userData?.coverChanges?.count ?? 0;
                 if (count >= 3) {
                     setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
                     return;
@@ -134,8 +134,8 @@ export default function UserProfile() {
                 if (result) setFormData(prevFormData => ({ ...prevFormData, coverURL: result.imageUrl }));
 
                 await logAdminAction(
-                    currentUser.uid, 
-                    "Mise à jour du profile", 
+                    currentUser.uid,
+                    "Mise à jour du profile",
                     "L'admin a mis à jour sa photo de couverture."
                 );
             }

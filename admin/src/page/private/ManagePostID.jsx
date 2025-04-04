@@ -133,6 +133,7 @@ export default function ManagePostID() {
             if (result.success) {
                 setToast({ show: true, type: 'success', message: 'Annonce supprimée avec succès.' });
                 closeModal();
+                navigate('/admin/dashboard/posts');
             } else {
                 setToast({ show: true, type: 'error', message: result.message });
             }
@@ -141,7 +142,7 @@ export default function ManagePostID() {
         } finally {
             setLoading(false);
         }
-    }, [userData, post, currentUser]);
+    }, [userData, post, currentUser, navigate]);
 
     // Confirmer la suppression
     const confirmDeletePost = () => {

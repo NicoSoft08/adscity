@@ -171,9 +171,9 @@ const deletePost = async (postID, userID) => {
     };
 };
 
-const markAsSold = async (userID, PostID) => {
+const markAsSold = async (userID, postID) => {
     try {
-        const response = await fetch(`${backendUrl}/api/posts/${PostID}/mark/sold`, {
+        const response = await fetch(`${backendUrl}/api/posts/${postID}/mark/sold`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

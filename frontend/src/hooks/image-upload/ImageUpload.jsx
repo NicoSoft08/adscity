@@ -2,8 +2,8 @@ import React, { useState, useRef } from 'react';
 import { faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Toast from '../../customs/Toast';
-import './ImageUpload.scss';
 import { uploadImage } from '../../routes/storageRoutes';
+import './ImageUpload.scss';
 
 export default function ImageUpload({ onNext, onBack, formData, setFormData, userData, currentUser }) {
     const [toast, setToast] = useState({ show: false, message: '', type: '' });

@@ -11,8 +11,8 @@ import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
-import '../../styles/ManagePostID.scss';
 import { logClientAction } from '../../routes/apiRoutes';
+import '../../styles/ManagePostID.scss';
 
 export default function ManagePostID({ currentUser }) {
     const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
@@ -21,6 +21,7 @@ export default function ManagePostID({ currentUser }) {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [loading, setLoading] = useState(true);
     const [post, setPost] = useState(null);
+    const [postID, setPostID] = useState(null);
     const { post_id } = useParams();
     const navigate = useNavigate();
 
@@ -45,6 +46,7 @@ export default function ManagePostID({ currentUser }) {
             const result = await fetchPostById(post_id);
             if (result.success) {
                 setPost(result.data);
+                setPostID(result.data.postID);
                 setLoading(false);
             }
         };
@@ -61,9 +63,9 @@ export default function ManagePostID({ currentUser }) {
             action: () => handleEdit(post?.id)
         },
         {
-            label: 'Marquer comme lu',
+            label: 'Marquer comme vendu',
             icon: faCheckSquare, // Vous pouvez utiliser une icône appropriée comme une coche
-            action: () => handleMarkAsSold(post?.id)
+            action: () => handleMarkAsSold(postID)
         },
         {
             label: 'Partager',
@@ -108,7 +110,7 @@ export default function ManagePostID({ currentUser }) {
         try {
             setLoading(true);
 
-            const result = await markAsSold(currentUser?.uid, post?.id);
+            const result = await markAsSold(currentUser?.uid, postID);
             if (result.success) {
                 setToast({
                     show: true,
@@ -243,7 +245,7 @@ export default function ManagePostID({ currentUser }) {
                 </Modal>
             )}
 
-            {confirm.willMarkAsSold && post.isSold  && (
+            {confirm.willMarkAsSold && !post.isSold  && (
                 <Modal title={"Confirmer la vente"} onShow={confirm.willMarkAsSold} onHide={() => setConfirm({ ...confirm, willMarkAsSold: false })}>
                     <p>Êtes-vous sûr de vouloir marquer cette annonce comme vendue ?</p>
                     <div className="ad-details-buttons">

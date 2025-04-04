@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { faChevronLeft, faCirclePlus, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { faChevronLeft, faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchPostById, updatePost } from '../../routes/postRoutes';
@@ -9,17 +9,21 @@ import formFields from '../../json/formFields.json';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
-import '../../styles/EditPostID.scss';
 import { logClientAction } from '../../routes/apiRoutes';
+import { uploadImage } from '../../routes/storageRoutes';
+import Spinner from '../../customs/Spinner';
+import '../../styles/EditPostID.scss';
 
 export default function EditPostID({ currentUser, userData }) {
     const { post_id } = useParams();
     const navigate = useNavigate();
+    const fileInputRef = useRef(null);
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [loading, setLoading] = useState(true);
-    const [formData, setFormData] = useState({});
+    const [formData, setFormData] = useState({ details: {}, images: [] });
     const [fields, setFields] = useState([]);
-    const [selectedImages, setSelectedImages] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const [postID, setPostID] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -29,7 +33,8 @@ export default function EditPostID({ currentUser, userData }) {
                 const postDetails = result.data;
                 const { subcategory } = postDetails || {};
 
-                setSelectedImages(postDetails.images || []);
+                setPostID(postDetails.postID);
+                setFormData({ images: postDetails.images || [] });
 
                 const categoryFields = formFields.fields[subcategory] || [];
                 setFields(categoryFields);
@@ -50,25 +55,6 @@ export default function EditPostID({ currentUser, userData }) {
 
         if (post_id) fetchData();
     }, [post_id]);
-
-    const handleImageChange = (e, index) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = () => {
-            setSelectedImages(prevImages => {
-                const newImages = [...prevImages];
-                newImages[index] = reader.result; // Remplace l'image à l'index donné
-                return newImages;
-            });
-        };
-        reader.readAsDataURL(file);
-    };
-
-    const handleRemoveImage = (index) => {
-        setSelectedImages(prevImages => prevImages.filter((_, i) => i !== index));
-    };
 
     const handleChange = (e) => {
         const { name, value, type, checked, files } = e.target;
@@ -94,8 +80,25 @@ export default function EditPostID({ currentUser, userData }) {
         e.preventDefault();
         setLoading(true);
 
+        const isValidForm = () => {
+            return fields.every(field => {
+                if (field.required) {
+                    const value = formData.details?.[field.name];
+                    return value !== undefined && value !== '';
+                }
+                return true;
+            });
+        };
+        if (!isValidForm()) {
+            setToast({ show: true, message: 'Veuillez remplir tous les champs obligatoires.', type: 'error' });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            return;
+        }
+
         try {
-            const result = await updatePost(post_id, formData, currentUser?.uid);
+            const { details, images } = formData;
+            const updatedData = { details, images };
+            const result = await updatePost(postID, updatedData, currentUser?.uid);
             if (result.success) {
                 setToast({ show: true, message: result.message, type: 'success' });
                 logEvent(analytics, 'update_post');
@@ -118,12 +121,58 @@ export default function EditPostID({ currentUser, userData }) {
         setLoading(false);
     };
 
-    const validateImages = () => {
-        if (!selectedImages.some(img => img !== null)) {
-            setToast({ type: 'error', message: 'Veuillez télécharger au moins une image.', show: true });
-            return false;
+    const handleDrop = (e) => {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        handleImageUpload(files);
+    };
+
+    const handleFileSelect = (e) => {
+        const files = Array.from(e.target.files);
+        handleImageUpload(files);
+    };
+
+    const handleImageUpload = async (filesArray) => {
+        if (!filesArray || filesArray.length === 0) return;
+
+        const maxPhotos = getUserPlanMaxPhotos();
+        const currentImages = formData.images || [];
+        if (currentImages.length + filesArray.length > maxPhotos) {
+            setToast({ show: true, message: `Maximum ${maxPhotos} images autorisées.`, type: 'error' });
+            return;
         }
-        return true;
+
+        setIsUploading(true);
+        setToast({ show: true, message: 'Téléchargement en cours...', type: 'info' });
+
+        try {
+            const userID = currentUser?.uid;
+            const uploadPromises = filesArray.map(file => uploadImage(file, userID));
+            const results = await Promise.all(uploadPromises);
+
+            const uploadedImages = results.filter(res => res.success).map(res => res.imageUrl);
+            if (uploadedImages.length) {
+                const newImages = [...currentImages, ...uploadedImages].slice(0, maxPhotos);
+                setFormData(prev => ({ ...prev, images: newImages }));
+            } else {
+                setToast({ show: true, message: 'Échec du téléchargement.', type: 'error' });
+            }
+            setToast({ show: true, message: 'Téléchargement terminé.', type: 'success' });
+        } catch (error) {
+            console.error("Erreur lors de l'upload :", error);
+            setToast({ show: true, message: 'Une erreur est survenue.', type: 'error' });
+        }
+
+        setIsUploading(false);
+    };
+
+    const handleRemoveImage = async (index) => {
+        if (window.confirm("Supprimer cette image ?")) {
+            setFormData(prev => ({
+                ...prev,
+                images: prev.images.filter((_, i) => i !== index)
+            }));
+        }
     };
 
     const getUserPlanMaxPhotos = () => {
@@ -143,39 +192,42 @@ export default function EditPostID({ currentUser, userData }) {
 
             <form onSubmit={handleSubmit} className="edit-form">
                 <div className="image-upload-form">
-                    <div className="image-uploader">
-                        <div className="upload-area">
-                            <FontAwesomeIcon icon={faCloudUpload} className="upload-icon" />
-                            <label htmlFor="upload-input" className="upload-button">Télécharger des Images</label>
-                        </div>
+                    <div className="upload-instructions">
+                        Cliquez ou glissez jusqu'à {getUserPlanMaxPhotos()} images
+                    </div>
 
-                        <div className="image-upload-grid">
-                            {[...Array(getUserPlanMaxPhotos())].map((_, index) => (
-                                <div className="image-upload-box" key={index}>
-                                    {selectedImages[index] ? (
-                                        <div className="image-container">
-                                            <img src={selectedImages[index]} alt={`upload-${index}`} className="uploaded-image" />
-                                            <FontAwesomeIcon
-                                                icon={faCircleXmark}
-                                                className="remove-icon"
-                                                onClick={() => handleRemoveImage(index)}
-                                            />
-                                        </div>
-                                    ) : (
-                                        <label htmlFor={`image-input-${index}`} className="image-placeholder">
-                                            <FontAwesomeIcon icon={faCirclePlus} className="plus-icon" size="2x" />
-                                        </label>
-                                    )}
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        id={`image-input-${index}`}
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleImageChange(e, index)}
-                                    />
-                                </div>
-                            ))}
-                        </div>
+                    <div
+                        className={`upload-area ${isUploading ? 'uploading' : ''}`}
+                        onClick={() => fileInputRef.current.click()}
+                        onDrop={handleDrop}
+                        onDragOver={(e) => e.preventDefault()}
+                        tabIndex={0}
+                        role="button"
+                        onKeyPress={(e) => e.key === 'Enter' && fileInputRef.current.click()}
+                    >
+                        <FontAwesomeIcon icon={faCloudUpload} className="upload-icon" />
+                        <p className="upload-text">{isUploading ? 'Téléchargement...' : 'Cliquez ou glissez vos images ici'}</p>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            ref={fileInputRef}
+                            style={{ display: "none" }}
+                            onChange={handleFileSelect}
+                        />
+                    </div>
+
+                    <div className="image-upload-grid">
+                        {formData.images && formData.images.map((image, index) => (
+                            <div className="image-container" key={index}>
+                                <img src={image} alt={`upload-${index}`} className="uploaded-image" />
+                                <FontAwesomeIcon
+                                    icon={faCircleXmark}
+                                    className="remove-icon"
+                                    onClick={() => handleRemoveImage(index)}
+                                />
+                            </div>
+                        ))}
                     </div>
                 </div>
 
@@ -193,7 +245,10 @@ export default function EditPostID({ currentUser, userData }) {
                         onChange={handleChange}
                     />
                 ))}
-                <button type="submit">Enregistrer</button>
+
+                <button type="submit" disabled={loading || isUploading}>
+                    {loading ? <Spinner /> : "Enregistrer"}
+                </button>
             </form>
 
             <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ show: false, ...toast })} />

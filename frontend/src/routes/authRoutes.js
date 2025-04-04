@@ -5,6 +5,8 @@ import { collectDeviceInfo } from "../services/apiServices";
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const createUser = async (address, city, country, email, password, firstName, lastName, phoneNumber, displayName) => {
+    console.log(phoneNumber);
+    
     try {
         const response = await fetch(`${backendUrl}/api/auth/create-user`, {
             method: 'POST',

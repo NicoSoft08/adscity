@@ -126,7 +126,7 @@ const ProgressBar = ({ publishedAt, expiresAt }) => {
 };
 
 export default function PostCard({ post, setToast, toast }) {
-    const { details, images, location, posted_at, expiry_date } = post;
+    const { details, images, location, posted_at, expiry_date, isSold } = post;
 
     return (
         <div className='post-card'>
@@ -137,6 +137,8 @@ export default function PostCard({ post, setToast, toast }) {
                 <p className="price">{details.price} RUB • {details.price_type}</p>
                 <p className="description">{details.description}</p>
             </div>
+
+            {isSold && <span className="sold-badge">VENDU</span>}
 
             <div className="specs">
                 <FormData details={details} />

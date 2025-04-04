@@ -17,6 +17,7 @@ import { analytics } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import Pagination from '../pagination/Pagination';
 import './Notifications.scss';
+import { logAdminAction } from '../../routes/apiRoutes';
 
 const NotificationItem = ({ userID, notification, setNotifications }) => {
     const sentAt = parseTimestamp(notification?.timestamp);
@@ -65,6 +66,11 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
             if (hasRead.success) {
                 setToast({ show: true, type: 'info', message: 'Notification marquée comme lue' })
                 logEvent(analytics, 'admin_mark_notification_as_read');
+                logAdminAction(
+                    userID,
+                    'Lecture de notification',
+                    "L'admin a marqué une notification comme lue"
+                );
                 // Mettre à jour localement
                 setNotifications((prev) =>
                     prev.map((notif) =>
@@ -91,6 +97,11 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
             if (result.success) {
                 setToast({ show: true, type: 'success', message: 'Notification supprimée' });
                 logEvent(analytics, 'admin_delete_notification');
+                logAdminAction(
+                    userID,
+                    'Suppression de notification',
+                    "L'admin a supprimé une notification"
+                );
                 setNotifications((prev) => prev.filter((notif) => notif.id !== notificationID));
                 setConfirm(false);
             }
@@ -218,6 +229,11 @@ export default function NotificationList({ notifications, setNotifications }) {
             if (result.success) {
                 setToast({ show: true, type: 'info', message: 'Toutes les notifications ont été marquées comme lues.' });
                 logEvent(analytics, 'admin_mark_all_notifications_as_read');
+                logAdminAction(
+                    userID,
+                    'Lecture des notifications',
+                    "L'admin a marqué toutes les notifications comme lues"
+                );
             } else {
                 setToast({ show: true, type: 'error', message: result.message });
             }
@@ -242,6 +258,11 @@ export default function NotificationList({ notifications, setNotifications }) {
             if (result.success) {
                 setToast({ show: true, type: 'success', message: 'Toutes les notifications ont été supprimées.' });
                 logEvent(analytics, 'admin_delete_all_notifications');
+                logAdminAction(
+                    userID,
+                    'Suppression des notifications',
+                    "L'admin a supprimé toutes les notifications"
+                );
                 setNotifications([]);
                 setConfirm(false);
             }

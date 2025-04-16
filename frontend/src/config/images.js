@@ -26,4 +26,18 @@ export const globe = require('../assets/social-media/globe.png');
 // export const img_4 = require('../imgs/carrousel/4.png');
 // export const img_5 = require('../imgs/carrousel/5.png');
 
+export const sber_bank = require('../imgs/bank-logo/sberbank.png');
+export const tinkoff_bank = require('../imgs/bank-logo/tinkoff.png');
+export const vtb_bank = require('../imgs/bank-logo/VTB.png');
+export const alpha_bank = require('../imgs/bank-logo/alpha-bank.png');
+
+export const orange_money = require('../imgs/mobile-money/orange-money.png');
+export const mtn_money = require('../imgs/mobile-money/mtn-money.png');
+export const moov_money = require('../imgs/mobile-money/moov-money.png');
+
+export const wave = require('../imgs/wallet/wave.png');
+export const flashsend = require('../imgs/wallet/flashsend.png');
+
+export const banner = require('../imgs/masthead.png');
+
 

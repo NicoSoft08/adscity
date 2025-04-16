@@ -19,7 +19,7 @@ export default function Header() {
     return (
         <header className='header'>
             <div className="content">
-                {!currentUser && (
+                {(!currentUser || userRole !== 'user') && (
                     <div className="top-header">
                         <div className="__left">
                             <Link to="/help-center"><span>Aide</span></Link>

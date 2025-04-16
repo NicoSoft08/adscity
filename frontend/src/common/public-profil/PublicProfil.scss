@@ -39,12 +39,16 @@
                 align-items: center;
                 margin: 0 20px;
                 color: $black;
+                background: $white;
+                padding: 8px;
+                border-radius: 5px;
 
                 .name {
                     font-size: 24px;
                     margin-bottom: 5px;
                     font-weight: $font-regular;
                     color: $black;
+                    margin: 0;
                 }
 
 
@@ -93,24 +97,6 @@
         justify-content: space-between;
         padding: 10px 30px;
 
-
-        // X-Small devices (portrait phones, less than 576px)
-        @media (max-width: 575.98px) {
-            flex-direction: column;
-        }
-
-        // Small devices (landscape phones, less than 768px)
-        @media (max-width: 767.98px) {}
-
-        // Medium devices (tablets, less than 992px)
-        @media (max-width: 991.98px) {}
-
-        // Large devices (desktops, less than 1200px)
-        @media (max-width: 1199.98px) {}
-
-        // X-Large devices (large desktops, less than 1400px)
-        @media (max-width: 1399.98px) {}
-
         .contact-options {
             display: flex;
             align-items: center;
@@ -118,29 +104,14 @@
             color: $white;
 
 
-            // X-Small devices (portrait phones, less than 576px)
-            @media (max-width: 575.98px) {
-                justify-content: space-between;
-            }
-
-            // Small devices (landscape phones, less than 768px)
-            @media (max-width: 767.98px) {}
-
-            // Medium devices (tablets, less than 992px)
-            @media (max-width: 991.98px) {}
-
-            // Large devices (desktops, less than 1200px)
-            @media (max-width: 1199.98px) {}
-
-            // X-Large devices (large desktops, less than 1400px)
-            @media (max-width: 1399.98px) {}
-
-
             .phone-info {
                 cursor: pointer;
                 display: flex;
                 align-items: center;
                 flex-direction: row;
+                background: $white;
+                // padding: 8px;
+                border-radius: 5px;
 
 
                 .show-phone {
@@ -150,7 +121,6 @@
                     border-radius: 50%;
                     width: 35px;
                     height: 35px;
-                    border: 0.5px solid $white;
                     color: $black;
 
                     svg {
@@ -162,6 +132,7 @@
                 .show-phone-btn {
                     margin: 0 20px;
                     color: $black;
+                    
 
                     small {
                         font-weight: $font-regular;

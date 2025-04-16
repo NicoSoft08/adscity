@@ -1,11 +1,12 @@
 import React, { useContext, useState } from 'react';
-import { faFolderOpen, faMapMarkerAlt, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { faFolderOpen, faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { facebook, IconAvatar, IconCover, instagram, whatsapp } from '../../config/images';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import { Phone } from 'lucide-react';
 import './PublicProfil.scss';
 
 export default function PublicProfil({ profile }) {
@@ -31,7 +32,7 @@ export default function PublicProfil({ profile }) {
             return false;
         }
 
-        logEvent(analytics, 'phone_viewed');   
+        logEvent(analytics, 'phone_viewed');
         setShowPhone(true);
     };
 
@@ -74,7 +75,7 @@ export default function PublicProfil({ profile }) {
 
                         {/* Social Media Links */}
                         {/* PERSONNALISATION POUR LES COMPTES  ENTREPRISES ET PROFESSIONNELS */}
-                        {currentUser && (profile.profileType === 'Professionnel' || userData.profileType === 'Entreprise' ) && (
+                        {currentUser && (profile.profileType === 'Professionnel' || userData.profileType === 'Entreprise') && (
                             <div className="social-media-links">
                                 <a href={"/"} target="_blank" rel="noreferrer">
                                     <img src={facebook} alt="faceook" />
@@ -100,11 +101,10 @@ export default function PublicProfil({ profile }) {
                 <div className="contact-options">
                     <div className="phone-info">
                         <div className="show-phone">
-                            <FontAwesomeIcon icon={faPhone} />
+                            <Phone size={18} />
                         </div>
                         <div className='show-phone-btn' onClick={handleShowPhone}>
                             {showPhone ? <small>{profile.phoneNumber}</small> : <small>Voir le numéro</small>}
-                            {/* <span>{profile.phoneNumber}</span> */}
                         </div>
                     </div>
 

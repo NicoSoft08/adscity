@@ -1,10 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ChronoWatch from '../../../utils/chrono-watch/ChronoWatch';
 import Toast from '../../../customs/Toast';
 import './PaymentInstructions.scss';
 
-const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) => {
+const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone, paymentID }) => {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const [isExpired, setIsExpired] = useState(false);
+
+    // Store payment details in localStorage when component mounts
+    useEffect(() => {
+        // Save current payment details to localStorage
+        if (paymentID) {
+            localStorage.setItem('current_payment_id', paymentID);
+            localStorage.setItem('current_payment_method', paymentMethod);
+            localStorage.setItem('current_payment_provider', provider);
+            localStorage.setItem('current_payment_amount', amount);
+        }
+
+        // Clean up function to remove payment details when component unmounts
+        return () => {
+            // Only clear if this payment ID matches the stored one
+            if (paymentID && localStorage.getItem('current_payment_id') === paymentID) {
+                localStorage.removeItem('current_payment_id');
+                localStorage.removeItem('current_payment_method');
+                localStorage.removeItem('current_payment_provider');
+                localStorage.removeItem('current_payment_amount');
+                localStorage.removeItem('chrono_timer_id');
+                localStorage.removeItem('chrono_start_time_timer_id');
+                localStorage.removeItem('chrono_end_time_timer_id');
+            }
+        };
+    }, [paymentID, paymentMethod, provider, amount]);
 
     const renderBankInstructions = () => {
         switch (provider) {
@@ -12,7 +38,7 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 return (
                     <div>
                         <h4>Via SberBank</h4>
-                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong>  vers notre compte SberBank :</p>
+                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong>  vers notre compte <strong>SberBank</strong> :</p>
                         <p>Numéro de carte: <strong>2202 2063 7106 8904</strong></p>
                         <p>Nom du titulaire: <strong>Н'ДА ПЕНИЭЛЬ НИКОЛЯ</strong></p>
                     </div>
@@ -21,7 +47,7 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 return (
                     <div>
                         <h4>Via Tinkoff</h4>
-                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong> vers notre compte Tinkoff :</p>
+                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong> vers notre compte <strong>Tinkoff</strong> :</p>
                         <p>Numéro de carte: <strong>2200 7010 4393 2042</strong></p>
                         <p>Nom du titulaire: <strong>Н'ДА ПЕНИЭЛЬ НИКОЛЯ</strong></p>
                     </div>
@@ -30,7 +56,7 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 return (
                     <div>
                         <h4>Via VTB</h4>
-                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong> vers notre compte VTB :</p>
+                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong> vers notre compte <strong>VTB</strong> :</p>
                         <p>Numéro de compte: <strong>2200 2459 3642 5888</strong></p>
                         <p>Nom du titulaire: <strong>Н'ДА ПЕНИЭЛЬ НИКОЛЯ</strong></p>
                     </div>
@@ -39,7 +65,7 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 return (
                     <div>
                         <h4>Via Alpha Bank</h4>
-                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong> vers notre compte Alpha Bank :</p>
+                        <p>Veuillez transférer le montant de <strong>{amount} RUB</strong> vers notre compte <strong>Alpha Bank</strong> :</p>
                         <p>Numéro de compte: <strong>2200 1529 5626 6467</strong></p>
                         <p>Nom du titulaire: <strong>Н'ДА ПЕНИЭЛЬ НИКОЛЯ</strong></p>
                     </div>
@@ -55,27 +81,27 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 return (
                     <div>
                         <h3>Via Orange Money</h3>
-                        <p>Veuillez transférer le montant de {amount} à notre numéro Orange Money :</p>
-                        <p>Numéro Orange Money: 987654321</p>
-                        <p>Nom du titulaire: AdsCity LLC</p>
+                        <p>Veuillez transférer le montant de {amount} à notre numéro <strong>Orange Money</strong> :</p>
+                        <p>Numéro Orange Money: <strong>987654321</strong> </p>
+                        <p>Nom du titulaire: <strong>AdsCity LLC</strong> </p>
                     </div>
                 );
             case 'MTN Money':
                 return (
                     <div>
                         <h3>Via MTN Money</h3>
-                        <p>Veuillez transférer le montant de {amount} à notre numéro MTN Money :</p>
-                        <p>Numéro MTN Money: 123456789</p>
-                        <p>Nom du titulaire: AdsCity LLC</p>
+                        <p>Veuillez transférer le montant de {amount} à notre numéro <strong>MTN Money</strong> :</p>
+                        <p>Numéro MTN Money: <strong>123456789</strong> </p>
+                        <p>Nom du titulaire: <strong>AdsCity LLC</strong> </p>
                     </div>
                 );
             case 'Moov Money':
                 return (
                     <div>
                         <h3>Via Moov Money</h3>
-                        <p>Veuillez transférer le montant de {amount} à notre numéro Moov Money :</p>
-                        <p>Numéro Moov Money: 456789123</p>
-                        <p>Nom du titulaire: AdsCity LLC</p>
+                        <p>Veuillez transférer le montant de {amount} à notre numéro <strong>Moov Money</strong> :</p>
+                        <p>Numéro Moov Money: <strong>456789123</strong> </p>
+                        <p>Nom du titulaire: <strong>AdsCity LLC</strong> </p>
                     </div>
                 );
             default:
@@ -89,23 +115,32 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 return (
                     <div>
                         <h4>Via Wave</h4>
-                        <p>Veuillez transférer le montant de {amount} à notre portefeuille Wave :</p>
-                        <p>Numéro Wave: 789456123</p>
-                        <p>Nom du titulaire: AdsCity LLC</p>
+                        <p>Veuillez transférer le montant de {amount} à notre portefeuille <strong>Wave</strong> :</p>
+                        <p>Numéro Wave: <strong>789456123</strong> </p>
+                        <p>Nom du titulaire: <strong>AdsCity LLC</strong> </p>
                     </div>
                 );
             case 'FlashSend':
                 return (
                     <div>
                         <h4>Via FlashSend</h4>
-                        <p>Veuillez transférer le montant de {amount} à notre portefeuille FlashSend :</p>
-                        <p>Numéro FlashSend: 321654987</p>
-                        <p>Nom du titulaire: AdsCity LLC</p>
+                        <p>Veuillez transférer le montant de {amount} à notre portefeuille <strong>FlashSend</strong> :</p>
+                        <p>Numéro FlashSend: <strong>321654987</strong> </p>
+                        <p>Nom du titulaire: <strong>AdsCity LLC</strong> </p>
                     </div>
                 );
             default:
                 return null;
         }
+    };
+
+    const handleTimeUp = () => {
+        setIsExpired(true);
+        setToast({
+            show: true,
+            type: 'warning',
+            message: "Le délai de paiement a expiré. Veuillez recommencer le processus."
+        });
     };
 
     const renderInstructions = () => {
@@ -121,24 +156,32 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
         }
     };
 
-    const handleCopyNumberToClipboard = (receiptPhone) => {
-        navigator.clipboard.writeText(receiptPhone).then(() => {
-            setToast({ show: true, type: 'info', message: "Numéro copié dans le presse-papiers" });
-        }).catch((error) => {
-            setToast({ show: true, type: 'error', message: `Erreur lors de la copie du numéro, ${error}` })
-        })
+    const handleCopyNumberToClipboard = () => {
+        let accountNumber = '';
+
+        // Determine which number to copy based on provider
+        switch (provider) {
+            case 'SberBank':
+                accountNumber = '2202 2063 7106 8904';
+                break;
+            case 'Tinkoff':
+                accountNumber = '2200 7010 4393 2042';
+                break;
+            // Add other cases for each provider
+            default:
+                accountNumber = '';
+        }
+
+        if (accountNumber) {
+            navigator.clipboard.writeText(accountNumber).then(() => {
+                setToast({ show: true, type: 'info', message: "Numéro copié dans le presse-papiers" });
+            }).catch((error) => {
+                setToast({ show: true, type: 'error', message: `Erreur lors de la copie du numéro, ${error}` });
+            });
+        } else {
+            setToast({ show: true, type: 'error', message: "Aucun numéro disponible pour ce fournisseur" });
+        }
     }
-
-    const handlePaymentDone = () => {
-        paymentDone();
-    };
-
-    const handleHide = () => {
-        setToast({
-            ...toast,
-            show: false,
-        });
-    };
 
     return (
         <div className="pay-instruction">
@@ -147,18 +190,16 @@ const PaymentInstructions = ({ paymentMethod, provider, amount, paymentDone }) =
                 {renderInstructions()}
                 <p>Effectuez le paiement dans un délai de</p>
                 <div className="time-watch">
-                    <ChronoWatch />
+                    <ChronoWatch
+                        initialMinutes={15}
+                        onTimeUp={handleTimeUp}
+                    />
                 </div>
                 <div className='btns-btn'>
                     <button id='copy-number' onClick={handleCopyNumberToClipboard}>Copier le numéro</button>
-                    <button id='deposit-done' onClick={handlePaymentDone}>Paiement Effectué</button>
+                    <button id='deposit-done' onClick={paymentDone}>Paiement Effectué</button>
                 </div>
-                <Toast
-                    show={toast.show}
-                    type={toast.type}
-                    message={toast.message}
-                    onClose={handleHide}
-                />
+                <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
             </div>
         </div>
     );

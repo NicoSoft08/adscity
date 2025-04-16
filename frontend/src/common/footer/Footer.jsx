@@ -58,6 +58,13 @@ export default function Footer() {
                         <p><Link to="/help-center">Aide</Link></p>
                         <p><Link to="/contact-us">Contactez-nous</Link></p>
                     </div>
+                    <div className="card">
+                        <h4>Offres</h4>
+                        <p><Link to="/ads/promotion">AdsCity Publicité</Link></p>
+                        <p><Link to="/store/create">Création de boutique</Link></p>
+                        <p><Link to="/subscriptions">Abonnements Pros</Link></p>
+                        <p><Link to="/campaign">Campagne personnalisée</Link></p>
+                    </div>
                 </div>
                 <div className='signature'>
                     &copy; {startYear} AdsCity - Publiez, Vendez, Echangez

@@ -3,8 +3,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import { useNavigate } from 'react-router-dom';
 import {
-    logoutUser,
-    updateUserPassword,
+    requestPasswordReset,
 } from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
 import Modal from '../../customs/Modal';
@@ -13,7 +12,7 @@ import { updateSocialLinks } from '../../routes/apiRoutes';
 import '../../styles/Settings.scss';
 
 export default function Settings() {
-    const { currentUser, userData } = useContext(AuthContext);
+    const { currentUser, userData, logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [open, setOpen] = useState(false);
@@ -54,7 +53,7 @@ export default function Settings() {
             return;
         }
 
-        const result = await updateUserPassword(userData.email, newPassword);
+        const result = await requestPasswordReset(userData.email, newPassword);
         if (result.error) {
             setToast({
                 show: true,
@@ -75,26 +74,27 @@ export default function Settings() {
     const handleLogout = async () => {
         setIsLoading(true);
 
-        const response = await logoutUser();
+        try {
+            const response = await logout();
 
-        setIsLoading(false);
-
-        if (response.success) {
             setToast({
                 show: true,
                 message: response.message,
-                type: 'success',
+                type: response.success ? 'success' : 'error',
             });
 
-            navigate('/');  // 🔹 Redirection vers la page d'accueil après la déconnexion
-            setOpen(false);
-
-        } else {
+            if (response.success) {
+                navigate('/');
+                setOpen(false);
+            }
+        } catch (error) {
             setToast({
                 show: true,
-                message: response.message,
+                message: "Erreur lors de la déconnexion. Veuillez réessayer.",
                 type: 'error',
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 

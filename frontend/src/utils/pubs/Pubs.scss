@@ -80,6 +80,50 @@
     }
 }
 
+// Banner
+.banner {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    height: 300px;
+    overflow: hidden;
+    background-color: darkblue;
+    margin: 0 auto;
+    border-radius: 8px;
+
+    @media (max-width: 768px) {
+        height: 150px;
+        width: 90%;
+    }
+
+    .banner-slide {
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+    }
+    .domaine-name {
+        position: absolute;
+        bottom: 0;
+        left: 20px;
+        color: $white;
+        background-color: rgba(0, 0, 0, 0.5); /* fond semi-transparent */
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: $font-light;
+        text-align: start;
+        white-space: nowrap;
+
+        @media (max-width: 768px) {
+            font-size: 16px;
+            left: 10px;
+        }
+    }
+}
+
+
+
+
 
 // Masthead
 .masthead {

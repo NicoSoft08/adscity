@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
-import { Camera, FolderOpen, Home, LinkIcon, Mail, MapPin, Pencil, PhoneCall, Search, User } from 'lucide-react';
+import { Camera, Files, FolderOpen, Home, LinkIcon, Mail, MapPin, Package, Pencil, PhoneCall, Search, User } from 'lucide-react';
 import { IconAvatar } from '../../config/images';
 import { uploadCoverPhoto, uploadProfilePhoto } from '../../routes/storageRoutes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartSimple, faCheck, faCircleCheck, faCircleExclamation, faMoneyCheck, faSliders, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faChartSimple, faCheck, faCircleCheck, faCircleExclamation, faCircleXmark, faCog, faMoneyCheck, faSliders, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { getUserLoginActivity, updateUserField } from '../../routes/userRoutes';
 import cities from '../../data/ru.json';
 import Modal from '../../customs/Modal';
@@ -17,8 +17,8 @@ import ManagePayments from '../../components/payment/ManagePayments';
 import { differenceInDays, format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import Pagination from '../../components/pagination/Pagination';
-import '../../styles/UserProfile.scss';
 import { logClientAction } from '../../routes/apiRoutes';
+import '../../styles/UserProfile.scss';
 
 export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -46,21 +46,48 @@ export default function UserProfile() {
     const [field, setField] = useState(null);
 
     useEffect(() => {
+        // Early return if no user ID
         if (!currentUser?.uid) return;
 
-        logEvent(analytics, 'profile_page_view', { page_path: '/user/dashboard/profile' });
+        // Log analytics event
+        try {
+            logEvent(analytics, 'profile_page_view', {
+                page_path: '/user/dashboard/profile',
+                // Avoid sending the actual UID to analytics
+                user_type: currentUser.uid ? 'authenticated' : 'anonymous'
+            });
+        } catch (error) {
+            console.error('Analytics error:', error);
+        }
 
+        // Fetch user activity with error handling
         const fetchUserActivity = async () => {
-            const result = await getUserLoginActivity(currentUser.uid);
-            if (result.success && Array.isArray(result.activity)) {
-                setLoginActivity(result.activity);
-            } else {
+            try {
+                // Validate user ID format (assuming Firebase UID format)
+                const uidRegex = /^[a-zA-Z0-9]{28}$/;
+                if (!uidRegex.test(currentUser.uid)) {
+                    console.error('Invalid user ID format');
+                    setLoginActivity([]);
+                    return;
+                }
+
+                const result = await getUserLoginActivity(currentUser.uid);
+                if (result.success && Array.isArray(result.activity)) {
+                    setLoginActivity(result.activity);
+                } else {
+                    console.warn('No activity data or invalid response format');
+                    setLoginActivity([]);
+                }
+            } catch (error) {
+                console.error('Error fetching user activity:', error);
                 setLoginActivity([]);
+                // Optionally show an error message to the user
             }
         };
 
         fetchUserActivity();
     }, [currentUser]);
+
 
     const tabs = [
         { id: 'activity', icon: faChartSimple, label: 'Activité' },
@@ -185,20 +212,70 @@ export default function UserProfile() {
 
         try {
             const userID = currentUser?.uid;
-            const result = await updateUserField(userID, { [field]: formData[field] });
+
+            // Validate user is logged in
+            if (!userID) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Vous devez être connecté pour modifier votre profil.'
+                });
+                return;
+            }
+
+            // Validate field exists and has a value
+            if (!field || !formData[field]) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Champ invalide ou vide.'
+                });
+                return;
+            }
+
+            // Sanitize input (basic example - implement more thorough validation)
+            const sanitizedValue = String(formData[field])
+                .trim()
+                .replace(/[<>]/g, ''); // Basic XSS protection
+
+            if (sanitizedValue !== formData[field]) {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: 'Le champ contient des caractères non autorisés.'
+                });
+                return;
+            }
+
+            const result = await updateUserField(userID, { [field]: sanitizedValue });
+
             if (result.success) {
-                setToast({ show: true, type: 'info', message: 'Modification réussie.' });
+                setToast({
+                    show: true,
+                    type: 'info',
+                    message: 'Modification réussie.'
+                });
                 setShowEdit(false);
                 setField(null);
-                setIsLoading(false);
+            } else {
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: result.message || 'Échec de la modification.'
+                });
             }
         } catch (error) {
             console.error('Erreur lors de la modification des données :', error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue, réessayez plus tard.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: 'Une erreur est survenue, réessayez plus tard.'
+            });
         } finally {
             setIsLoading(false);
         }
     };
+
 
     const renderEditForm = () => {
         switch (field) {
@@ -390,6 +467,10 @@ export default function UserProfile() {
                                 <h1 className="profile-name">
                                     {userData.firstName} {userData.lastName}
                                 </h1>
+                                <button className="forfait">
+                                    <Package size={18} />
+                                    Changer de forfait
+                                </button>
                                 {/* <p className="profile-username">{dummyUser.short_name_link}</p> */}
                             </div>
                         </div>
@@ -434,6 +515,30 @@ export default function UserProfile() {
                                     />
                                 </span>
                             </div>
+
+                            {/* <div className="profile-location">
+                                <Files className="icon-sm" />
+                                <span>Vérification des documents</span>
+                                {userData.verificationStatus === 'pending' ? (
+                                    <FontAwesomeIcon
+                                        icon={faCog}
+                                        spin
+                                        className='edit-icon'
+                                    />
+                                ) : userData.verificationStatus === 'approved' ? (
+                                    <FontAwesomeIcon
+                                        icon={faCircleCheck}
+                                        color='#28a745'
+                                        className='edit-icon'
+                                    />
+                                ) : (
+                                    <FontAwesomeIcon
+                                        icon={faCircleXmark}
+                                        color='#dc3545'
+                                        className='edit-icon'
+                                    />
+                                )}
+                            </div> */}
                             <div className="profile-location">
                                 <PhoneCall className="icon-sm" />
                                 <span>{userData.phoneNumber}</span>
@@ -459,7 +564,7 @@ export default function UserProfile() {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
             <div className="switcher">
                 <div className="switcher-tabs">
                     {tabs.map((tab) => (
@@ -480,48 +585,52 @@ export default function UserProfile() {
                 </div>
             </div>
 
-            {isModalOpen && (
-                <Modal
-                    onShow={isModalOpen}
-                    onHide={() => toggleModal('image', false)}
-                    title={`Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`}
-                >
-                    <div>
-                        <img src={previewImage} alt="Aperçu" className="modal-preview" />
+            {
+                isModalOpen && (
+                    <Modal
+                        onShow={isModalOpen}
+                        onHide={() => toggleModal('image', false)}
+                        title={`Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`}
+                    >
+                        <div>
+                            <img src={previewImage} alt="Aperçu" className="modal-preview" />
+                            <div className="modal-actions">
+                                <button className="btn btn-confirm" onClick={handleConfirm}>
+                                    {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
+                                </button>
+                                <button className="btn btn-cancel" onClick={() => toggleModal('image', false)}>
+                                    <FontAwesomeIcon icon={faTimes} /> Annuler
+                                </button>
+                            </div>
+                        </div>
+                    </Modal>
+                )
+            }
+
+            {
+                showEdit && field && (
+                    <Modal
+                        onShow={showEdit}
+                        onHide={() => toggleModal('edit', false)}
+                        title={`Modifier ${field === "bio" ? "ma bio" : field === "city" ? "ma localisation" : field === "address" ? "mon adresse" : field === "lastName" ? "mon nom" : field === "firstName" ? "mon prénom" : ""}`}
+                    >
+                        <div className="edit-form">
+                            {renderEditForm()}
+                        </div>
                         <div className="modal-actions">
-                            <button className="btn btn-confirm" onClick={handleConfirm}>
+                            <button className="btn btn-confirm" onClick={handleConfirmEdit}>
                                 {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
                             </button>
-                            <button className="btn btn-cancel" onClick={() => toggleModal('image', false)}>
+                            <button className="btn btn-cancel" onClick={() => toggleModal('edit', false)}>
                                 <FontAwesomeIcon icon={faTimes} /> Annuler
                             </button>
                         </div>
-                    </div>
-                </Modal>
-            )}
 
-            {showEdit && field && (
-                <Modal
-                    onShow={showEdit}
-                    onHide={() => toggleModal('edit', false)}
-                    title={`Modifier ${field === "bio" ? "ma bio" : field === "city" ? "ma localisation" : field === "address" ? "mon adresse" : field === "lastName" ? "mon nom" : field === "firstName" ? "mon prénom" : ""}`}
-                >
-                    <div className="edit-form">
-                        {renderEditForm()}
-                    </div>
-                    <div className="modal-actions">
-                        <button className="btn btn-confirm" onClick={handleConfirmEdit}>
-                            {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
-                        </button>
-                        <button className="btn btn-cancel" onClick={() => toggleModal('edit', false)}>
-                            <FontAwesomeIcon icon={faTimes} /> Annuler
-                        </button>
-                    </div>
-
-                </Modal>
-            )}
+                    </Modal>
+                )
+            }
 
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
-        </div>
+        </div >
     );
 };

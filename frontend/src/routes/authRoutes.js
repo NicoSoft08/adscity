@@ -1,12 +1,11 @@
-import { signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { collectDeviceInfo } from "../services/apiServices";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-const createUser = async (address, city, country, email, password, firstName, lastName, phoneNumber, displayName) => {
-    console.log(phoneNumber);
-    
+const createUser = async (address, city, country, email, password, firstName, lastName, phoneNumber, displayName, captchaToken) => {
+
     try {
         const response = await fetch(`${backendUrl}/api/auth/create-user`, {
             method: 'POST',
@@ -16,11 +15,11 @@ const createUser = async (address, city, country, email, password, firstName, la
             body: JSON.stringify({
                 address, city, country,
                 email, password, firstName,
-                lastName, phoneNumber, displayName,
+                lastName, phoneNumber, displayName, captchaToken
             }),  // Si tu envoies le mot de passe, assure-toi que c'est sécurisé
         });
 
-        const result  = await response.json();
+        const result = await response.json();
         return result;
     } catch (error) {
         console.error('Erreur lors de la création de l\'utilisateur :', error);
@@ -28,16 +27,16 @@ const createUser = async (address, city, country, email, password, firstName, la
     };
 };
 
-const signinUser = async (email, password) => {
+const signinUser = async (email, password, captchaToken) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
         // 🔹 Vérifier si l'utilisateur est vérifié
         if (!user.emailVerified) {
-            return { 
-                success: false, 
-                message: "Votre adresse email n'est pas vérifiée. Veuillez vérifier votre boîte de réception." 
+            return {
+                success: false,
+                message: "Votre adresse email n'est pas vérifiée. Veuillez vérifier votre boîte de réception."
             };
         }
 
@@ -46,7 +45,7 @@ const signinUser = async (email, password) => {
 
         // 🔹 Récupérer les informations sur le périphérique
         const deviceInfo = await collectDeviceInfo();
-        
+
         // 🔹 Envoyer les données au backend
         const response = await fetch(`${backendUrl}/api/auth/login-user`, {
             method: 'POST',
@@ -54,7 +53,7 @@ const signinUser = async (email, password) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ userID: user.uid, deviceInfo }),
+            body: JSON.stringify({ userID: user.uid, deviceInfo, captchaToken }),
         });
 
         const result = await response.json();
@@ -81,16 +80,10 @@ const logoutUser = async () => {
 
         const result = await response.json();
 
-        // 🔹 Déconnexion locale après validation côté serveur
-        await signOut(auth);
-
-        console.log(result);
-
         return { success: true, message: result.message || "Déconnexion réussie." };
 
     } catch (error) {
-        console.error('❌ Erreur lors de la déconnexion :', error.message);
-        return { success: false, message: error.message || "Une erreur est survenue." };
+        throw error;
     }
 };
 
@@ -143,18 +136,58 @@ const passwordReset = async (email) => {
     }
 };
 
-const updateUserPassword = async (email, newPassword) => {
-    const response = await fetch(`${backendUrl}/api/auth/update-password`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, newPassword }),
-    });
+const requestPasswordReset = async (email, captchaToken) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/request-password-reset`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, captchaToken }),
+        });
 
-    const result = await response.json();
-    // console.log(result);
-    return result;
+        const result = await response.json();
+        console.log(result);
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la réinitialisation du mot de passe :', error);
+        throw error;
+    }
+};
+
+const verifyResetToken = async (token) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/verify-reset-token/${token}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la vérification du token de réinitialisation :', error);
+        throw error;
+    }
+};
+
+const updateUserPassword = async (email, newPassword, token, captchaToken) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/auth/update-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, newPassword, token, captchaToken }),
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour du mot de passe :', error);
+        throw error;
+    }
 };
 
 const checkCode = async (email, code) => {
@@ -246,7 +279,7 @@ const refuseDevice = async (deviceID, verificationToken) => {
 };
 
 
-export { 
+export {
     checkCode,
     createUser,
     deleteUser,
@@ -255,7 +288,9 @@ export {
     refuseDevice,
     sendVerificationCode,
     signinUser,
-    updateUserPassword,
+    requestPasswordReset,
+    verifyResetToken,
     validateDevice,
-    verifyCodeAndUpdateEmail 
+    verifyCodeAndUpdateEmail,
+    updateUserPassword
 };

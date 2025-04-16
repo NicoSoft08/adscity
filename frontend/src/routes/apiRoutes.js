@@ -50,6 +50,23 @@ const incrementClickCount = async (postID, userID) => {
     }
 };
 
+const updateShareCount = async (postID, userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/do/increment/share/${postID}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ userID }),
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de l\'incrémentation du nombre de clics:', error);
+        throw error;
+    }
+};
+
 const updateInteraction = async (postID, userID, category) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/update/interaction`, {
@@ -260,6 +277,7 @@ export {
     searchItems,
     updateInteraction,
     updateContactClick,
+    updateShareCount,
     updatePost,
     updateSocialLinks,
 };

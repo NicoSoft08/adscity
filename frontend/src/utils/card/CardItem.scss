@@ -37,6 +37,19 @@
         object-fit: cover;
     }
 
+    .badge-sponsored {
+        position: absolute;
+        top: 55%;
+        left: 8px;
+        background-color: #ffc107;
+        color: #fff;
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+        /* important pour éviter d'empêcher les clics sur l'image */
+    }
+
 
     .card-content {
         padding: 10px;
@@ -45,7 +58,7 @@
 
         .card-title {
             white-space: nowrap;
-            overflow: hidden;  
+            overflow: hidden;
             text-overflow: ellipsis;
 
             font-size: 14px;
@@ -60,6 +73,14 @@
             color: $secondary-color;
             margin: 0 0 5px;
             text-align: start;
+
+            display: flex;
+            align-items: center;
+
+            .delievery-icon {
+                margin-left: 8px;
+                color: $light;
+            }
         }
 
 
@@ -137,7 +158,7 @@
                 svg {
                     // color: #ff4d4d;
                     transform: scale(1.1);
-                }  
+                }
             }
 
             &.active {
@@ -206,7 +227,7 @@
         justify-content: space-around;
 
         button {
-            font-family: 'Ubuntu',sans-serif;
+            font-family: 'Ubuntu', sans-serif;
             font-size: 13px;
             font-weight: $font-light;
             border: none;
@@ -233,7 +254,7 @@
         top: 0;
         background: $white;
         border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         z-index: 100;
 
         .content {

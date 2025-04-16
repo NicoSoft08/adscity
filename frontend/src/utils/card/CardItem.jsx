@@ -3,12 +3,11 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
     faBalanceScale,
     faBan, faCalendarDay, faClone, faEllipsisV, faExclamationTriangle,
-    faEye, faFlag, faGavel, faQuestionCircle,
+    faFlag, faGavel, faQuestionCircle,
     faShareFromSquare
 } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
-import { formatViewCount } from '../../func';
 import { format, isToday, isYesterday } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
@@ -17,7 +16,8 @@ import {
     incrementClickCount,
     incrementViewCount,
     updateContactClick,
-    updateInteraction
+    updateInteraction,
+    updateShareCount
 } from '../../routes/apiRoutes';
 import { reportPost } from '../../routes/postRoutes';
 import { fetchProfileByUserID } from '../../routes/storageRoutes';
@@ -26,11 +26,12 @@ import Toast from '../../customs/Toast';
 import { toggleFavorites } from '../../routes/userRoutes';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import { Truck } from 'lucide-react';
 import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
-    const { id, PostID, UserID, userID, details = {}, images = [], location = {}, category, subcategory, isActive, moderated_at, isSold, stats } = post;
+    const { id, PostID, UserID, userID, details = {}, images = [], location = {}, category, subcategory, isActive, moderated_at, isSold } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -38,7 +39,6 @@ export default function CardItem({ post, onToggleFavorite }) {
     const [profilURL, setProfilURL] = useState(null);
     const [reportSuccess, setReportSuccess] = useState(false);
     const [currentImage, setCurrentImage] = useState(images?.length > 0 ? images[0] : "");
-    const [views, setViews] = useState(0);
     const navigate = useNavigate();
     const cardRef = useRef(null);
     const reportRef = useRef(null);
@@ -62,10 +62,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                 if (entries[0].isIntersecting) {
                     const success = await incrementViewCount(id, currentUser?.uid);
                     if (success) {
-                        const result = await getViewCount(id);
-                        if (result.success) {
-                            setViews(result.viewCount);
-                        }
+                        await getViewCount(id);
                     }
 
                     observer.disconnect(); // Arrêter l'observation après enregistrement
@@ -83,11 +80,7 @@ export default function CardItem({ post, onToggleFavorite }) {
 
     // Charger le nombre de vues au montage
     useEffect(() => {
-        getViewCount(id).then((result) => {
-            if (result.success) {
-                setViews(result.viewCount);
-            }
-        });
+        getViewCount(id);
     }, [id]);
 
     useEffect(() => {
@@ -104,8 +97,8 @@ export default function CardItem({ post, onToggleFavorite }) {
                     setProfilURL(null); // Assurer que la valeur est bien gérée
                 }
             } catch (error) {
-                console.error("Erreur lors de la récupération du profil :", error);
                 setProfilURL(null);
+                throw error;
             }
         };
 
@@ -234,22 +227,37 @@ export default function CardItem({ post, onToggleFavorite }) {
 
     const handleShareAd = async (PostID) => {
         const shareLink = `${window.location.origin}/posts/${category}/${subcategory}/${PostID}`;
-        await navigator.clipboard.writeText(shareLink).then(() => {
+
+        try {
+            // More captivating title and text
+            await navigator.share({
+                title: '✨ Annonce exceptionnelle sur AdsCity! ✨',
+                text: '🔥 J\'ai trouvé cette offre incroyable que vous devez absolument voir! Cliquez pour découvrir tous les détails.',
+                url: shareLink
+            }).then(async () => {
+                const postID = id;
+                const userID = currentUser?.uid;
+                if (!userID) return null;
+                await updateShareCount(postID, userID);
+            });
+
+            await navigator.clipboard.writeText(shareLink);
             setToast({
                 show: true,
                 type: 'success',
                 message: 'Le lien a été copié dans le presse-papiers.'
             });
             logEvent(analytics, 'share_link');
-        }).catch((error) => {
+        } catch (error) {
             console.error('Erreur lors de la copie dans le presse-papiers :', error);
             setToast({
                 show: true,
                 type: 'error',
                 message: 'Une erreur est survenue lors de la copie du lien dans le presse-papiers.'
             });
-        });
+        }
     };
+
 
     // const handleHideAd = (postID) => {
     //     console.log(`Masquer l'annonce avec l'ID : ${postID}`);
@@ -388,6 +396,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                     className="card-image"
                 // onError={() => setCurrentImage(PlaceholderImage)} // Gérer les erreurs de chargement
                 />
+                {/*  <div className="badge-sponsored">Sponsorisé</div> */}
             </div>
 
             {/* Contenu de l'annonce */}
@@ -398,7 +407,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                         : details.title
                     }
                 </h2>
-                <p className="card-price">{details.price} RUB</p>
+                <p className="card-price">{details.price} RUB {details.delievery && <span title='Possibilité de livraison'><Truck className='delievery-icon' size={14} /></span>} </p>
                 <p className="card-city">{location.city}, {location.country}</p>
                 <div onClick={() => handleProfileClick(`/users/user/${user_id}/profile/show`)} className="announcer">
                     <img src={profileImage} alt="avatar" className="avatar" />
@@ -407,10 +416,6 @@ export default function CardItem({ post, onToggleFavorite }) {
                     <span className="card-date">
                         <FontAwesomeIcon icon={faCalendarDay} color={"gray"} />
                         {formatPostedAt(moderatedAtDate)}
-                    </span>
-                    <span className="card-viewCount">
-                        <FontAwesomeIcon icon={faEye} color={"gray"} />
-                        {formatViewCount(views || stats?.views || 0)}
                     </span>
                 </div>
             </div>

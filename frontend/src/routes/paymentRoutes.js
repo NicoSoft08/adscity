@@ -46,8 +46,37 @@ const paymentProcessing = async (userID, paymentData) => {
     };
 };
 
+const updateUserSubscription = async (userID, subscriptionData) => {
+    const response = await fetch(`${backendUrl}/api/payments/${userID}/update-subscription`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subscriptionData }),
+    });
+
+    const result = await response.json();
+    return result;
+};
+
+const createPaymentIntent = async (userID, paymentData) => {
+    const response = await fetch(`${backendUrl}/api/payments/create-intent`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userID, paymentData }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+}
+
 
 export {
+    createPaymentIntent,
     fetchUserPaymentInfo,
     paymentProcessing,
+    updateUserSubscription,
 };

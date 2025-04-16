@@ -14,6 +14,8 @@ import CardItem from '../../utils/card/CardItem';
 // import { MastheadSlider, NativeDisplayPub, VideoInFeedPub } from '../../utils/pubs/Pubs';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import { Banner } from '../../utils/pubs/Pubs';
+import { banner } from '../../config/images';
 import '../../styles/HomePage.scss';
 
 export default function HomePage() {
@@ -83,12 +85,14 @@ export default function HomePage() {
 
     return (
         <div className="home-page">
-
             <div style={{ marginTop: '1rem' }}></div>
+            <Banner domainName={'adscity.net'} img={banner} />
+
 
             {/* <MastheadSlider interval={5000} /> */}
 
             <div style={{ marginBottom: '1rem' }}></div>
+
 
             <div className="home-container">
                 <div className="main-content">

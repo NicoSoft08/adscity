@@ -8,6 +8,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import Toast from '../../customs/Toast';
 import { createUser } from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
+import ReCAPTCHA from 'react-google-recaptcha';
 import '../../styles/SignUpPage.scss';
 import "react-phone-input-2/lib/style.css";
 
@@ -25,6 +26,7 @@ export default function SignUpPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [filteredCities, setFilteredCities] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [captchaValue, setCaptchaValue] = useState(null);
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
@@ -37,8 +39,21 @@ export default function SignUpPage() {
         confirmPassword: '',
         agree: false,
     });
+    const [errors, setErrors] = useState({
+        firstName: '',
+        lastName: '',
+        country: '',
+        city: '',
+        address: '',
+        email: '',
+        phoneNumber: '',
+        password: '',
+        confirmPassword: '',
+        agree: false,
+    });
 
-    const [errors, setErrors] = useState({});
+    // Replace with your actual reCAPTCHA site key
+    const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
 
     const validate = (currentStep) => {
         const newErrors = {};
@@ -63,6 +78,10 @@ export default function SignUpPage() {
             if (password !== confirmPassword) newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
         }
 
+        if (!captchaValue) {
+            newErrors.captcha = "Veuillez confirmer que vous n'êtes pas un robot";
+        }
+
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -80,6 +99,17 @@ export default function SignUpPage() {
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+    };
+
+    const handleCaptchaChange = (value) => {
+        setCaptchaValue(value);
+        // Clear captcha error if it exists
+        if (errors.captcha) {
+            setErrors({
+                ...errors,
+                captcha: ''
+            });
+        }
     };
 
     const handleSearch = (e) => {
@@ -111,6 +141,12 @@ export default function SignUpPage() {
             setToast({ show: true, type: 'error', message: 'Veuillez accepter les conditions d\'utilisation' });
             return;
         }
+
+        // Check CAPTCHA completion
+        if (!captchaValue) {
+            setToast({ show: true, type: 'error', message: 'Veuillez confirmer que vous n\'êtes pas un robot' });
+            return;
+        }
         setIsLoading(true);
 
         // S'assurer que le numéro est bien formaté en E.164
@@ -119,12 +155,17 @@ export default function SignUpPage() {
         try {
             const displayName = `${formData.firstName} ${formData.lastName}`;
             const { address, city, country, email, password, firstName, lastName } = formData;
-            const result = await createUser(address, city, country, email, password, firstName, lastName, phoneNumber, displayName);
+            const result = await createUser(address, city, country, email, password, firstName, lastName, phoneNumber, displayName, captchaValue);
 
             if (result.success) {
                 setTimeout(() => {
                     navigate(`/auth/validate-email`, { state: { userData: formData } });
                 }, 5000);
+                // Reset captcha if login fails
+                if (window.grecaptcha) {
+                    window.grecaptcha.reset();
+                }
+                setCaptchaValue(null);
                 setIsLoading(false);
             } else {
                 setToast({ show: true, type: 'error', message: result.message });
@@ -302,6 +343,15 @@ export default function SignUpPage() {
                 <input type='checkbox' id='agree' name='agree' value={formData.agree} onChange={handleChange} />
                 <label htmlFor="agree" className="agree-label">En continuant, vous acceptez les Conditions d'utilisation</label>
                 {errors.agree && <span className='error-message'>{errors.agree}</span>}
+
+                {/* reCAPTCHA component */}
+                <div className="captcha-container">
+                    <ReCAPTCHA
+                        sitekey={RECAPTCHA_SITE_KEY}
+                        onChange={handleCaptchaChange}
+                    />
+                </div>
+                {errors.captcha && <div className="error-text">{errors.captcha}</div>}
 
                 {/* Navigation Buttons */}
                 <div className="form-navigation">

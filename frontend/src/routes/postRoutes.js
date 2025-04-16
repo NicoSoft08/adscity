@@ -2,7 +2,7 @@ import { auth } from "../firebaseConfig";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-const createPost = async (postData, userID) => {
+const createPost = async (postData, userID, captchaToken) => {
     try {
         // Get user's current token for authentication
         const idToken = await auth.currentUser.getIdToken();
@@ -14,7 +14,7 @@ const createPost = async (postData, userID) => {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ postData, userID }),
+            body: JSON.stringify({ postData, userID, captchaToken }),
         });
 
 

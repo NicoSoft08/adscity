@@ -6,41 +6,46 @@ import Spinner from '../../customs/Spinner';
 import Loading from '../../customs/Loading';
 import { signinUser } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
+import ReCAPTCHA from 'react-google-recaptcha';
 import '../../styles/LoginPage.scss';
 
 
 export default function LoginPage() {
     const { email } = useParams();
     const navigate = useNavigate();
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState({ email: '', password: '', agree: false, captcha: '' });
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ email: email || '', password: '', agree: false });
+    const [captchaValue, setCaptchaValue] = useState(null);
+
+    // Replace with your actual reCAPTCHA site key
+    const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
 
     const toggleShowPassword = () => {
         setShowPassword(!showPassword);
     };
 
     const validateForm = () => {
-        const errors = {};
-        const { agree, email, password } = formData;
-
-        if (agree === false) {
-            errors.agree = "Vous devez accepter les termes et conditions.";
+        const formErrors = {}
+        if (!formData.agree) {
+            formErrors.agree = "Vous devez accepter les termes et conditions";
         } else {
-            if (!email) {
-                errors.email = "Email réquis";
+            if (!formData.email) {
+                formErrors.email = "Email réquis";
             }
-            if (!password) {
-                errors.password = "Mot de passe réquis";
-            } else if (password.length < 6) {
-                errors.password = "Le mot de passe doit contenir au moins 6 caractères.";
+            if (!formData.password) {
+                formErrors.password = "Mot de Passe réquis";
             }
         }
 
-        return errors;
-    }
+        if (!captchaValue) {
+            formErrors.captcha = "Veuillez confirmer que vous n'êtes pas un robot";
+        }
+
+        return formErrors;
+    };
 
     const handleChange = (e) => {
         const { name, value, checked, type } = e.target;
@@ -50,11 +55,22 @@ export default function LoginPage() {
         });
     };
 
+    const handleCaptchaChange = (value) => {
+        setCaptchaValue(value);
+        // Clear captcha error if it exists
+        if (errors.captcha) {
+            setErrors({
+                ...errors,
+                captcha: ''
+            });
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrors({}); // Réinitialise les erreurs
-    
+
         // 🔹 Validation des champs avant d'envoyer la requête
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
@@ -62,29 +78,34 @@ export default function LoginPage() {
             setLoading(false);
             return;
         }
-    
+
         try {
             const { email, password } = formData;
-    
+
             // 🔹 Tentative de connexion
-            const result = await signinUser(email, password);
-    
+            const result = await signinUser(email, password, captchaValue);
+
             if (!result.success) {
                 setToast({
                     show: true,
                     type: 'error',
                     message: result.message || "Une erreur est survenue. Veuillez réessayer.",
                 });
+                // Reset captcha if login fails
+                if (window.grecaptcha) {
+                    window.grecaptcha.reset();
+                }
+                setCaptchaValue(null);
                 setLoading(false);
                 return;
             }
-    
+
             setToast({
                 show: true,
                 type: 'success',
                 message: result.message || "Connexion réussie.",
             });
-    
+
             // 🔹 Redirection selon le rôle
             if (result.role === 'user') {
                 navigate('/');
@@ -142,7 +163,7 @@ export default function LoginPage() {
                     </span>
                     {errors.password && <div className="error-text">{errors.password}</div>}
                 </div>
-                <Link to={`/auth/reset-password/${formData.email}`} className="passwrod-forgot">
+                <Link to={`/auth/forgot-password`} className="passwrod-forgot">
                     <span>Mot de passe oublié ?</span>
                 </Link>
                 <label className="checkbox-label">
@@ -155,6 +176,15 @@ export default function LoginPage() {
                     En continuant, vous acceptez les Conditions d'utilisation
                 </label>
                 {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
+
+                {/* reCAPTCHA component */}
+                <div className="captcha-container">
+                    <ReCAPTCHA
+                        sitekey={RECAPTCHA_SITE_KEY}
+                        onChange={handleCaptchaChange}
+                    />
+                </div>
+                {errors.captcha && <div className="error-text">{errors.captcha}</div>}
 
                 <button
                     type="submit"

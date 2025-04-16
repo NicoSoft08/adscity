@@ -1,6 +1,6 @@
 import React from 'react';
-import '../../styles/HelpPage.scss';
 import FAQsPage from './FAQsPage';
+import '../../styles/HelpPage.scss';
 
 export default function HelpPage() {
     return (

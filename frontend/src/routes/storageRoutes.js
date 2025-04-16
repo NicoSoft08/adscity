@@ -26,14 +26,8 @@ const deleteProfilURLByUserID = async (userID) => {
             }
         });
 
-        if (response.ok) {
-            const result = await response.json();
-            console.log('Photo de profil supprimée avec succès', result);
-
-            return result;
-        } else {
-            console.error('Erreur lors de la suppression de la photo de profil');
-        }
+        const result = await response.json();
+        return result;
     } catch (error) {
         console.error('Erreur lors de la suppression:', error);
         throw error;
@@ -49,9 +43,6 @@ const fetchProfileByUserID = async (userID) => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error('Erreur lors de la récupération de la photo de profile.');
-        }
         const result = await response.json();
         return result;
     } catch (error) {
@@ -102,6 +93,23 @@ const uploadImage = async (file, userID) => {
     return result;
 };
 
+const uploadSensitiveVerification = async (userID, document, faceImage) => {
+    // Create FormData for secure file upload
+    const formData = new FormData();
+    formData.append('userID', userID);
+    formData.append('document', document);
+    formData.append('selfie', faceImage);
+
+    const response = await fetch(`${backendUrl}/api/storage/upload/sensitive-verification`, {
+        method: 'POST',
+        body: formData,
+    });
+
+    const result = await response.json();
+    console.log('Result:', result); 
+    return result;
+}
+
 
 export {
     deletePostImagesFromStorage,
@@ -110,4 +118,5 @@ export {
     fetchProfileByUserID,
     uploadCoverPhoto,
     uploadProfilePhoto,
+    uploadSensitiveVerification,
 };

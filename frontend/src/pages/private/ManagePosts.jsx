@@ -14,6 +14,7 @@ import { faChartPie, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
 import data from '../../json/data.json';
 import { useNavigate } from 'react-router-dom';
 import '../../styles/MyPosts.scss';
+import Loading from '../../customs/Loading';
 
 const STATUS_ICONS = {
     pending: "🟠 En attente",
@@ -137,7 +138,7 @@ export default function ManagePosts({ currentUser }) {
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showEditModal, setShowEditModal] = useState(false);
-    const [isLoading, setIsloading] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
     const [postToEdit, setPostToEdit] = useState(null);
@@ -151,20 +152,49 @@ export default function ManagePosts({ currentUser }) {
 
     useEffect(() => {
         let isMounted = true;
+        const controller = new AbortController();
+
+        // Add loading state
+        setIsLoading(true);
 
         const fetchPosts = async () => {
             try {
-                if (!currentUser) return;
+                // Validate user is logged in
+                if (!currentUser?.uid) {
+                    setIsLoading(false);
+                    return;
+                }
 
                 const userID = currentUser.uid;
-                const data = await fetchPostsByUserID(userID);
 
-                if (isMounted && data) {
-                    setPosts(data.postsData?.allAds || []);
-                    setFilteredPosts(data.postsData?.allAds || []);
+                try {
+                    const data = await fetchPostsByUserID(userID);
+
+                    if (isMounted) {
+                        // Validate and set data
+                        const postsArray = data.postsData?.allAds || [];
+                        setPosts(postsArray);
+                        setFilteredPosts(postsArray);
+
+                        // Update loading state
+                        setIsLoading(false);
+                    }
+                } catch (error) {
+                    console.error('Erreur lors de la récupération des annonces:', error);
+
+                    if (isMounted) {
+                        // Set error state for user feedback
+                        setPosts([]);
+                        setFilteredPosts([]);
+                        setIsLoading(false);
+                    }
                 }
             } catch (error) {
-                console.error('Erreur lors de la récupération des annonces:', error);
+                console.error('Erreur inattendue:', error);
+
+                if (isMounted) {
+                    setIsLoading(false);
+                }
             }
         };
 
@@ -172,8 +202,10 @@ export default function ManagePosts({ currentUser }) {
 
         return () => {
             isMounted = false;
+            controller.abort(); // Cancel any pending requests
         };
     }, [currentUser]);
+
 
     const currentPosts = useMemo(() => {
         const indexOfLastPost = currentPage * postPerPage;
@@ -218,7 +250,7 @@ export default function ManagePosts({ currentUser }) {
 
     const confirmEditPost = async () => {
         if (!postToEdit || !editData) return;
-        setIsloading(true);
+        setIsLoading(true);
 
         try {
             // 🔥 Mettre à jour Firestore
@@ -240,7 +272,7 @@ export default function ManagePosts({ currentUser }) {
             setConfirm({ ...confirm, willUpdate: false });
             setPostToEdit(null);
             setEditData(null);
-            setIsloading(false);
+            setIsLoading(false);
         }
     };
 
@@ -253,7 +285,7 @@ export default function ManagePosts({ currentUser }) {
 
     const confirmDeletePost = async () => {
         if (!postToDelete) return;
-        setIsloading(true);
+        setIsLoading(true);
 
         try {
             // 🔥 Trouver l'annonce correspondante pour récupérer les images
@@ -281,7 +313,7 @@ export default function ManagePosts({ currentUser }) {
             // Réinitialise le modal
             setConfirm({ ...confirm, willDelete: false });
             setPostToDelete(null);
-            setIsloading(false);
+            setIsLoading(false);
         }
     };
 
@@ -293,7 +325,7 @@ export default function ManagePosts({ currentUser }) {
 
     const confirmMarkAsSold = async () => {
         if (!postToMarkAsSold) return;
-        setIsloading(true);
+        setIsLoading(true);
 
         try {
             const result = await markAsSold(currentUser?.uid, postToMarkAsSold.id);
@@ -311,7 +343,7 @@ export default function ManagePosts({ currentUser }) {
         } finally {
             setConfirm({ ...confirm, willMarkAsSold: false });
             setPostToMarkAsSold(null);
-            setIsloading(false);
+            setIsLoading(false);
         }
     };
 
@@ -375,6 +407,8 @@ export default function ManagePosts({ currentUser }) {
             {openFilter && (
                 <PostsFilter onFilterChange={handleFilterChange} />
             )}
+
+            {isLoading && <Loading />}
 
             <div className="ads-list">
                 <div className="table-container">

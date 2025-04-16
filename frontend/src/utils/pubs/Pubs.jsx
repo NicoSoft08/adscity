@@ -52,6 +52,17 @@ export const MastheadSlider = ({ interval = 5000 }) => {
     )
 };
 
+export const Banner = ({ img, domainName }) => {
+    return (
+        <div className="banner">
+
+            <img src={img} alt="" className="banner-slide" />
+
+            {domainName ? <p className='domaine-name'> {domainName} </p> : null}
+        </div>
+    );
+};
+
 export const MastheadPub = ({ pub }) => {
     const [showMenu, setShowMenu] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);

@@ -1,18 +1,13 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import PaymentInstructions from '../../common/adscity-pay/payment-instructions/PaymentInstructions';
-import { AuthContext } from '../../contexts/AuthContext';
-import { useLocation } from 'react-router-dom';
 
-function PaymentPage() {
-    const location = useLocation();
-    const { userData } = useContext(AuthContext);
-    const { planInfo, provider, paymentMethod } = location.state || {};
+function PaymentPage({ userData, price, currency, paymentMethod, provider }) {
 
     return (
         <div>
             <PaymentInstructions
                 paymentInfo={userData}
-                amount={planInfo?.price}
+                amount={price}
                 paymentMethod={paymentMethod}
                 provider={provider}
             />

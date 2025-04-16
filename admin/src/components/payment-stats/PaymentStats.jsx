@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { fetchPaymentStatus } from '../../routes/paymentRoutes';
 import { paymentStatuses } from '../../data';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import './PaymentStats.scss';
-
 
 export default function PaymentStats() {
     const [paymentsProcessing, setPaymentsProcessing] = useState([]);
     const [paymentsCompleted, setPaymentsCompleted] = useState([]);
     const [paymentsFailed, setPaymentsFailed] = useState([]);
-
+    const { language } = useContext(LanguageContext);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -28,48 +28,48 @@ export default function PaymentStats() {
 
     return (
         <div className="payment-stats">
-            <h3>Paiements</h3>
+            <h3>{language === 'FR' ? "Paiements" : "Payments"}</h3>
             <div className="container">
                 <div
                     className="stat-card"
-                    style={{ backgroundColor: paymentStatuses.processing.color }}
+                    style={{ backgroundColor: paymentStatuses(language).processing.color }}
                 >
                     <span className="stat-icon">
-                        {paymentStatuses.processing.icon}
+                        {paymentStatuses(language).processing.icon}
                     </span>
                     <span className="stat-value">
                         {paymentsProcessing.length}
                     </span>
                     <span className="stat-label">
-                        {paymentStatuses.processing.label}
+                        {paymentStatuses(language).processing.label}
                     </span>
                 </div>
                 <div
                     className="stat-card"
-                    style={{ backgroundColor: paymentStatuses.completed.color }}
+                    style={{ backgroundColor: paymentStatuses(language).completed.color }}
                 >
                     <span className="stat-icon">
-                        {paymentStatuses.completed.icon}
+                        {paymentStatuses(language).completed.icon}
                     </span>
                     <span className="stat-value">
                         {paymentsCompleted.length}
                     </span>
                     <span className="stat-label">
-                        {paymentStatuses.completed.label}
+                        {paymentStatuses(language).completed.label}
                     </span>
                 </div>
                 <div
                     className="stat-card"
-                    style={{ backgroundColor: paymentStatuses.failed.color }}
+                    style={{ backgroundColor: paymentStatuses(language).failed.color }}
                 >
                     <span className="stat-icon">
-                        {paymentStatuses.failed.icon}
+                        {paymentStatuses(language).failed.icon}
                     </span>
                     <span className="stat-value">
                         {paymentsFailed.length}
                     </span>
                     <span className="stat-label">
-                        {paymentStatuses.failed.label}
+                        {paymentStatuses(language).failed.label}
                     </span>
                 </div>
             </div>

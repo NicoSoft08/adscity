@@ -61,6 +61,21 @@ const fetchUsers = async () => {
     }
 }
 
+const fetchUserVerificationData = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/verification/${userID}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        throw error;
+    }
+}
+
 const fetchUserById = async (user_id) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/user/${user_id}`, {
@@ -134,6 +149,20 @@ const updateUserField = async (userID, field) => {
     const result = await response.json();
     return result;
 };
+
+const updateUserFields = async (userID, fields) => {
+    const response = await fetch(`${backendUrl}/api/users/${userID}/profile-fields/update`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ fields }),
+    });
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+}
 
 const fetchNotifications = async (userID) => {
     const response = await fetch(`${backendUrl}/api/users/${userID}/admin/notifications`, {
@@ -246,4 +275,6 @@ export {
     markNotificationAsRead,
     setUserOnlineStatus,
     updateUserField,
+    updateUserFields,
+    fetchUserVerificationData,
 };

@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Toast from '../../customs/Toast';
 import { useNavigate } from 'react-router-dom';
 import {
-    logoutUser,
     updateUserPassword,
 } from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
 import Modal from '../../customs/Modal';
+import { AuthContext } from '../../contexts/AuthContext';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import { translations } from '../../langs/translations';
 import '../../styles/Settings.scss';
 
 export default function Settings({ userData }) {
+    const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [open, setOpen] = useState(false);
@@ -21,6 +24,8 @@ export default function Settings({ userData }) {
         verificationCode: "",
         password: "",
     });
+    const { language, setLanguage } = useContext(LanguageContext);
+    const t = translations[language] || translations.FR;
 
 
     const handleSecurityInfoUpdate = async () => {
@@ -29,7 +34,9 @@ export default function Settings({ userData }) {
         if (!newPassword) {
             setToast({
                 show: true,
-                message: "Veuillez renseigner votre nouveau mot de passe !",
+                message: language === 'FR'
+                    ? "Veuillez renseigner votre nouveau mot de passe !"
+                    : "Please enter your new password!",
                 type: 'error',
             });
             return;
@@ -56,26 +63,29 @@ export default function Settings({ userData }) {
     const handleLogout = async () => {
         setIsLoading(true);
 
-        const response = await logoutUser();
+        try {
+            const response = await logout();
 
-        setIsLoading(false);
-
-        if (response.success) {
             setToast({
                 show: true,
                 message: response.message,
-                type: 'success',
+                type: response.success ? 'success' : 'error',
             });
 
-            navigate('/');  // 🔹 Redirection vers la page d'accueil après la déconnexion
-            setOpen(false);
-
-        } else {
+            if (response.success) {
+                navigate('/');
+                setOpen(false);
+            }
+        } catch (error) {
             setToast({
                 show: true,
-                message: response.message,
+                message: language === 'FR'
+                    ? "Erreur lors de la déconnexion. Veuillez réessayer."
+                    : "Error during logout. Please try again.",
                 type: 'error',
             });
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -87,12 +97,37 @@ export default function Settings({ userData }) {
         setShowModal(false); // Ferme le Modal
     };
 
+    // Composant de toggle de langue
+    const LanguageToggle = () => {
+        const toggleLanguage = () => {
+            setLanguage(language === 'FR' ? 'EN' : 'FR');
+            // translate();
+        };
+
+        return (
+            <div className="language-toggle">
+                <span className={language === 'FR' ? 'active' : ''}>FR</span>
+                <label className="switch">
+                    <input
+                        type="checkbox"
+                        checked={language === 'EN'}
+                        onChange={toggleLanguage}
+                    />
+                    <span className="slider round"></span>
+                </label>
+                <span className={language === 'EN' ? 'active' : ''}>EN</span>
+            </div>
+        );
+    };
+
     return (
         <div className='user-settings'>
-            <h2>Paramètres</h2>
+            {/* <h2>Paramètres</h2> */}
+            <h2>{t.settings}</h2>
 
             <section className="security-info">
-                <h2>Sécurité</h2>
+                {/* <h2>Sécurité</h2> */}
+                <h2>{t.security}</h2>
                 <form onSubmit={(e) => e.preventDefault()}>
                     <input
                         type="password"
@@ -103,55 +138,60 @@ export default function Settings({ userData }) {
                                 password: e.target.value
                             })
                         }
-                        placeholder="Nouveau mot de passe"
+                        placeholder={t.newPassword}
                     />
                     <button onClick={handleSecurityInfoUpdate}>
-                        {isLoading ? <Spinner /> : "Enregistrer"}
+                        {isLoading ? <Spinner /> : t.save}
                     </button>
                 </form>
             </section>
 
+            <section className="preference-zone">
+                <h2>{t.preference}</h2>
+                <div className="preference-item">
+                    <span>{t.language}</span>
+                    <LanguageToggle />
+                </div>
+            </section>
+
             <section className="help-zone">
-                <h2>Assistance</h2>
-                <button onClick={() => navigate('/contact-us')} className='help-button'>Support Client</button>
+                <h2>{t.support}</h2>
+                <button onClick={() => navigate('/contact-us')} className='help-button'>{t.supp_client}</button>
                 <button onClick={() => navigate('/help-center/faq')} className='help-button'>FAQs</button>
             </section>
 
             <section className="danger-zone">
-                <h2>Zone Danger</h2>
-                <button className="logout" onClick={handleOpen}>Déconnexion</button>
+                <h2>{t.danger_zone}</h2>
+                <button className="logout" onClick={handleOpen}>{t.logout}</button>
                 <button onClick={handleAccountDeletion} className="delete-button">
-                    Supprimer le compte
+                    {t.delete_account}
                 </button>
             </section>
 
             {open &&
                 <Modal
-                    title={"Déconnexion"}
+                    title={t.logout}
                     onShow={() => setOpen(true)}
                     onHide={() => setOpen(false)}
                     onNext={handleLogout}
                     isNext={true}
                     isHide={false}
-                    nextText={isLoading ? <Spinner /> : "Oui"}
-                    hideText={"Annuler"}
+                    nextText={isLoading ? <Spinner /> : t.yes}
+                    hideText={t.cancel}
                 >
-                    <p>Confirmez-vous vouloir vous déconnecter ?</p>
+                    <p>{t.logout_confirm}</p>
                 </Modal>
             }
 
             {showModal && (
                 <Modal
-                    title={"Supprimer mon compte"}
+                    title={t.delete_title}
                     onShow={() => setShowModal(true)}
                     onHide={closeModal}
                     isNext={false}
 
                 >
-                    <p>
-                        Pour des raisons de sécurité, veuillez contacter notre support client
-                        à <strong>support@adscity.net</strong> pour effectuer cette action.
-                    </p>
+                    <p>{t.delete_alert}</p>
                 </Modal>
             )}
 

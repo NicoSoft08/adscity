@@ -57,7 +57,7 @@ const logAdminAction = async (userID, action, details) => {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({action, details})
+            body: JSON.stringify({ action, details })
         });
 
         const result = await response.json();
@@ -67,9 +67,25 @@ const logAdminAction = async (userID, action, details) => {
     }
 };
 
+const fetchVerifications = async () => {
+    try {
+        const response = await fetch(`${backendUrl}/api/do/collect/verifications`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
 export {
     createPub,
     fetchPubs,
     fetchPubById,
+    fetchVerifications,
     logAdminAction,
 };

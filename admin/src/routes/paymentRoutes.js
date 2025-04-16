@@ -84,13 +84,67 @@ const updatePaymentStatus = async (paymentID, newStatus) => {
     return result;
 };
 
+const fetchAccounts = async (selectedMethod, selectedProvider) => {
+    const response = await fetch(`${backendUrl}/api/payments/accounts/${selectedMethod}/${selectedProvider}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
 
+    const result = await response.json();
+    return result;
+}
+
+const createAccount = async (accountData) => {
+    const response = await fetch(`${backendUrl}/api/payments/accounts/create`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(accountData)
+    }); 
+
+    const result = await response.json();
+    return result;
+}
+
+const toggleAccountStatus = async (accountID, newStatus) => {
+    const response = await fetch(`${backendUrl}/api/payments/accounts/${accountID}/status`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: newStatus })
+    }); 
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+}
+
+const deleteAccount = async (accountID) => {
+    const response = await fetch(`${backendUrl}/api/payments/accounts/${accountID}/delete`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }); 
+
+    const result = await response.json();
+    console.log(result);
+    return result;
+}
 
 export {
+    createAccount,
+    deleteAccount,
+    fetchAccounts,
     fetchPaymentInfo,
     updatePaymentStatus,
     fetchPaymentStatus,
     fetchProcessingPayments,
     fetchCompletedPayments,
     fetchFailedPayments,
+    toggleAccountStatus,
 };

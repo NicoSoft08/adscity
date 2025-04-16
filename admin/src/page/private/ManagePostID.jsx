@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
-import { faChartPie, faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faChartPie, faCheck, faChevronLeft, faEllipsisH, faPauseCircle, faTimes, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { adminDeletePost, fetchPostById } from '../../routes/postRoutes';
@@ -9,13 +9,15 @@ import { AuthContext } from '../../contexts/AuthContext';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import { logAdminAction } from '../../routes/apiRoutes';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import '../../styles/ManagePostID.scss';
 
 export default function ManagePostID() {
     const { post_id } = useParams();
     const menuRef = useRef(null);
     const navigate = useNavigate();
-    const {  currentUser, userData } = useContext(AuthContext);
+    const { currentUser, userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [loading, setLoading] = useState(true);
     const [confirm, setConfirm] = useState({ willDelete: false });
     const [post, setPost] = useState(null);
@@ -53,22 +55,22 @@ export default function ManagePostID() {
 
     const options = [
         {
-            label: 'Suspendre',
+            label: language === 'FR' ? 'Suspendre' : 'Suspend',
             icon: faPauseCircle, // Icône pour suspendre
             action: () => handleSuspend(post?.id)
         },
         {
-            label: 'Restaurer',
+            label: language === 'FR' ? 'Restaurer' : 'Restore',
             icon: faUndo, // Icône pour restaurer
             action: () => handleRestore(post?.id)
         },
         {
-            label: 'Statistiques',
+            label: language === 'FR' ? 'Statistiques' : 'Statistics',
             icon: faChartPie,
             action: () => handleStatistics(post?.id)
         },
         {
-            label: 'Supprimer',
+            label: language === 'FR' ? 'Supprimer' : 'Delete',
             icon: faTrash,
             action: () => confirmDeletePost(post?.id)
         }
@@ -80,30 +82,50 @@ export default function ManagePostID() {
     };
 
     // Suspendre une annonce
-    const handleSuspend = async () => { 
+    const handleSuspend = async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour suspendre les annonces.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations pour suspendre les annonces.'
+                    : 'You do not have permission to suspend posts.'
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Suspension d'annonce", 
-            "L'admin a suspendu une annonce."
+            currentUser.uid,
+            language === 'FR'
+                ? "Suspension d'annonce"
+                : "Post suspension",
+            language === 'FR'
+                ? "L'admin a suspendu une annonce."
+                : "The admin has suspended a post."
         );
     };
 
     // Restaurer une annonce
-    const handleRestore = async () => { 
+    const handleRestore = async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour restaurer les annonces.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations pour restaurer les annonces.'
+                    : 'You do not have permission to restore posts.'
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Restauration d'annonce", 
-            "L'admin a restauré une annonce."
+            currentUser.uid,
+            language === 'FR'
+                ? "Restauration d'annonce"
+                : "Post restoration",
+            language === 'FR'
+                ? "L'admin a restauré une annonce."
+                : "The admin has restored a post."
         );
     };
 
@@ -115,7 +137,13 @@ export default function ManagePostID() {
     // Supprimer une annonce
     const handleDelete = useCallback(async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer les annonces.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations pour supprimer les annonces.'
+                    : 'You do not have permission to delete posts.'
+            });
             return;
         };
 
@@ -126,22 +154,42 @@ export default function ManagePostID() {
             const result = await adminDeletePost(post.postID);
             if (result.success) {
                 await logAdminAction(
-                    currentUser.uid, 
-                    "Suppression d'annonce", 
-                    "L'admin a supprimé une annonce."
+                    currentUser.uid,
+                    language === 'FR'
+                        ? "Suppression d'annonce"
+                        : "Post deletion",
+                    language === 'FR'
+                        ? "L'admin a supprimé une annonce."
+                        : "The admin has deleted a post."
                 );
-                setToast({ show: true, type: 'success', message: 'Annonce supprimée avec succès.' });
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: language === 'FR'
+                        ? 'Annonce supprimée avec succès.'
+                        : 'Post deleted successfully.'
+                });
                 closeModal();
                 navigate('/admin/dashboard/posts');
             } else {
-                setToast({ show: true, type: 'error', message: result.message });
+                setToast({
+                    show: true,
+                    type: 'error',
+                    message: result.message
+                });
             }
         } catch (error) {
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Une erreur est survenue.'
+                    : 'An error occurred.'
+            });
         } finally {
             setLoading(false);
         }
-    }, [userData, post, currentUser, navigate]);
+    }, [userData, post, currentUser, navigate, language]);
 
     // Confirmer la suppression
     const confirmDeletePost = () => {
@@ -153,6 +201,17 @@ export default function ManagePostID() {
         setConfirm({ willDelete: false });
     };
 
+    const formatDate = (timestamp) => {
+        if (timestamp && timestamp._seconds) {
+            const date = new Date(timestamp._seconds * 1000); // Convert to milliseconds
+            let formattedDate = date.toLocaleDateString(language === 'FR' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Capitalize the first letter
+            return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+        }
+        return '';
+    };
+
     if (loading) {
         return <Loading />;
     }
@@ -160,12 +219,17 @@ export default function ManagePostID() {
     return (
         <div className='manage-post'>
             <div className="head">
-                <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
-                <h2>Annonce: {post_id.toLocaleUpperCase()}</h2>
+                <div className="back">
+                    <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
+                </div>
+                <div className="title">
+                    <h2>{language === 'FR' ? "Annonces" : "Ads"} /</h2>
+                    <p>{post?.details.title}</p>
+                </div>
 
-                <span className="more-options" title="Plus d'options" onClick={handleMenuClick}>
+                <div className="more-options" title={language === 'FR' ? "Plus d'options" : "More options"} onClick={handleMenuClick}>
                     <FontAwesomeIcon icon={faEllipsisH} />
-                </span>
+                </div>
                 {showMenu &&
                     <div className="options-menu" ref={menuRef}>
                         {options.map((option, index) => (
@@ -178,16 +242,31 @@ export default function ManagePostID() {
                 }
             </div>
 
+            <div className='user-info'>
+                <span>Post ID: <strong>{post?.PostID}</strong></span>
+                <span> {language === 'FR' ? "Date de publication" : "Publication date"}: <strong>{formatDate(post?.moderated_at)}</strong></span>
+            </div>
+
             <PostCard post={post} toast={toast} setToast={setToast} />
 
             {confirm?.willDelete && (
-                <Modal title={"Suppression d'annonce"} onShow={confirm?.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>
-                    <p>Êtes-vous sûr de vouloir supprimer cette annonce définitivement ?</p>
+                <Modal
+                    title={language === 'FR'
+                        ? "Suppression d'annonce"
+                        : "Post deletion"}
+                    onShow={confirm?.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>
+                    <p>{language === 'FR'
+                        ? "Êtes-vous sûr de vouloir supprimer cette annonce définitivement ?"
+                        : "Are you sure you want to delete this ad permanently?"
+                    }
+                    </p>
                     <div className="ad-details-buttons">
                         <button className='modal-button approve-button' onClick={handleDelete}>
-                            {loading ? <Spinner /> : 'Confirmer'}
+                            {loading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> {language === 'FR' ? "Confirmer" : "Confirm"}</>}
                         </button>
-                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
+                        <button className='modal-button delete-button' onClick={closeModal}>
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
+                        </button>
                     </div>
                 </Modal>
             )}

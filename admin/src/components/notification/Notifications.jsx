@@ -149,6 +149,7 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
                 <p className='title'>{notification.title}</p>
                 <p className='type'>
                     {notification.type === 'new_post' && notification.message}
+                    {notification.type === 'id_verification' && notification.message}
                     {notification.type === 'ad_refusal' && notification.message}
                 </p>
                 <span className="timestamp">

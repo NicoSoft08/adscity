@@ -6,6 +6,7 @@ import { signinUser } from '../../routes/authRoutes';
 import { AuthContext } from '../../contexts/AuthContext';
 import Spinner from '../../customs/Spinner';
 import Toast from '../../customs/Toast';
+import ReCAPTCHA from 'react-google-recaptcha';
 import '../../styles/LoginPage.scss';
 
 export default function LoginPage() {
@@ -13,9 +14,13 @@ export default function LoginPage() {
     const { currentUser, userRole } = useContext(AuthContext);
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState({ email: '', password: '', agree: false });
+    const [errors, setErrors] = useState({ email: '', password: '', agree: false, captcha: '' });
     const [formData, setFormData] = useState({ email: '', password: '', agree: false });
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
+    const [captchaValue, setCaptchaValue] = useState(null);
+
+    // Replace with your actual reCAPTCHA site key
+    const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
 
     useEffect(() => {
         if (currentUser && (userRole === 'admin')) {
@@ -26,19 +31,20 @@ export default function LoginPage() {
 
     const validateForm = () => {
         const formErrors = {}
-
         if (!formData.agree) {
             formErrors.agree = "Vous devez accepter les termes et conditions";
         } else {
             if (!formData.email) {
                 formErrors.email = "Email réquis";
             }
-
             if (!formData.password) {
                 formErrors.password = "Mot de Passe réquis";
             }
         }
 
+        if (!captchaValue) {
+            formErrors.captcha = "Veuillez confirmer que vous n'êtes pas un robot";
+        }
 
         return formErrors;
     };
@@ -60,18 +66,29 @@ export default function LoginPage() {
             setToast({ show: true, type: 'error', message: 'Ne sont autorisés que des caractères latins' });
             return; // Ignore l'entrée si elle contient des caractères cyrilliques
         }
-        
+
         setFormData({
             ...formData,
             [name]: type === 'checkbox' ? checked : value,
         });
     };
 
+    const handleCaptchaChange = (value) => {
+        setCaptchaValue(value);
+        // Clear captcha error if it exists
+        if (errors.captcha) {
+            setErrors({
+                ...errors,
+                captcha: ''
+            });
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setErrors({}); // Réinitialise les erreurs
-    
+
         // 🔹 Validation des champs avant d'envoyer la requête
         const errors = validateForm();
         if (Object.keys(errors).length > 0) {
@@ -79,29 +96,34 @@ export default function LoginPage() {
             setLoading(false);
             return;
         }
-    
+
         try {
             const { email, password } = formData;
-    
+
             // 🔹 Tentative de connexion
-            const result = await signinUser(email, password);
-    
+            const result = await signinUser(email, password, captchaValue);
+
             if (!result.success) {
                 setToast({
                     show: true,
                     type: 'error',
                     message: result.message || "Une erreur est survenue. Veuillez réessayer.",
                 });
+                // Reset captcha if login fails
+                if (window.grecaptcha) {
+                    window.grecaptcha.reset();
+                }
+                setCaptchaValue(null);
                 setLoading(false);
                 return;
             }
-    
+
             setToast({
                 show: true,
                 type: 'success',
                 message: result.message || "Connexion réussie.",
             });
-    
+
             // 🔹 Redirection selon le rôle
             if (result.role === 'admin') {
                 navigate('/admin/dashboard/panel');
@@ -109,11 +131,21 @@ export default function LoginPage() {
                 navigate('/access-denied');
             }
         } catch (error) {
-            console.error("❌ Erreur lors de la connexion :", error.message);
+            setToast({
+                show: true,
+                type: 'error',
+                message: "Erreur de connexion. Veuillez réessayer."
+            });
+
+            // Reset captcha on error
+            if (window.grecaptcha) {
+                window.grecaptcha.reset();
+            }
+            setCaptchaValue(null);
         } finally {
             setLoading(false);
         }
-    };    
+    };
 
     return (
         <div className='login-page'>
@@ -166,6 +198,15 @@ export default function LoginPage() {
                 </label>
 
                 {errors.agree && <div className="error-text">{errors.agree}</div>}
+
+                {/* reCAPTCHA component */}
+                <div className="captcha-container">
+                    <ReCAPTCHA
+                        sitekey={RECAPTCHA_SITE_KEY}
+                        onChange={handleCaptchaChange}
+                    />
+                </div>
+                {errors.captcha && <div className="error-text">{errors.captcha}</div>}
 
                 <button
                     type="submit"

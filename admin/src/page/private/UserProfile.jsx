@@ -3,7 +3,14 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { Camera, Home, Mail, MapPin, Pencil, PhoneCall, Search, User } from 'lucide-react';
 import { uploadCoverPhoto, uploadProfilePhoto } from '../../routes/storageRoutes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartSimple, faCheck, faCircleCheck, faCircleExclamation, faSliders, faTimes } from '@fortawesome/free-solid-svg-icons';
+import {
+    faChartSimple,
+    faCheck,
+    faCircleCheck,
+    faCircleExclamation,
+    faSliders,
+    faTimes
+} from '@fortawesome/free-solid-svg-icons';
 import { getUserLoginActivity, updateUserField } from '../../routes/userRoutes';
 import cities from '../../data/ru.json';
 import Modal from '../../customs/Modal';
@@ -13,11 +20,13 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import Settings from './Settings';
 import { differenceInDays, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { fr, enUS } from 'date-fns/locale';
 import Pagination from '../../components/pagination/Pagination';
 import { IconAvatar } from '../../config/images';
 import { logAdminAction } from '../../routes/apiRoutes';
 import '../../styles/UserProfile.scss';
+import { translations } from '../../langs/translations';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -43,6 +52,8 @@ export default function UserProfile() {
     });
     const [showEdit, setShowEdit] = useState(false);
     const [field, setField] = useState(null);
+    const { language } = useContext(LanguageContext);
+    const t = translations[language] || translations.FR;
 
     useEffect(() => {
         if (!currentUser?.uid) return;
@@ -62,8 +73,8 @@ export default function UserProfile() {
     }, [currentUser]);
 
     const tabs = [
-        { id: 'activity', icon: faChartSimple, label: 'Activité' },
-        { id: 'settings', icon: faSliders, label: 'Réglages' },
+        { id: 'activity', icon: faChartSimple, label: t.activity_label },
+        { id: 'settings', icon: faSliders, label: t.settings_label },
     ];
 
 
@@ -75,12 +86,24 @@ export default function UserProfile() {
         const maxSize = 5 * 1024 * 1024; // 5MB
 
         if (!allowedTypes.includes(file?.type)) {
-            setToast({ show: true, type: 'error', message: 'Le fichier doit être au format JPEG, PNG ou JPG.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Le fichier doit être au format JPEG, PNG ou JPG.'
+                    : 'The file must be in JPEG, PNG or JPG format.'
+            });
             return false;
         }
 
         if (file?.size > maxSize) {
-            setToast({ show: true, type: 'error', message: 'La taille du fichier ne doit pas dépasser 5MB.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'La taille du fichier ne doit pas dépasser 5MB.'
+                    : 'The file size must not exceed 5MB.'
+            });
             return false;
         }
 
@@ -110,7 +133,13 @@ export default function UserProfile() {
             if (imageType === "profile") {
                 const count = userData?.profilChanges?.count ?? 0;
                 if (count >= 3) {
-                    setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
+                    setToast({
+                        show: true,
+                        type: 'error',
+                        message: language === 'FR'
+                            ? 'Vous avez dépassé le nombre maximum de changements de photo de profil.'
+                            : 'You have exceeded the maximum number of profile photo changes.'
+                    });
                     return;
                 }
 
@@ -119,14 +148,24 @@ export default function UserProfile() {
 
                 await logAdminAction(
                     currentUser.uid,
-                    "Mise à jour du profile",
-                    "L'admin a mis à jour sa photo de profile."
+                    language === 'FR'
+                        ? "Mise à jour du profile"
+                        : "Update profile",
+                    language === 'FR'
+                        ? "L'admin a mis à jour sa photo de profile."
+                        : "The admin has updated their profile photo."
                 );
 
             } else if (imageType === "cover") {
                 const count = userData?.coverChanges?.count ?? 0;
                 if (count >= 3) {
-                    setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
+                    setToast({
+                        show: true,
+                        type: 'error',
+                        message: language === 'FR'
+                            ? 'Vous avez dépassé le nombre maximum de changements de photo de couverture.'
+                            : 'You have exceeded the maximum number of cover photo changes.'
+                    });
                     return;
                 }
 
@@ -135,14 +174,24 @@ export default function UserProfile() {
 
                 await logAdminAction(
                     currentUser.uid,
-                    "Mise à jour du profile",
-                    "L'admin a mis à jour sa photo de couverture."
+                    language === 'FR'
+                        ? "Mise à jour du profile"
+                        : "Update profile",
+                    language === 'FR'
+                        ? "L'admin a mis à jour sa photo de couverture."
+                        : "The admin has updated their cover photo."
                 );
             }
             setIsModalOpen(false); // Fermer la modale SEULEMENT si l'upload réussit
         } catch (error) {
             console.error('Erreur lors de la mise à jour de l\'image :', error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue, réessayez plus tard.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Une erreur est survenue, réessayez plus tard.'
+                    : 'An error occurred, please try again later.'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -184,14 +233,26 @@ export default function UserProfile() {
             const userID = currentUser?.uid;
             const result = await updateUserField(userID, { [field]: formData[field] });
             if (result.success) {
-                setToast({ show: true, type: 'info', message: 'Modification réussie.' });
+                setToast({
+                    show: true,
+                    type: 'info',
+                    message: language === 'FR'
+                        ? 'Modification réussie.'
+                        : 'Modification successful.'
+                });
                 setShowEdit(false);
                 setField(null);
                 setIsLoading(false);
             }
         } catch (error) {
             console.error('Erreur lors de la modification des données :', error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue, réessayez plus tard.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Une erreur est survenue, réessayez plus tard.'
+                    : 'An error occurred, please try again later.'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -207,7 +268,10 @@ export default function UserProfile() {
                             name="firstName"
                             value={formData.firstName}
                             onChange={handleChange}
-                            placeholder="Prénom"
+                            placeholder={language === 'FR'
+                                ? "Prénom"
+                                : "First name"
+                            }
                             className='input-field'
                         />
                     </div>
@@ -220,7 +284,10 @@ export default function UserProfile() {
                             name="lastName"
                             value={formData.lastName}
                             onChange={handleChange}
-                            placeholder="Nom"
+                            placeholder={language === 'FR'
+                                ? "Nom de Famille"
+                                : "Last name"
+                            }
                             className='input-field'
                         />
                     </div>
@@ -234,7 +301,10 @@ export default function UserProfile() {
                             name="bio"
                             value={formData.bio}
                             onChange={handleChange}
-                            placeholder="Écrivez quelque chose à propos de vous..."
+                            placeholder={language === 'FR'
+                                ? "Écrivez quelque chose à propos de vous..."
+                                : "Write something about yourself..."
+                            }
                         />
                     </div>
                 );
@@ -259,7 +329,10 @@ export default function UserProfile() {
                                 type='text'
                                 name='searchTerm'
                                 className='input-field'
-                                placeholder='Rechercher une ville'
+                                placeholder={language === 'FR'
+                                    ? 'Rechercher une ville'
+                                    : "Search for a city"
+                                }
                                 value={searchTerm}
                                 onChange={handleSearch}
                             />
@@ -275,7 +348,12 @@ export default function UserProfile() {
                                 className='input-field'
                                 onChange={handleChange}
                             >
-                                <option value="">Choisissez votre ville</option>
+                                <option value="">
+                                    {language === 'FR'
+                                        ? 'Choisissez votre ville'
+                                        : 'Select a city'
+                                    }
+                                </option>
                                 {filteredCities.map((city, index) => (
                                     <option key={index} value={city.city}>{city.city}</option>
                                 ))}
@@ -311,39 +389,55 @@ export default function UserProfile() {
         );
 
         const formatDateTimestamp = (adTimestamp) => {
-            if (!adTimestamp) return "Date inconnue";
+            if (!adTimestamp) return language === 'FR' ? "Date inconnue" : "Unknown date";
 
             const adDate = new Date(adTimestamp?._seconds * 1000);
             const now = new Date();
             const diffDays = differenceInDays(now, adDate);
 
-            if (diffDays === 0) return `Auj. à ${format(adDate, 'HH:mm', { locale: fr })}`;
-            if (diffDays === 1) return `Hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
-            if (diffDays === 2) return `Avant-hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
-
-            return `${format(adDate, 'dd/MM/yyyy à HH:mm', { locale: fr })}`;
+            if (language === 'FR') {
+                if (diffDays === 0) return `Auj. à ${format(adDate, 'HH:mm', { locale: fr })}`;
+                if (diffDays === 1) return `Hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
+                if (diffDays === 2) return `Avant-hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
+                return `${format(adDate, 'dd/MM/yyyy à HH:mm', { locale: fr })}`;
+            } else {
+                if (diffDays === 0) return `Today at ${format(adDate, 'HH:mm', { locale: enUS })}`;
+                if (diffDays === 1) return `Yesterday at ${format(adDate, 'HH:mm', { locale: enUS })}`;
+                if (diffDays === 2) return `Day before yesterday at ${format(adDate, 'HH:mm', { locale: enUS })}`;
+                return `${format(adDate, 'MM/dd/yyyy at HH:mm', { locale: enUS })}`; // Note: US date format MM/DD/YYYY
+            }
         };
+
 
         return (
             <div className='activity'>
-                <h2>Activité de Connexion</h2>
+                <h2>
+                    {language === 'FR' ? "Activité de Connexion" : "Login Activity"}
+                </h2>
                 <p>
-                    {loginActivity.length === 0
-                        ? "Aucune activité récente."
-                        : `Voici votre journal ${loginActivity.length > 1
-                            ? `${loginActivity.length} dernières activités`
-                            : "dernière activité"
-                        } de connexion.`}
+                    {loginActivity.length === 0 ? (
+                        language === 'FR' ? "Aucune activité récente." : "No recent activity."
+                    ) : (
+                        language === 'FR' ? (
+                            `Voici vos ${loginActivity.length > 1
+                                ? `${loginActivity.length} dernières activités`
+                                : "dernière activité"} de connexion.`
+                        ) : (
+                            `Here ${loginActivity.length > 1
+                                ? `are your last ${loginActivity.length} login activities`
+                                : "is your last login activity"}.`
+                        )
+                    )}
                 </p>
 
                 <div className="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Navigateur</th>
-                                <th>Système</th>
-                                <th>Adresse IP</th>
-                                <th>Période</th>
+                                <th>{language === 'FR' ? 'Navigateur' : 'Browser'}</th>
+                                <th>{language === 'FR' ? 'Système' : 'System'}</th>
+                                <th>{language === 'FR' ? 'Adresse IP' : 'IP Address'}</th>
+                                <th>{language === 'FR' ? 'Période' : 'Period'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -393,7 +487,10 @@ export default function UserProfile() {
                     <div className="profile-bio">
                         <p>
                             {formData.bio}
-                            <span title="Modifier ma bio" onClick={() => handleEdit("bio")}>
+                            <span
+                                title={language === 'FR' ? "Modifier ma bio" : "Edit bio"}
+                                onClick={() => handleEdit("bio")}
+                            >
                                 <Pencil size={16} />
                             </span>
                         </p>
@@ -402,14 +499,21 @@ export default function UserProfile() {
                             <div className="profile-location">
                                 <User className="icon-sm" />
                                 <span>{formData.firstName}</span>
-                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("firstName")}>
+                                <span
+                                    className="edit-icon" title={language === 'FR' ? "Modifier prénom" : "Edit first name"}
+                                    onClick={() => handleEdit("firstName")}
+                                >
                                     <Pencil size={16} />
                                 </span>
                             </div>
                             <div className="profile-location">
                                 <User className="icon-sm" />
                                 <span>{formData.lastName}</span>
-                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("lastName")}>
+                                <span
+                                    className="edit-icon"
+                                    title={language === 'FR' ? "Modifier nom de famille" : "Edit last name"}
+                                    onClick={() => handleEdit("lastName")}
+                                >
                                     <Pencil size={16} />
                                 </span>
                             </div>
@@ -417,7 +521,11 @@ export default function UserProfile() {
                                 <Mail className="icon-sm" />
                                 <span>{userData.email}</span>
                                 <span
-                                    title={userData.emailVerified ? 'Vérifié' : 'Non vérifié'}
+                                    title={
+                                        userData.emailVerified
+                                            ? (language === 'FR' ? 'Vérifié' : 'Verified')
+                                            : (language === 'FR' ? 'Non vérifié' : 'Not verified')
+                                    }
                                     className='edit-icon'
                                 >
                                     <FontAwesomeIcon
@@ -433,14 +541,18 @@ export default function UserProfile() {
                             <div className="profile-location">
                                 <MapPin className="icon-sm" />
                                 <span>{formData.city}, {formData.country}</span>
-                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("city")}>
+                                <span className="edit-icon"
+                                    title={language === 'FR' ? "Modifier la localisation" : "Edit localization"}
+                                    onClick={() => handleEdit("city")}>
                                     <Pencil size={16} />
                                 </span>
                             </div>
                             <div className="profile-location">
                                 <Home className="icon-sm" />
                                 <span>{formData.address}</span>
-                                <span className="edit-icon" title="Modifier mon adresse" onClick={() => handleEdit("address")}>
+                                <span className="edit-icon"
+                                    title={language === 'FR' ? "Modifier nom de adresse" : "Edit address"}
+                                    onClick={() => handleEdit("address")}>
                                     <Pencil size={16} />
                                 </span>
                             </div>
@@ -472,16 +584,20 @@ export default function UserProfile() {
                 <Modal
                     onShow={isModalOpen}
                     onHide={() => toggleModal('image', false)}
-                    title={`Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`}
+                    title={
+                        language === 'FR'
+                            ? `Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`
+                            : `Confirm ${imageType === "profile" ? "profile picture" : "cover photo"}`
+                    }
                 >
                     <div>
                         <img src={previewImage} alt="Aperçu" className="modal-preview" />
                         <div className="modal-actions">
                             <button className="btn btn-confirm" onClick={handleConfirm}>
-                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
+                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> language === 'FR' ? "Confirmer" : "Confirm"</>}
                             </button>
                             <button className="btn btn-cancel" onClick={() => toggleModal('image', false)}>
-                                <FontAwesomeIcon icon={faTimes} /> Annuler
+                                <FontAwesomeIcon icon={faTimes} /> language === 'FR' ? "Annuler" : "Cancel"
                             </button>
                         </div>
                     </div>
@@ -492,17 +608,33 @@ export default function UserProfile() {
                 <Modal
                     onShow={showEdit}
                     onHide={() => toggleModal('edit', false)}
-                    title={`Modifier ${field === "bio" ? "ma bio" : field === "city" ? "ma localisation" : field === "address" ? "mon adresse" : field === "lastName" ? "mon nom" : field === "firstName" ? "mon prénom" : ""}`}
+                    title={
+                        language === 'FR'
+                            ? `Modifier ${field === "bio" ? "ma bio" :
+                                field === "city" ? "ma localisation" :
+                                    field === "address" ? "mon adresse" :
+                                        field === "lastName" ? "mon nom" :
+                                            field === "firstName" ? "mon prénom" :
+                                                ""
+                            }`
+                            : `Edit ${field === "bio" ? "my bio" :
+                                field === "city" ? "my location" :
+                                    field === "address" ? "my address" :
+                                        field === "lastName" ? "my last name" :
+                                            field === "firstName" ? "my first name" :
+                                                ""
+                            }`
+                    }
                 >
                     <div className="edit-form">
                         {renderEditForm()}
                     </div>
                     <div className="modal-actions">
                         <button className="btn btn-confirm" onClick={handleConfirmEdit}>
-                            {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
+                            {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> {language === 'FR' ? "Confirmer" : "Confirm"}</>}
                         </button>
                         <button className="btn btn-cancel" onClick={() => toggleModal('edit', false)}>
-                            <FontAwesomeIcon icon={faTimes} /> Annuler
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
                         </button>
                     </div>
 

@@ -1,21 +1,23 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { faChartSimple, faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchUserById } from '../../routes/userRoutes';
 import Loading from '../../customs/Loading';
 import UserCard from '../../components/card/UserCard';
 import { deleteUser, disableUser, restoreUser } from '../../routes/authRoutes';
-import '../../styles/ManageUserID.scss';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import { AuthContext } from '../../contexts/AuthContext';
 import { logAdminAction } from '../../routes/apiRoutes';
 import Toast from '../../customs/Toast';
+import '../../styles/ManageUserID.scss';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 export default function ManageUserID() {
     const menuRef = useRef(null);
     const { currentUser, userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const { user_id } = useParams();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
@@ -60,22 +62,17 @@ export default function ManageUserID() {
 
     const options = [
         {
-            label: 'Suspendre',
+            label: language === 'FR' ? 'Suspendre' : 'Suspend',
             icon: faPauseCircle, // Icône pour suspendre
             action: () => setOpenModal({ type: 'suspend', open: true })
         },
         {
-            label: 'Activités',
-            icon: faChartSimple,
-            action: () => navigate('activity', { state: { UserID: user?.UserID } })
-        },
-        {
-            label: 'Restaurer',
+            label: language === 'FR' ? 'Restaurer' : 'Restore',
             icon: faUndo, // Icône pour restaurer
             action: () => handleRestore(user?.userID)
         },
         {
-            label: 'Supprimer',
+            label: language === 'FR' ? 'Supprimer' : 'Delete',
             icon: faTrash,
             action: () => setOpenModal({ type: 'delete', open: true })
         },
@@ -83,14 +80,24 @@ export default function ManageUserID() {
 
     const handleDelete = async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour supprimer les utilisateurs.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations pour supprimer les utilisateurs.'
+                    : "You don't have permission to delete users."
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Suppression de compte utilisateur", 
-            "L'admin a supprimé le compte d'un utilisateur."
+            currentUser.uid,
+            language === 'FR'
+                ? "Suppression de compte utilisateur"
+                : "User account deletion",
+            language === 'FR'
+                ? "L'admin a supprimé le compte d'un utilisateur."
+                : "The admin has deleted a user's account."
         );
 
         try {
@@ -105,14 +112,24 @@ export default function ManageUserID() {
 
     const handleSuspend = async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour suspendre les utilisateurs.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations pour suspendre les utilisateurs.'
+                    : "You don't have permission to suspend users."
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Suspension de compte utilisateur", 
-            "L'admin a suspendu le compte d'un utilisateur."
+            currentUser.uid,
+            language === 'FR'
+                ? "Suspension de compte utilisateur"
+                : "User account suspension",
+            language === 'FR'
+                ? "L'admin a suspendu le compte d'un utilisateur."
+                : "The admin has suspended a user's account."
         );
 
         try {
@@ -127,14 +144,24 @@ export default function ManageUserID() {
 
     const handleRestore = async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations pour restaurer les utilisateurs.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations pour restaurer les utilisateurs.'
+                    : "You don't have permission to restore users."
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Restauration de compte utilisateur", 
-            "L'admin a restauré le compte d'un utilisateur."
+            currentUser.uid,
+            language === 'FR'
+                ? "Restauration de compte utilisateur"
+                : "User account restoration",
+            language === 'FR'
+                ? "L'admin a restauré le compte d'un utilisateur."
+                : "The admin has restored a user's account."
         );
 
         try {
@@ -147,6 +174,17 @@ export default function ManageUserID() {
         }
     };
 
+    const formatDate = (timestamp) => {
+        if (timestamp && timestamp._seconds) {
+            const date = new Date(timestamp._seconds * 1000); // Convert to milliseconds
+            let formattedDate = date.toLocaleDateString(language === 'FR' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Capitalize the first letter
+            return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+        }
+        return '';
+    };
+
     if (loading) {
         return <Loading />;
     }
@@ -154,12 +192,17 @@ export default function ManageUserID() {
     return (
         <div className='manage-user'>
             <div className="head">
-                <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
-                <h2>Utilisateur: {user_id.toLocaleUpperCase()}</h2>
+                <div className="back">
+                    <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
+                </div>
+                <div className="title">
+                    <h2>{language === 'FR' ? "Utilisateurs" : "Users"} /</h2>
+                    <p>{user?.firstName} {user?.lastName}</p>
+                </div>
 
-                <span className="more-options" title="Plus d'options" onClick={handleMenuClick}>
+                <div className="more-options" title="Plus d'options" onClick={handleMenuClick}>
                     <FontAwesomeIcon icon={faEllipsisH} />
-                </span>
+                </div>
                 {showMenu &&
                     <div className="options-menu" ref={menuRef}>
                         {options.map((option, index) => (
@@ -170,6 +213,11 @@ export default function ManageUserID() {
                         ))}
                     </div>
                 }
+            </div>
+
+            <div className='user-info'>
+                <span>User ID: <strong>{user?.profileNumber}</strong></span>
+                <span>{language === 'FR' ? "Dernière connexion" : "Last login"}: <strong>{formatDate(user?.lastLoginAt)}</strong></span>
             </div>
 
             <UserCard user={user} />
@@ -193,14 +241,14 @@ export default function ManageUserID() {
                                 handleSuspend();
                             }
                         }}>
-                            {loading ? <Spinner /> : openModal.type === 'delete' ? 'Supprimer' : 'Suspendre'}
+                            {loading ? <Spinner /> : language === 'FR'
+                                ? openModal.type === 'delete' ? 'Supprimer' : 'Suspendre'
+                                : openModal.type === 'delete' ? 'Delete' : 'Suspend'}
                         </button>
                         <button className="modal-button delete" onClick={handleDelete}>
-                            Annuler
+                            {language === 'FR' ? 'Annuler' : 'Cancel'}
                         </button>
-
                     </div>
-
                 </Modal>
             )}
 

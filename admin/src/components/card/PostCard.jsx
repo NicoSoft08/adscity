@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import Toast from '../../customs/Toast';
 import { useEffect } from 'react';
 import FormData from '../../utils/FormData';
 import '../../styles/PostCard.scss';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 const ImageGallery = ({ images = [] }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
+     
 
     if (images.length === 0) {
         return <p>Aucune image disponible.</p>;
@@ -61,7 +63,7 @@ const ImageGallery = ({ images = [] }) => {
     );
 };
 
-const ProgressBar = ({ publishedAt, expiresAt }) => {
+const ProgressBar = ({ publishedAt, expiresAt, language }) => {
     const [progress, setProgress] = useState(0);
     const [todayPosition, setTodayPosition] = useState(0);
 
@@ -88,7 +90,7 @@ const ProgressBar = ({ publishedAt, expiresAt }) => {
     // Fonction pour formater la date en "14 mars"
     const formatDate = (dateString) => {
         const options = { day: "numeric", month: "short" };
-        return new Date(dateString).toLocaleDateString("fr-FR", options);
+        return new Date(dateString).toLocaleDateString(language === 'FR' ? "fr-FR" : 'en-US', options);
     };
 
     return (
@@ -99,7 +101,7 @@ const ProgressBar = ({ publishedAt, expiresAt }) => {
                 <span className='today' style={{
                     left: `${todayPosition}%`,
                 }}>
-                    Auj.
+                    {language === 'FR' ? 'Auj.' : 'Today'}
                 </span>
                 <span className='end'>{formatDate(expiresAt)}</span>
             </div>
@@ -127,6 +129,7 @@ const ProgressBar = ({ publishedAt, expiresAt }) => {
 
 export default function PostCard({ post, setToast, toast }) {
     const { details, images, location, posted_at, expiry_date, isSold } = post;
+    const { language } = useContext(LanguageContext);
 
     return (
         <div className='post-card'>
@@ -138,14 +141,16 @@ export default function PostCard({ post, setToast, toast }) {
                 <p className="description">{details.description}</p>
             </div>
 
-            {isSold && <span className="sold-badge">VENDU</span>}
+            {isSold && <span className="sold-badge">
+                {language === 'FR' ? ' VENDU' : ' SOLD'}
+            </span>}
 
             <div className="specs">
                 <FormData details={details} />
             </div>
 
             <div className="location">
-                <p>Emplacement : {location.address}, {location.city}, {location.country}</p>
+                <p>{location.address}, {location.city}, {location.country}</p>
             </div>
 
             <ProgressBar publishedAt={posted_at._seconds * 1000} expiresAt={expiry_date} />

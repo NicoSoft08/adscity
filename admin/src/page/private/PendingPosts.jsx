@@ -6,13 +6,14 @@ import Tab from '../../customs/Tab';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
 import { AuthContext } from '../../contexts/AuthContext';
-import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faEye, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Pagination from '../../components/pagination/Pagination';
 import { logAdminAction } from '../../routes/apiRoutes';
 import '../../styles/PendingPosts.scss';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
-const PostRow = ({ index, post, onView }) => (
+const PostRow = ({ index, post, onView, language }) => (
     <tr>
         <td>{index + 1}</td>
         <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
@@ -20,7 +21,7 @@ const PostRow = ({ index, post, onView }) => (
         <td>{post.details.price} RUB</td>
         <td>{formateDateTimestamp(post.posted_at._seconds)}</td>
         <td>
-            <button title="Voir l'annonce" onClick={() => onView(post)}>
+            <button title={language === 'FR' ? "Voir l'annonce" : "View ad"} onClick={() => onView(post)}>
                 <FontAwesomeIcon icon={faEye} />
             </button>
         </td>
@@ -32,6 +33,7 @@ export default function PendingPosts() {
     const [selectedPost, setSelectedPost] = useState(null);
     const [modalType, setModalType] = useState(null); // 'approve', 'reject', 'delete'
     const { currentUser, userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [confirm, setConfirm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -58,14 +60,24 @@ export default function PendingPosts() {
 
     const handleApprove = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour approuver les annonces.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations nécessaires pour approuver les annonces.'
+                    : 'You do not have the necessary permissions to approve ads.'
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Validation d'annonce'", 
-            "L'admin a validé une annonce."
+            currentUser.uid,
+            language === 'FR'
+                ? "Validation d'annonce"
+                : "Approval of an ad",
+            language === 'FR'
+                ? "L'admin a validé une annonce."
+                : "The admin approved an ad."
         );
 
         if (!selectedPost) return;
@@ -75,28 +87,54 @@ export default function PendingPosts() {
 
         if (result.success) {
             setPostsPending(postsPending.filter(post => post.PostID !== selectedPost.PostID));
-            setToast({ show: true, type: 'success', message: 'Annonce approuvée avec succès.' });
+            setToast({
+                show: true,
+                type: 'success',
+                message: language === 'FR'
+                    ? 'Annonce approuvée avec succès.'
+                    : 'Ad approved successfully.'
+            });
             closeModal();
         } else {
-            setToast({ show: true, type: 'error', message: result.message });
+            setToast({
+                show: true,
+                type: 'error',
+                message: result.message
+            });
         }
-    }, [selectedPost, postsPending, currentUser, userData]);
+    }, [selectedPost, postsPending, currentUser, userData, language]);
 
 
     const handleReject = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour refuser les annonces.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations nécessaires pour refuser les annonces.'
+                    : 'You do not have the necessary permissions to reject ads.'
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Refus d'annonce'", 
-            "L'admin a refusé une annonce."
+            currentUser.uid,
+            language === 'FR'
+                ? "Refus d'annonce"
+                : "Refusal of an ad",
+            language === 'FR'
+                ? "L'admin a refusé une annonce."
+                : "The admin refused an ad."
         );
 
         if (!selectedPost || refusalReason.trim() === '') {
-            setToast({ show: true, type: 'error', message: 'Veuillez fournir un motif avant de refuser l\'annonce.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Veuillez fournir un motif avant de refuser l\'annonce.'
+                    : 'Please provide a reason before rejecting the ad.'
+            });
             return;
         }
 
@@ -106,24 +144,44 @@ export default function PendingPosts() {
 
         if (result.success) {
             setPostsPending(postsPending.filter(post => post.postID !== selectedPost.postID));
-            setToast({ show: true, type: 'success', message: 'Annonce refusée avec succès.' });
+            setToast({
+                show: true,
+                type: 'success',
+                message: language === 'FR'
+                    ? 'Annonce refusée avec succès.'
+                    : 'Ad rejected successfully.'
+            });
             closeModal();
         } else {
-            setToast({ show: true, type: 'error', message: result.message });
+            setToast({
+                show: true,
+                type: 'error',
+                message: result.message
+            });
         }
-    }, [selectedPost, postsPending, refusalReason, currentUser, userData]);
+    }, [selectedPost, postsPending, refusalReason, currentUser, userData, language]);
 
 
     const handleDelete = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
-            setToast({ show: true, type: 'error', message: 'Vous n\'avez pas les autorisations nécessaires pour supprimer les annonces.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous n\'avez pas les autorisations nécessaires pour supprimer les annonces.'
+                    : 'You do not have the necessary permissions to delete ads.'
+            });
             return;
         }
 
         await logAdminAction(
-            currentUser.uid, 
-            "Suppression d'annonce'", 
-            "L'admin a supprimé une annonce."
+            currentUser.uid,
+            language === 'FR'
+                ? "Suppression d'annonce"
+                : "Deletion of an ad",
+            language === 'FR'
+                ? "L'admin a supprimé une annonce."
+                : "The admin deleted an ad."
         );
 
         if (!selectedPost) return;
@@ -134,12 +192,22 @@ export default function PendingPosts() {
 
         if (result.success) {
             setPostsPending(postsPending.filter(post => post.postID !== selectedPost.postID));
-            setToast({ show: true, type: 'success', message: 'Annonce supprimée avec succès.' });
+            setToast({
+                show: true,
+                type: 'success',
+                message: language === 'FR'
+                    ? 'Annonce supprimée avec succès.'
+                    : 'Ad deleted successfully.'
+            });
             closeModal();
         } else {
-            setToast({ show: true, type: 'error', message: result.message });
+            setToast({
+                show: true,
+                type: 'error',
+                message: result.message
+            });
         }
-    }, [currentUser, userData, selectedPost, postsPending]);
+    }, [currentUser, userData, selectedPost, postsPending, language]);
 
     const openModal = (post, type) => {
         setSelectedPost(post);
@@ -158,16 +226,16 @@ export default function PendingPosts() {
 
     return (
         <div className='pending-ads'>
-            <h3>Annonces en attente</h3>
+            <h3>{language === 'FR' ? "Annonces en attente" : "Pending ads"}</h3>
             <div className="table-container">
                 <table>
                     <thead>
                         <tr>
                             <th>#</th>
                             <th>Photo</th>
-                            <th>Titre</th>
-                            <th>Prix</th>
-                            <th>Date de Publication</th>
+                            <th>{language === 'FR' ? "Titre" : "Title"}</th>
+                            <th>{language === 'FR' ? "Prix" : "Price"}</th>
+                            <th>{language === 'FR' ? "Date de Publication" : "Date of Publication"}</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -178,7 +246,9 @@ export default function PendingPosts() {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="6" align='center'>Aucune annonce en attente.</td>
+                                <td colSpan="6" align='center'>
+                                    {language === 'FR' ? "Aucune annonce en attente." : "No pending ads."}
+                                </td>
                             </tr>
                         )}
                     </tbody>
@@ -186,19 +256,19 @@ export default function PendingPosts() {
             </div>
 
             {selectedPost && (
-                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
+                <Modal title={language === 'FR' ? "Confirmation" : "Confirmation"} onShow={!!selectedPost} onHide={closeModal}>
                     <Tab formData={selectedPost} />
 
                     <div className="ad-details-buttons">
                         <button className='modal-button approve-button' onClick={() => setModalType('approve', selectedPost)}>
-                            Approuver
+                            {language === 'FR' ? "Approuver" : "Approve"}
                         </button>
 
                         <button className='modal-button reject-button' onClick={() => setModalType('refuse', selectedPost)}>
-                            Refuser
+                            {language === 'FR' ? "Refuser" : "Decline"}
                         </button>
                         <button className='modal-button delete-button' onClick={() => setModalType('delete', selectedPost)}>
-                            Supprimer
+                            {language === 'FR' ? "Supprimer" : "Delete"}
                         </button>
                     </div>
 
@@ -206,41 +276,53 @@ export default function PendingPosts() {
             )}
 
             {modalType === 'approve' && (
-                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
+                <Modal title={language === 'FR' ? "Confirmation" : "Confirmation"} onShow={!!selectedPost} onHide={closeModal}>
                     <p>Êtes-vous sûr de vouloir approuver cette annonce ?</p>
                     <div className="ad-details-buttons">
                         <button className='modal-button approve-button' onClick={handleApprove}>
-                            {isLoading ? <Spinner /> : 'Confirmer'}
+                            {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> {language === 'FR' ? "Confirmer" : "Confirm"}</>}
                         </button>
-                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
+                        <button className='modal-button delete-button' onClick={closeModal}>
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
+                        </button>
                     </div>
                 </Modal>
             )}
 
             {modalType === 'delete' && (
-                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
-                    <p>Êtes-vous sûr de vouloir supprimer cette annonce définitivement ?</p>
+                <Modal title={language === 'FR' ? "Confirmation" : "Confirmation"} onShow={!!selectedPost} onHide={closeModal}>
+                    <p>
+                        {language === 'FR'
+                            ? "Êtes-vous sûr de vouloir supprimer cette annonce définitivement ?"
+                            : "Are you sure you want to delete this ad permanently ?"
+                        }
+                    </p>
                     <div className="ad-details-buttons">
                         <button className='modal-button approve-button' onClick={handleDelete}>
-                            {isLoading ? <Spinner /> : 'Confirmer'}
+                            {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> {language === 'FR' ? "Confirmer" : "Confirm"}</>}
                         </button>
-                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
+                        <button className='modal-button delete-button' onClick={closeModal}>
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
+                        </button>
                     </div>
                 </Modal>
             )}
 
             {modalType === 'refuse' && (
-                <Modal title="Confirmation" onShow={!!selectedPost} onHide={closeModal}>
+                <Modal title={language === 'FR' ? "Confirmation" : "Confirmation"} onShow={!!selectedPost} onHide={closeModal}>
                     {confirm ? (
                         <>
                             <p>
-                                Êtes-vous certain de vouloir refuser cette annonce ? Cette action est définitive et ne pourra pas être annulée.
+                                {language === 'FR'
+                                    ? "Êtes-vous certain de vouloir refuser cette annonce ? Cette action est définitive et ne pourra pas être annulée."
+                                    : "Are you sure you want to reject this ad? This action is irreversible and cannot be undone."
+                                }
                             </p>
                         </>
                     ) : (
                         <>
                             <label htmlFor="report_reason">
-                                Motif du refus
+                                {language === 'FR' ? "Motif du refus" : "Reason for rejection"}:
                                 <textarea
                                     name='report_reason'
                                     value={refusalReason}
@@ -258,9 +340,16 @@ export default function PendingPosts() {
                                 setConfirm(true);
                             }
                         }}>
-                            {confirm ? 'Confirmer' : isLoading ? <Spinner /> : 'Refuser'}
+                            {confirm
+                                ? (language === 'FR' ? 'Confirmer' : 'Confirm')
+                                : isLoading
+                                    ? <Spinner />
+                                    : (language === 'FR' ? 'Refuser' : 'Decline')
+                            }
                         </button>
-                        <button className='modal-button delete-button' onClick={closeModal}>Annuler</button>
+                        <button className='modal-button delete-button' onClick={closeModal}>
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
+                        </button>
                     </div>
                 </Modal>
             )}

@@ -92,12 +92,12 @@ export default function CreatePostFlow() {
     };
 
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (captchaToken) => {
         const userID = currentUser?.uid;
         try {
             setIsLoading(true);
 
-            const result = await createPost(postData, userID);
+            const result = await createPost(postData, userID, captchaToken);
 
             if (result.success) {
                 setToast({

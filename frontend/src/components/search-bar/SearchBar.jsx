@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
@@ -12,6 +12,7 @@ import './SearchBar.scss';
 export default function SearchBar({ currentUser }) {
     const [keywords, setKeywords] = useState('');
     const [suggestions, setSuggestions] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
     const [lang] = useState("fr");
     const navigate = useNavigate();
 
@@ -27,7 +28,6 @@ export default function SearchBar({ currentUser }) {
             const filteredSuggestions = allSuggestions
                 .filter(item => item.name.toLowerCase().includes(value.toLowerCase()))
                 .slice(0, 5);
-
             setSuggestions(filteredSuggestions);
         } else {
             setSuggestions([]);
@@ -36,8 +36,10 @@ export default function SearchBar({ currentUser }) {
 
     // ✅ Fonction pour sélectionner une suggestion
     const handleSelectSuggestion = (suggestion) => {
+        // Set the keywords first, then perform the search
         setKeywords(suggestion.name);
         setSuggestions([]);
+        // Use the suggestion name directly instead of relying on state update
         handleSearch(suggestion.name);
     };
 
@@ -46,16 +48,26 @@ export default function SearchBar({ currentUser }) {
         const trimmedQuery = (searchQuery || keywords).trim();
         if (!trimmedQuery) return;
 
-        // ✅ Mettre à jour l'historique de recherche
-        if (currentUser) {
-            await updateSearchHistory(currentUser.uid, trimmedQuery);
-        }
+        setIsSearching(true);
 
-        // ✅ Fermer les suggestions et naviguer vers les résultats
-        setKeywords('');
-        setSuggestions([]);
-        navigate(`/search-results?query=${encodeURIComponent(trimmedQuery)}`);
-        logEvent(analytics, 'search', { search_term: trimmedQuery });
+        try {
+            // ✅ Mettre à jour l'historique de recherche
+            if (currentUser && currentUser.uid) {
+                await updateSearchHistory(currentUser.uid, trimmedQuery);
+            }
+
+            // ✅ Fermer les suggestions et naviguer vers les résultats
+            setKeywords('');
+            setSuggestions([]);
+            navigate(`/search-results?query=${encodeURIComponent(trimmedQuery)}`);
+            logEvent(analytics, 'search', { search_term: trimmedQuery });
+        } catch (error) {
+            console.error('Error updating search history:', error);
+            // Still navigate even if the history update fails
+            navigate(`/search-results?query=${encodeURIComponent(trimmedQuery)}`);
+        } finally {
+            setIsSearching(false);
+        }
     };
 
     // ✅ Fonction pour détecter "Enter" et déclencher la recherche
@@ -63,6 +75,14 @@ export default function SearchBar({ currentUser }) {
         if (e.key === 'Enter') {
             handleSearch();  // 🔥 Recherche avec le mot tapé
         }
+    };
+
+    // Improved blur handling
+    const handleBlur = () => {
+        // Only hide suggestions if we're not in the middle of selecting one
+        setTimeout(() => {
+            setSuggestions([]);
+        }, 200);
     };
 
     return (
@@ -73,17 +93,18 @@ export default function SearchBar({ currentUser }) {
                 value={keywords}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
-                onBlur={() => setTimeout(() => setSuggestions([]), 150)}
+                onBlur={handleBlur}
+                aria-label="Recherche"
             />
             <FontAwesomeIcon
-                icon={faSearch}
+                icon={isSearching ? faSpinner : faSearch}
                 className='fa-search'
                 onClick={() => handleSearch()}
             />
             {suggestions.length > 0 && (
                 <ul className="suggestions-list">
                     {suggestions.map((sugg, index) => (
-                        <li key={index} onClick={() => handleSelectSuggestion(sugg)}>
+                        <li key={index} onClick={() => handleSelectSuggestion(sugg)} onMouseDown={(e) => e.preventDefault()}>
                             <span className="sugg-name">{sugg.name}</span>
                             {sugg.category && <span className="sugg-category"> ➝ {sugg.category}</span>}
                         </li>

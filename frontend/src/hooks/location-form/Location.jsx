@@ -1,28 +1,43 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import citiesData from '../../data/ru.json';
 import './Location.scss';
 
-export default function Location({ onNext, onBack, formData, setFormData }) {
+export default function Location({ onNext, onBack, userData, formData, setFormData }) {
     const [errors, setErrors] = useState({});
+    const [useUserInfo, setUseUserInfo] = useState(false);
     const [filteredCities, setFilteredCities] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const citySelectRef = useRef(null);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
-    // Initialisation du pays à "Russie"
     useEffect(() => {
-        if (!formData?.location?.country) {
+        if (useUserInfo) {
             setFormData(prev => ({
                 ...prev,
-                location: { ...prev.location, country: 'Russie' }
+                location: {
+                    ...prev.location,
+                    city: userData.city,
+                    address: userData.address
+                }
             }));
+            setSearchTerm(userData.city);
         }
-    }, [formData, setFormData]);
+    }, [useUserInfo, setFormData, userData]);
+
+    // Initialisation du pays à "Russie"
+    // useEffect(() => {
+    //     if (!formData?.location?.country) {
+    //         setFormData(prev => ({
+    //             ...prev,
+    //             location: { ...prev.location, country: 'Russie' }
+    //         }));
+    //     }
+    // }, [formData, setFormData]);
 
     // Filtrer les villes en fonction de la recherche
     useEffect(() => {
         if (searchTerm.length > 0) {
             const results = citiesData.filter(city =>
-                city.city.toLowerCase().includes(searchTerm.toLowerCase())
+                city.city.toLowerCase().startsWith(searchTerm.toLowerCase())
             );
             setFilteredCities(results);
         } else {
@@ -38,13 +53,28 @@ export default function Location({ onNext, onBack, formData, setFormData }) {
         }));
     };
 
-    // Sélection automatique de la ville lors du changement dans la liste
-    const handleCityChange = (e) => {
+    const handleSearch = (e) => {
+        const value = e.target.value;
+        setSearchTerm(value);
+
+        if (value.length >= 2) {
+            const filtered = citiesData.filter(city =>
+                city.city.toLowerCase().startsWith(value.toLowerCase())
+            );
+            setFilteredCities(filtered);
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    };
+
+    const handleCitySelect = (city) => {
         setFormData(prev => ({
             ...prev,
-            location: { ...prev.location, city: e.target.value }
+            city: city.city // Stocke uniquement le nom de la ville
         }));
-        // setSearchTerm(''); // Réinitialiser le champ de recherche après la sélection
+        setSearchTerm(city.city); // Mettre à jour l'input avec la ville sélectionnée
+        setShowSuggestions(false);
     };
 
     // Validation des champs
@@ -83,39 +113,27 @@ export default function Location({ onNext, onBack, formData, setFormData }) {
                 />
             </div>
 
-            {/* Recherche de ville */}
-            <div className="input-group">
-                <label className="input-label">Rechercher une ville</label>
+            <div className="search-field">
+                <label className="input-label">Ville <strong className='compulsory'>*</strong></label>
                 <input
-                    className="input-field"
                     type="text"
-                    placeholder="Tapez le nom de votre ville..."
+                    name="searchTerm"
+                    placeholder="Rechercher une ville"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className={`input-field ${errors.searchTerm ? "error" : ""}`}
+                    onChange={handleSearch}
                 />
-            </div>
 
-            {/* Sélection de la ville */}
-            {filteredCities.length > 0 && (
-                <div className="input-group">
-                    <label className="input-label">Ville <strong className='compulsory'>*</strong></label>
-                    <select
-                        ref={citySelectRef}
-                        className={`input-field ${errors.city ? 'error' : ''}`}
-                        name="location.city"
-                        value={formData?.location?.city || ''}
-                        onChange={handleCityChange}
-                    >
-                        <option value="">Sélectionner une ville</option>
+                {showSuggestions && (
+                    <ul className="suggestions-list">
                         {filteredCities.map((city, index) => (
-                            <option key={index} value={city.city}>
+                            <li key={index} onClick={() => handleCitySelect(city)}>
                                 {city.city}
-                            </option>
+                            </li>
                         ))}
-                    </select>
-                    {errors.city && <p className="error-message">{errors.city}</p>}
-                </div>
-            )}
+                    </ul>
+                )}
+            </div>
 
             {/* Adresse */}
             <div className="input-group">
@@ -130,6 +148,19 @@ export default function Location({ onNext, onBack, formData, setFormData }) {
                 />
                 {errors.address && <p className="error-message">{errors.address}</p>}
             </div>
+
+            {/* Auto-remplissage des infos utilisateur */}
+            <div className="input-group checkbox-group">
+                <label className="checkbox-label">
+                    <input
+                        type="checkbox"
+                        checked={useUserInfo}
+                        onChange={() => setUseUserInfo(prev => !prev)}
+                    />
+                    Utiliser mes informations enregistrées
+                </label>
+            </div>
+
 
             {/* Navigation */}
             <div className="form-navigation">

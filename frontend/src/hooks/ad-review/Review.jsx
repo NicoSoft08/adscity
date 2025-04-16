@@ -5,27 +5,57 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import data from '../../json/data.json';
 import FormData from '../FormData';
+import ReCAPTCHA from 'react-google-recaptcha';
 import './Review.scss';
 
 export default function Review({ formData, onBack, onSubmit, isLoading }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [captchaValue, setCaptchaValue] = useState(null);
+    const [errors, setErrors] = useState({ captcha: '' });
+
+    // Replace with your actual reCAPTCHA site key
+    const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
 
     const handleClose = () => setIsOpen(false);
 
+    const handleCaptchaChange = (value) => {
+        setCaptchaValue(value);
+        // Clear captcha error if it exists
+        if (errors.captcha) {
+            setErrors({
+                ...errors,
+                captcha: ''
+            });
+        }
+    };
+
+    const validateForm = () => {
+        const newErrors = {};
+
+        if (!captchaValue) {
+            newErrors.captcha = "Veuillez confirmer que vous n'êtes pas un robot";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
     const handleSubmit = () => {
-        onSubmit();
-        handleClose();
-    }
+        if (validateForm()) {
+            onSubmit(captchaValue);
+            handleClose();
+        }
+    };
 
     const formatCategorization = () => {
         let category = "";
         let subcategory = "";
-    
+
         if (formData.category) {
             const categoryData = data.categories.find(cat => cat.categoryName === formData.category);
             if (categoryData) category = categoryData.categoryTitles.fr;
         }
-    
+
         if (formData.subcategory) {
             const categoryData = data.categories.find(cat => cat.categoryName === formData.category);
             if (categoryData) {
@@ -33,10 +63,10 @@ export default function Review({ formData, onBack, onSubmit, isLoading }) {
                 if (subcategoryData) subcategory = subcategoryData.sousCategoryTitles.fr;
             }
         }
-    
+
         return { category, subcategory };
     };
-    
+
     const { category, subcategory } = formatCategorization();
 
     return (
@@ -78,12 +108,41 @@ export default function Review({ formData, onBack, onSubmit, isLoading }) {
                 </div>
             </div>
 
+            {/* reCAPTCHA component */}
+            <div className="captcha-container">
+                <ReCAPTCHA
+                    sitekey={RECAPTCHA_SITE_KEY}
+                    onChange={handleCaptchaChange}
+                />
+            </div>
+            {errors.captcha && <div className="error-text">{errors.captcha}</div>}
+
 
             <div className="form-navigation">
                 <button className="back-button" onClick={onBack}>
                     Retour
                 </button>
-                <button className="next-button" onClick={() => setIsOpen(true)}>
+                <button
+                    className="next-button"
+                    onClick={() => {
+                        // First check if CAPTCHA is completed
+                        if (!captchaValue) {
+                            setErrors({
+                                ...errors,
+                                captcha: "Veuillez confirmer que vous n'êtes pas un robot"
+                            });
+                            // Scroll to the CAPTCHA to make the error visible
+                            document.querySelector('.captcha-container')?.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'center'
+                            });
+                        } else {
+                            // CAPTCHA is valid, open the modal
+                            setIsOpen(true);
+                        }
+                    }}
+                    aria-label="Publier l'annonce"
+                >
                     <FontAwesomeIcon icon={faPaperPlane} />
                 </button>
             </div>

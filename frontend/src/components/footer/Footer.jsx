@@ -29,10 +29,9 @@ export default function Footer() {
 
                 {/* Help Section */}
                 <div className="footer-section">
-                    <h3>Aide</h3>
+                    <h3>Assistance</h3>
                     <ul>
-                        <li><a href="/help-center/faq">FAQ</a></li>
-                        <li><a href="/help-center/safety">Conseils de sécurité</a></li>
+                        <li><a href="/help">Centre d'aide</a></li>
                         <li><a href="/contact-us">Contact</a></li>
                     </ul>
                 </div>
@@ -44,6 +43,16 @@ export default function Footer() {
                         <li><a href="/legal/terms">Conditions d'utilisation</a></li>
                         <li><a href="/legal/privacy-policy">Règles de confidentialité</a></li>
                         <li><a href="/legal/post-rules">Règles de publication</a></li>
+                    </ul>
+                </div>
+
+                {/* Offres */}
+                <div className="footer-section">
+                    <h3>Offres</h3>
+                    <ul>
+                        <li><a href="/advertise">AdsCity Publicité</a></li>
+                        <li><a href="/store">Création de boutique</a></li>
+                        {/* <li><a href="/forfait">Forfaits</a></li> */}
                     </ul>
                 </div>
 

@@ -1,14 +1,27 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { faCircleXmark, faCloudUpload } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Toast from '../../customs/Toast';
 import { uploadImage } from '../../routes/storageRoutes';
 import './ImageUpload.scss';
 
+const MAX_FILE_SIZE_MB = 5; // 5MB maximum file size
+
 export default function ImageUpload({ onNext, onBack, formData, setFormData, userData, currentUser }) {
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef(null);
+
+    useEffect(() => {
+        if (!currentUser || !currentUser.uid) {
+            setToast({
+                show: true,
+                message: "Vous devez être connecté pour télécharger des images.",
+                type: 'error'
+            });
+            // Optionally redirect to login page
+        }
+    }, [currentUser]);
 
     const getUserPlanMaxPhotos = () => {
         if (!userData?.plans) return 3;
@@ -16,8 +29,76 @@ export default function ImageUpload({ onNext, onBack, formData, setFormData, use
         return userPlan ? userPlan.max_photos : 3;
     };
 
+    // Function to validate file size
+    const validateFileSize = (file) => {
+        const fileSizeMB = file.size / (1024 * 1024);
+        return fileSizeMB <= MAX_FILE_SIZE_MB;
+    };
+
+    // Function to validate file types
+    const validateFile = (file) => {
+        // Define allowed extensions
+        const allowedExtensions = ['jpg', 'jpeg', 'png'];
+        const allowedMimeTypes = ['image/jpeg', 'image/png'];
+
+        // Get file extension
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+
+        // Check extension and MIME type
+        const isValidType = allowedExtensions.includes(fileExtension) && allowedMimeTypes.includes(file.type);
+
+        // Check file size
+        const isValidSize = validateFileSize(file);
+
+        return {
+            isValid: isValidType && isValidSize,
+            reason: !isValidType ? 'type' : !isValidSize ? 'size' : null
+        };
+    };
+
+    const sanitizeFileName = (fileName) => {
+        // Remove special characters and spaces
+        return fileName
+            .replace(/[^\w\s.-]/g, '')
+            .replace(/\s+/g, '-')
+            .toLowerCase();
+    };
+
     const handleImageUpload = async (filesArray) => {
         if (!filesArray || filesArray.length === 0) return;
+
+        // Validate files
+        const validationResults = filesArray.map(file => ({
+            file,
+            validation: validateFile(file)
+        }));
+
+        // Filter out invalid file types
+        const validFiles = validationResults
+            .filter(item => item.validation.isValid)
+            .map(item => item.file);
+        const invalidTypeCount = validationResults.filter(item => item.validation.reason === 'type').length;
+
+        const invalidSizeCount = validationResults.filter(item => item.validation.reason === 'size').length;
+
+        // Show appropriate error messages
+        if (invalidTypeCount > 0) {
+            setToast({
+                show: true,
+                message: `${invalidTypeCount} fichier(s) rejeté(s). Seuls les formats JPG, JPEG, PNG et WEBP sont acceptés.`,
+                type: 'error'
+            });
+        }
+
+        if (invalidSizeCount > 0) {
+            setToast({
+                show: true,
+                message: `${invalidSizeCount} fichier(s) rejeté(s). La taille maximum est de ${MAX_FILE_SIZE_MB}MB par image.`,
+                type: 'error'
+            });
+        }
+
+        if (validFiles.length === 0) return;
 
         const maxPhotos = getUserPlanMaxPhotos();
         const currentImages = formData.images || [];
@@ -31,14 +112,18 @@ export default function ImageUpload({ onNext, onBack, formData, setFormData, use
 
         try {
             const userID = currentUser?.uid;
-            const uploadPromises = filesArray.map(file => uploadImage(file, userID));
+            const uploadPromises = validFiles.map(file => {
+                const sanitizedName = sanitizeFileName(file.name);
+                const sanitizedFile = new File([file], sanitizedName, { type: file.type });
+                return uploadImage(sanitizedFile, userID);
+            })
             const results = await Promise.all(uploadPromises);
 
             const uploadedImages = results.filter(res => res.success).map(res => res.imageUrl);
             if (uploadedImages.length) {
                 const newImages = [...currentImages, ...uploadedImages].slice(0, maxPhotos);
                 setFormData(prev => ({ ...prev, images: newImages }));
-                setToast({ show: true, message: 'Images téléchargées avec succès !', type: 'success' });
+                setToast({ show: true, message: `${uploadedImages.length} image(s) téléchargée(s) avec succès !`, type: 'success' });
             } else {
                 setToast({ show: true, message: 'Échec du téléchargement.', type: 'error' });
             }
@@ -83,12 +168,12 @@ export default function ImageUpload({ onNext, onBack, formData, setFormData, use
                 Cliquez ou glissez jusqu'à {getUserPlanMaxPhotos()} images
             </div>
 
-            <div 
-                className={`upload-area ${isUploading ? 'uploading' : ''}`} 
+            <div
+                className={`upload-area ${isUploading ? 'uploading' : ''}`}
                 onClick={() => fileInputRef.current.click()}
                 onDrop={handleDrop}
                 onDragOver={(e) => e.preventDefault()}
-                tabIndex={0} 
+                tabIndex={0}
                 role="button"
                 onKeyPress={(e) => e.key === 'Enter' && fileInputRef.current.click()}
             >
@@ -96,7 +181,7 @@ export default function ImageUpload({ onNext, onBack, formData, setFormData, use
                 <p className="upload-text">{isUploading ? 'Téléchargement...' : 'Cliquez ou glissez vos images ici'}</p>
                 <input
                     type="file"
-                    accept="image/*"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
                     multiple
                     ref={fileInputRef}
                     style={{ display: "none" }}

@@ -1,45 +1,67 @@
 import {
-    FaTachometerAlt, 
-    FaUser, 
-    FaBullhorn, 
-    FaHeart, 
-    FaUserCircle, 
-    FaCogs, 
+    FaTachometerAlt,
+    FaUser,
+    FaBullhorn,
+    FaHeart,
+    FaUserCircle,
+    FaCogs,
     FaQuestionCircle,
-    FaChartLine,
-    FaUsers,
-    FaBell,
 } from 'react-icons/fa';
-import { faImages, faInfoCircle, faMapMarker, faTags } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faBullhorn, faChartLine, faFolder, faImages, faInfoCircle, faMapMarker, faMoneyBill, faTags, faUserCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { calculateEndDate } from '../func';
 
-const tabs = [
-    { id: 'category', label: 'Catégorie', icon: faTags },
-    { id: 'details', label: 'Détails', icon: faInfoCircle },
-    { id: 'location', label: 'Localisation', icon: faMapMarker },
-    { id: 'photos', label: 'Photos', icon: faImages }
-];
+const tabs = (language) => ([
+    {
+        id: 'category',
+        label: language === 'FR'
+            ? 'Catégorie'
+            : 'Category',
+        icon: faTags
+    },
+    {
+        id: 'details',
+        label: language === 'FR'
+            ? 'Détails'
+            : 'Details',
+        icon: faInfoCircle
+    },
+    {
+        id: 'location',
+        label: language === 'FR'
+        ? 'Localisation'
+        : 'Localization',
+        icon: faMapMarker
+    },
+    {
+        id: 'photos',
+        label: language === 'FR'
+        ? 'Photos'
+        : 'Photos',
+        icon: faImages
+    }
+]);
 
 
 const userLeftBarContent = [
-    { id: 1, name: 'Panel', selectId: 'panel', icon: FaTachometerAlt, activeIcon: FaTachometerAlt, onClick: () => {} },
-    { id: 2, name: 'Compte', selectId: 'users', icon: FaUser, activeIcon: FaUser, onClick: () => {} },
-    { id: 3, name: 'Annonces', selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => {} },
-    { id: 4, name: 'Favoris', selectId: 'favoris', icon: FaHeart, activeIcon: FaHeart, onClick: () => {} },
-    { id: 5, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => {} },
-    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => {} },
-    { id: 7, name: 'Support', selectId: 'support', icon: FaQuestionCircle, activeIcon: FaQuestionCircle, onClick: () => {} },
+    { id: 1, name: 'Panel', selectId: 'panel', icon: FaTachometerAlt, activeIcon: FaTachometerAlt, onClick: () => { } },
+    { id: 2, name: 'Compte', selectId: 'users', icon: FaUser, activeIcon: FaUser, onClick: () => { } },
+    { id: 3, name: 'Annonces', selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => { } },
+    { id: 4, name: 'Favoris', selectId: 'favoris', icon: FaHeart, activeIcon: FaHeart, onClick: () => { } },
+    { id: 5, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => { } },
+    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => { } },
+    { id: 7, name: 'Support', selectId: 'support', icon: FaQuestionCircle, activeIcon: FaQuestionCircle, onClick: () => { } },
 ];
 
-const adminSidebarData = [
-    { id: 1, name: "Panel", selectId: 'panel', icon: FaChartLine, activeIcon: FaChartLine, onClick: () => {} },
-    { id: 2, name: "Annonces", selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => {} },
-    { id: 3, name: 'Utilisateurs', selectId: 'users', icon: FaUsers, activeIcon: FaUsers, onClick: () => {} },
-    { id: 4, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => {} },
-    { id: 5, name: "Notifications", selectId: 'notifications', icon: FaBell, activeIcon: FaBell, onClick: () => {} },
-    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => {} },
-];
-
+const adminSidebarData = (language) => ([
+    { id: 'panel', name: language === 'FR' ? "Panel" : "Panel", icon: faChartLine, path: "/admin/dashboard/panel" },
+    { id: 'posts', name: language === 'FR' ? "Annonces" : "Ads", icon: faBullhorn, path: "/admin/dashboard/posts" },
+    { id: 'users', name: language === 'FR' ? 'Utilisateurs' : 'Users', icon: faUsers, path: "/admin/dashboard/users" },
+    // { id: "pubs", name: language === 'FR' ? 'Publicités' : 'Advertisements', icon: faBuysellads, path: "/admin/dashboard/pubs" },
+    { id: "verifications", name: language === 'FR' ? 'Vérifications' : 'Verifications', icon: faFolder, path: "/admin/dashboard/verifications", badge: 0 },
+    { id: 'notifications', name: language === 'FR' ? 'Notifications' : 'Notifications', icon: faBell, path: "/admin/dashboard/notifications", badge: 0 },
+    // { id: 'payments', name: language === 'FR' ? 'Paiements' : 'Payments', icon: faMoneyBill, path: "/admin/dashboard/payments" },
+    { id: 'profile', name: language === 'FR' ? 'Profile' : 'Profile', icon: faUserCircle, path: "/admin/dashboard/profile" },
+]);
 
 
 
@@ -83,30 +105,30 @@ const plans = [
 ];
 
 
-const paymentStatuses = {
+const paymentStatuses = (language) => ({
     'processing': {
         color: '#FBBF24',
-        label: 'En cours',
+        label: language === 'FR' ? 'En cours' : 'Processing',
         icon: '🔄'
     },
     'completed': {
         color: '#34D399',
-        label: 'Terminé(s)',
+        label: language === 'FR' ? 'Terminé(s)' : 'Completed',
         icon: '✅'
     },
     'failed': {
         color: '#EF4444',
-        label: 'Échoué(s)',
+        label: language === 'FR' ? 'Échoué(s)' : 'Failed',
         icon: '❌'
     }
-};
+});
 
 
 
-export { 
-    userLeftBarContent, 
-    adminSidebarData, 
-    plans, 
+export {
+    userLeftBarContent,
+    adminSidebarData,
+    plans,
     tabs,
     paymentStatuses
 };

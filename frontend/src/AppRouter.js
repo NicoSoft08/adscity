@@ -13,8 +13,6 @@ import CategoryPage from './pages/public/CategoryNamePage';
 import ConditionPage from './pages/public/ConditionPage';
 import ContactPage from './pages/public/ContactPage';
 import FAQsPage from './pages/public/FAQsPage';
-import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
-import HelpPage from './pages/public/HelpPage';
 import HomePage from './pages/public/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import NotFoundPage from './pages/public/NotFoundPage';
@@ -51,6 +49,12 @@ import ManagePayments from './components/payment/ManagePayments';
 import EditPostID from './pages/private/EditPostID';
 import StatsPostID from './pages/private/StatsPostID';
 import ManageFavorites from './pages/private/ManageFavorites';
+// import Forfaits from './pages/public/Forfaits';
+import Account from './pages/public/Account';
+import Announce from './pages/public/Announce';
+// import Verification from './pages/private/Verification';
+import PasswordResetPage from './pages/auth/PasswordResetPage';
+import RequestPasswordResetPage from './pages/auth/RequestPasswordResetPage';
 
 export default function AppRouter() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -64,11 +68,9 @@ export default function AppRouter() {
                     <Route path='/category/:categoryName' element={<CategoryNamePage />} />
                     <Route path='/auth/create-post' element={<CreatePostPage />} />
 
-                    <Route path='/payment' element={<PaymentPage />} />
-
                     <Route path='/contact-us' element={<ContactPage />} />
 
-                    {/* <Route path='/pricing' element={<PlansPage />} /> */}
+                    {/* <Route path='/forfait' element={<Forfaits />} /> */}
                     <Route path='/search-results' element={<SearchResultPage />} />
                     {/* <Route path="/filters" element={<FiltersPage />} /> */}
 
@@ -82,15 +84,17 @@ export default function AppRouter() {
                     <Route path="/posts/:category/:subcategory/:post_id" element={<PostDetailPage />} />
                     <Route path="/posts/:category/:subcategory/:postID" element={<PostIDPage />} />
                     <Route path='/users/user/:UserID/profile/show' element={<ShowUserPage />} />
-                    <Route path='/proceed-to-checkout' element={<CheckoutProceed />} />
+                    <Route path='/payment/:id' element={<PaymentPage />} />
+                    <Route path='/proceed-to-checkout/:id' element={<CheckoutProceed />} />
 
                     <Route path='/start-guide' element={<QuickStartGuide />} />
 
                     <Route path='/feedback-tests' element={<FeedbackForm />} />
+                    <Route path='/faq' element={<FAQsPage />} />
                 </Route>
-                <Route path='/help-center' element={<HelpLayout />}>
-                    <Route index element={<HelpPage />} />
-                    <Route path='faq' element={<FAQsPage />} />
+                <Route path='/help' element={<HelpLayout />}>
+                    <Route path='account' element={<Account />} />
+                    <Route path='posts' element={<Announce />} />
                     <Route path='safety' element={<SecurityAdvices />} />
                 </Route>
 
@@ -99,13 +103,15 @@ export default function AppRouter() {
                     <Route path='/auth/signin/:email?' element={<LoginPage />} />
                     <Route path='/auth/create-user' element={<SignupPage />} />
                     <Route path='/auth/validate-email' element={<SignupSuccess />} />
-                    <Route path='/auth/reset-password/:email?' element={<ForgotPasswordPage />} />
+                    <Route path='/auth/forgot-password' element={<RequestPasswordResetPage />} />
+                    <Route path='/auth/reset-password/:token' element={<PasswordResetPage />} />
                     <Route path="/auth/verify-device/:deviceID/:verificationToken" element={<VerifyDevice />} />
                     <Route path="/auth/decline-device/:deviceID/:verificationToken" element={<DeclineDevice />} />
                 </Route>
 
                 <Route path='/user/dashboard' element={<UserHome />}>
                     <Route path="panel" element={<DashboardPanel />} />
+                    {/* <Route path="documents" element={<Verification currentUser={currentUser} userData={userData} />} /> */}
                     <Route path="favoris" element={<ManageFavorites currentUser={currentUser} />} />
                     <Route path="posts" element={<ManagePosts currentUser={currentUser} />} />
                     <Route path='posts/:post_id' element={<ManagePostID currentUser={currentUser} />} />

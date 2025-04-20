@@ -1,0 +1,146 @@
+@import '../../styles/variables';
+@import '../../styles/fonts';
+
+.footer {
+    // margin-top: 85px;
+    // width: 100%;
+    // padding: 20px 0;
+    // position: sticky;
+    // bottom: 0;
+    
+    .content {
+        // max-height: 100vh;
+        // max-width: 1200px;
+        // margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        background-color: $gray-dark;
+        font-family: 'Ubuntu', sans-serif;
+
+
+        // Media queries
+        @media (max-width: 768px) {}
+
+        @media (max-width: 480px) {}
+
+
+        .footer-nav {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+
+            // Media queries
+            @media (max-width: 768px) {}
+
+            @media (max-width: 480px) {
+                gap: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+            }
+
+
+            .card {
+                flex: 1 1 200px;
+                margin: 10px;
+
+                // Media queries
+                @media (max-width: 768px) {}
+
+                @media (max-width: 480px) {
+                    flex: 1;
+                    margin: 0;
+                }
+
+
+                h4 {
+                    text-transform: uppercase;
+                    color: $white;
+                }
+
+
+                img {
+                    width: 150px;
+                    cursor: pointer;
+                }
+
+                p {
+                    text-align: start;
+
+                    // Media queries
+                    @media (max-width: 768px) {}
+
+                    @media (max-width: 480px) {
+                        text-align: center;
+                    }
+                }
+
+                a {
+                    text-decoration: none;
+                    color: $white;
+                    font-weight: 600;
+                }
+
+
+                a:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+
+
+        .social-media {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            margin: 20px 0;
+
+
+            .facebook,
+            .whatsapp,
+            .instagram,
+            .youtube {
+                height: 50px;
+                width: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background-color: transparent;
+                border-radius: 50%;
+                border: 0.5px solid $white;
+                cursor: pointer;
+                transition: $transition;
+
+
+                .icon {
+                    font-size: 20px;
+                    color: $white;
+                }
+            }
+
+            .facebook:hover,
+            .whatsapp:hover,
+            .instagram:hover,
+            .youtube:hover {
+                background-color: $white;
+                border: 0.5px solid $gray-dark;
+            }
+
+            .facebook:hover .icon,
+            .whatsapp:hover .icon,
+            .instagram:hover .icon,
+            .youtube:hover .icon {
+                color: $gray-dark;
+            }
+        }
+
+
+        .signature {
+            color: $white;
+            font-weight: 400;
+            padding: 10px 0;
+            text-align: center;
+        }
+    }
+}

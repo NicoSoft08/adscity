@@ -1,0 +1,208 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.public-profile-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+    background-size: cover;
+    background-position: center;
+
+
+    .profile-header {
+        height: 300px;
+        position: relative;
+        color: $white;
+        display: flex;
+        justify-content: space-between;
+        align-items: last baseline;
+        margin-bottom: 10px;
+        padding: 10px 30px;
+
+
+        .profile-info {
+            display: flex;
+            align-items: center;
+
+
+            .avatar {
+                border-radius: 50%;
+                height: 80px;
+                width: 80px;
+                border: 2px solid $white;
+            }
+
+            .info {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                margin: 0 20px;
+                color: $black;
+                background: $white;
+                padding: 8px;
+                border-radius: 5px;
+
+                .name {
+                    font-size: 24px;
+                    margin-bottom: 5px;
+                    font-weight: $font-regular;
+                    color: $black;
+                    margin: 0;
+                }
+
+
+                .detail {
+                    display: flex;
+
+                    small {
+                        margin-bottom: 5px;
+                        font-weight: $font-light;
+                    }
+
+                    .location {
+                        font-size: 12px;
+                    }
+
+                    .adsCount {
+                        font-size: 12px;
+                        margin-left: 8px;
+                    }
+                }
+            }
+        }
+
+
+        .social-media-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            color: $black;
+
+            a {
+                color: $black;
+                text-decoration: none;
+
+                img {
+                    width: 25px;
+                    height: 25px;
+                }
+            }
+        }
+    }
+
+
+    .profile-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 30px;
+
+        .contact-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            color: $white;
+
+
+            .phone-info {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                flex-direction: row;
+                background: $white;
+                // padding: 8px;
+                border-radius: 5px;
+
+
+                .show-phone {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    width: 35px;
+                    height: 35px;
+                    color: $black;
+
+                    svg {
+                        font-size: 12px;
+                    }
+                }
+
+
+                .show-phone-btn {
+                    margin: 0 20px;
+                    color: $black;
+                    
+
+                    small {
+                        font-weight: $font-regular;
+                        font-size: 13px;
+                    }
+                }
+            }
+        }
+
+
+        .message-form {
+            padding: 8px;
+            position: relative;
+            width: 50%;
+            max-width: 300px;
+
+
+            // X-Small devices (portrait phones, less than 576px)
+            @media (max-width: 575.98px) {
+                padding-top: 10px;
+                margin: 0 auto;
+                max-width: 350px;
+                width: 90%;
+            }
+
+            // Small devices (landscape phones, less than 768px)
+            @media (max-width: 767.98px) {}
+
+            // Medium devices (tablets, less than 992px)
+            @media (max-width: 991.98px) {}
+
+            // Large devices (desktops, less than 1200px)
+            @media (max-width: 1199.98px) {}
+
+            // X-Large devices (large desktops, less than 1400px)
+            @media (max-width: 1399.98px) {}
+
+
+            .message-input {
+                width: 90%;
+                border-radius: 18px;
+                padding: 8px;
+                outline: none;
+                border: 0.5px solid $white;
+                font-weight: $font-light;
+                font-family: 'Ubuntu', sans-serif;
+            }
+
+
+            .send-btn {
+                background-color: $three;
+                color: $white;
+                right: 0;
+                border: none;
+                border-radius: 18px;
+                padding: 9px 20px;
+                cursor: pointer;
+                position: absolute;
+                font-weight: $font-light;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+
+
+    .seperator {
+        width: 90%;
+        max-width: 1000px;
+        margin: auto;
+        height: 1px;
+        background-color: $white;
+    }
+}

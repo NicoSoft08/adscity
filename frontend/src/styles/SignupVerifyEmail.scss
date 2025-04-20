@@ -1,0 +1,115 @@
+@import './fonts';
+@import './variables';
+
+
+.signup-success-page {
+    background: $two;
+    padding: 0 20px;
+    font-family: 'Ubuntu', sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+
+
+    .loading-page {
+        padding: 20px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        max-width: 600px;
+        border-radius: 8px;
+        background-color: $light;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+
+        h2 {
+            color: $gray-dark;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+
+        p {
+            color: $dark;
+            font-weight: $font-light;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+    }
+
+
+
+    .error-page {
+        padding: 20px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        max-width: 600px;
+        border-radius: 8px;
+        background-color: #FF9494;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+
+        h2 {
+            color: $danger;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+
+        p {
+            color: $dark;
+            font-weight: $font-light;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+
+
+        button {
+            font-size: 1rem;
+            padding: 8px 14px;
+            border: 1px solid;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: $font-light;
+            font-family: 'Ubuntu', sans-serif;
+        }
+
+
+        a {
+            color: $primary;
+            font-weight: $font-regular;
+            text-decoration: none;
+        }
+    }
+
+    .success-page {
+        padding: 20px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        flex-direction: column;
+        max-width: 600px;
+        border-radius: 8px;
+        background-color: #DAF7A6; // #90EE90
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        h2 {
+            color: $success;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+
+
+        p {
+            color: $dark;
+            font-weight: $font-light;
+            text-align: center;
+            font-size: 1.3rem;
+        }
+    }
+}

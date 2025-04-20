@@ -1,0 +1,28 @@
+@import './fonts';
+@import './variables';
+
+
+.spinner {
+    width: 12px;
+    height: 12px;
+    position: relative;
+    display: inline-block;
+
+
+    .bounce {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: $white;
+        opacity: 0.6;
+        top: 0;
+        left: 0;
+        position: absolute;
+        animation: bounce 2s infinite ease-in-out;
+    }
+
+
+    .bounce.two {
+        animation-delay: -1s;
+    }
+}

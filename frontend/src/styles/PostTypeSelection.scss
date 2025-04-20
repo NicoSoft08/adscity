@@ -1,0 +1,62 @@
+@import './fonts';
+@import './variables';
+
+
+.post-type-selection {
+    text-align: center;
+    margin-bottom: 20px;
+
+
+    h2 {
+        font-size: 24px;
+        color: $gray-dark;
+        margin-bottom: 15px;
+
+
+        @media (max-width: 430px) {
+            font-size: 20px;
+        }
+    }
+
+
+    .post-type-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px; /* Espace entre les boutons */
+
+        @media (max-width: 475px) {
+            flex-direction: column;
+        }
+
+
+        button {
+            background-color: $four; /* Couleur de fond des boutons */
+            border: 2px solid transparent;
+            color: $white;
+            padding: 10px 20px;
+            font-size: 15px;
+            border-radius: 25px;
+            font-family: 'Ubuntu',sans-serif;
+            font-weight: $font-light;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+
+
+        button:hover {
+            background-color: $two; /* Couleur au survol */
+        }
+
+
+        button.active {
+            background-color: $three; /* Couleur du bouton sélectionné */
+            border-color: $two; /* Ajoute un contour pour indiquer la sélection */
+        }
+
+
+        button:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3); /* Effet de focus */
+        }
+    }
+}

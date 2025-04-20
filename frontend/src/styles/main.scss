@@ -1,0 +1,42 @@
+@import './fonts';
+@import './variables';
+
+
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px;
+
+    .back-button {
+        background-color: $danger;
+        color: $white;
+        font-family: 'Ubuntu',sans-serif;
+        cursor: pointer;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+
+    .next-button {
+        background-color: $two;
+        color: $white;
+        font-family: 'Ubuntu',sans-serif;
+        cursor: pointer;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+
+    .proceed-btn {
+        background-color: $two;
+        color: $white;
+        font-family: 'Ubuntu',sans-serif;
+        cursor: pointer;
+        padding: 10px 20px;
+        border-radius: 5px;
+        border: none;
+        box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    }
+}

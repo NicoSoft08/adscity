@@ -1,0 +1,39 @@
+@import './fonts';
+@import './variables';
+
+
+.home-page {
+    background-color: $white;
+
+    .home-container {
+        display: flex;
+        
+        .main-content {
+            width: 80%;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+
+            @media (max-width: 768px) {
+                width: 100%;
+            }
+    
+            .no-ads {
+                text-align: center;
+                font-size: 15px;
+                color: $dark;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-regular;
+            }
+        }
+
+        .pubs-sidebar {
+            width: 20%;
+            // height: 100vh;
+
+            @media (max-width: 768px) {
+                display: none;
+            }
+        }
+    }
+}

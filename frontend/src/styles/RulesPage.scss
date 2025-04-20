@@ -1,0 +1,36 @@
+@import './fonts';
+@import './variables';
+
+
+.rules {
+    padding: 2rem;
+    line-height: 1.6;
+
+    h1 {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 24px;
+    }
+
+    h2 {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 18px;
+        text-transform: uppercase;
+    }
+
+    p {
+        font-family: 'Ubuntu',sans-serif;
+        color: $dark;
+        font-size: 15px;
+        font-weight: $font-light;
+        text-align: justify;
+    }
+
+    li {
+        color: $dark;
+        font-size: 15px;
+        font-weight: $font-light;
+        text-align: justify;
+    }
+}

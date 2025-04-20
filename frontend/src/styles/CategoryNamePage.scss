@@ -1,0 +1,14 @@
+@import './fonts';
+@import './variables';
+
+.category-page {
+
+    .display {
+        width: 80%;
+        margin: auto;
+
+        @media (max-width: 768px) {
+            width: 100%;
+        }
+    }
+}

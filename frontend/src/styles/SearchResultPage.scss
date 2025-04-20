@@ -1,0 +1,21 @@
+@import './fonts';
+@import './variables';
+
+
+.search-result {
+   
+    .display {
+        width: 80%;
+        margin: auto;
+
+        @media (max-width: 768px) {
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 18px;
+            color: $dark;
+            margin-left: 10px;
+        }
+    }
+}

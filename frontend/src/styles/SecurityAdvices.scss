@@ -1,0 +1,87 @@
+@import './fonts';
+@import './variables';
+
+
+.security-advice {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 24px;
+
+    h2 {
+        color: $two;
+        margin-top: 7rem;
+        text-align: center;
+    }
+
+    .advice-sections {
+        display: grid;
+        gap: 24px;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+
+        .advice-section {
+            background: $white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+            h3 {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                color: $two;
+                margin-bottom: 16px;
+
+                svg {
+                    color: $two;
+                }
+            }
+
+            ul {
+                list-style: none;
+                padding: 0;
+
+                li {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 8px 0;
+                    font-weight: $font-light;
+                    color: $dark;
+
+                    svg {
+                        color: #4caf50;
+                    }
+                }
+            }
+        }
+    }
+
+    .emergency-section {
+        margin-top: 24px;
+        background: #fff3cd;
+        border-radius: 12px;
+        padding: 20px;
+
+        h3 {
+            color: #856404;
+            margin-bottom: 16px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+
+            li {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 8px 0;
+                color: #856404;
+
+                svg {
+                    color: #856404;
+                }
+            }
+        }
+    }
+}

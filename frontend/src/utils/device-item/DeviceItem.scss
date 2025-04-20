@@ -1,0 +1,43 @@
+@import '../../styles/variables';
+@import '../../styles/fonts';
+
+
+.device-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    .device-details {
+        flex-grow: 1;
+
+        p {
+            display: flex;
+            align-items: center;
+
+            svg {
+                margin-right: 8px;
+                color: #007bff; // Couleur par défaut des icônes
+            }
+        }
+    }
+
+    .disconnect-btn {
+        background: #ff4d4f;
+        color: $white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        cursor: pointer;
+
+        &:hover {
+            background: #e04345;
+        }
+    }
+}

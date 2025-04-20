@@ -1,0 +1,18 @@
+@import '../../styles/variables';
+
+
+.social {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+    background-color: $five;
+    
+    
+    img {
+        margin: 0 5px;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+    }
+}

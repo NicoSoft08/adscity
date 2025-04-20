@@ -1,0 +1,28 @@
+{
+    "location": [
+        {
+            "name": "country",
+            "label": "Pays",
+            "type": "text",
+            "placeholder": "Ex: Russie",
+            "required": false,
+            "readOnly": true,
+            "options": []
+        },
+        {
+            "name": "city",
+            "label": "Ville",
+            "type": "text",
+            "placeholder": "Ex: Rostov-Na-Donu",
+            "required": true,
+            "options": []
+        },
+        {
+            "name": "address",
+            "label": "Adresse",
+            "type": "text",
+            "placeholder": "Ex: 2-ya Sovietskaya 123",
+            "required": true
+        }
+    ]
+}

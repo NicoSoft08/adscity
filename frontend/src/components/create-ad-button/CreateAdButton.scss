@@ -1,0 +1,47 @@
+@import '../../styles/variables';
+@import '../../styles/fonts';
+
+.create-ad {
+    display: flex;
+    width: 150px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    height: 40px;
+    border: none;
+    padding: 0 10px;
+    color: $white;
+    cursor: pointer;
+    font-weight: 300;
+    background-color: $secondary-color;
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 1px 4px;
+
+
+    .create-ad:hover {
+        box-shadow: none;
+    }
+
+    .icon {
+        font-size: 18px;
+    }
+
+    span {
+        font-size: 13px;
+        font-family: 'Ubuntu',sans-serif;
+        margin-left: 5px;
+    }
+
+    // Media queries
+    @media (max-width: 820px) {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+
+    @media (max-width: 480px) {
+        display: none;
+    }
+
+}

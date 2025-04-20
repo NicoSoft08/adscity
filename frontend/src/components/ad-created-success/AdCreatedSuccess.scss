@@ -1,0 +1,67 @@
+@import '../../styles/fonts';
+@import '../../styles/variables';
+
+
+.ad-created-success {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: $white;
+    
+
+
+    .ad-created-success-icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+
+        div {
+            margin: 15px;
+
+            .icon {
+                font-size: 2rem;
+                color: $dark;
+            }
+        }
+    }
+
+
+    h2 {
+        font-family: 'Ubuntu', sans-serif;
+        font-size: 1.5rem;
+        text-align: center;
+    }
+
+
+    p {
+        margin: 15px;
+        font-size: 1.2rem;
+        color: $dark;
+        font-weight: $font-light;
+        text-align: center;
+    }
+
+
+    a {
+        text-decoration: none;
+        margin: 15px;
+        padding: 10px 20px;
+        border-radius: 12px;
+        border: none;
+        background-color: $secondary-color;
+        color: $white;
+        font-family: 'Ubuntu', sans-serif;
+        font-weight: $font-light;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: $transition;
+        font-family: 'Ubuntu',sans-serif;
+    }
+
+    a:hover {
+        background-color: $two;
+    }
+}

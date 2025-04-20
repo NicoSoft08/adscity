@@ -1,0 +1,267 @@
+@import './fonts';
+@import './variables';
+
+
+.ads-stats {
+    margin-top: 20px;
+
+    .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px;
+        border-radius: 5px;
+        background-color: $dark;
+
+
+
+        h3 {
+            font-size: 18px;
+            color: $white;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-regular;
+        }
+
+        .add-new-ad {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            background-color: $gray;
+            color: $white;
+            box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+
+
+            svg {
+                font-size: 16px;
+            }
+
+            span {
+                font-weight: $font-light;
+                margin-left: 5px;
+                font-size: 15px;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+
+
+    label {
+        color: $dark;
+        display: block;
+        font-size: 15px;
+        font-weight: $font-regular;
+        // margin-top: 1rem;
+    }
+
+    .input-field {
+        width: 90%;
+        margin: 8px 0;
+        padding: 8px 15px;
+        display: inline-block;
+        border: 1px solid $dark;
+        outline: none;
+        font-size: 15px;
+        color: $dark;
+        font-weight: $font-light;
+        font-family: "Ubuntu", sans-serif;
+    }
+
+    .input-field.error {
+        background-color: #FF9494;
+        border: 1px solid $red;
+    }
+
+
+    .error-text {
+        font-size: 13px;
+        font-family: "Ubuntu", sans-serif;
+        color: $red;
+        margin-bottom: 10px;
+        font-weight: $font-regular;
+        text-align: start;
+    }
+
+    .select-field {
+        width: 98%;
+        padding: 8px 15px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid $dark;
+        outline: none;
+        font-size: 15px;
+        color: $dark;
+        font-weight: $font-light;
+        font-family: "Ubuntu", sans-serif;
+
+        option {
+            font-weight: $font-light;
+            font-family: "Ubuntu", sans-serif;
+        }
+    }
+
+
+    p {
+        font-weight: $font-light;
+    }
+
+
+    .form {
+
+        .progress-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+
+            .step-indicator {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background-color: #eee;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .step-indicator.active {
+                background-color: $secondary-color;
+                color: $white;
+            }
+
+            .step-indicator::after {
+                content: '';
+                position: absolute;
+                width: 100%;
+                height: 2px;
+                background-color: #eee;
+                left: 50%;
+                top: 50%;
+                transform: translateY(-50%);
+                z-index: -1;
+            }
+
+            .step-indicator:last-child::after {
+                display: none;
+            }
+        }
+
+        .step-content {
+            margin-bottom: 20px;
+
+            h2 {
+                font-size: 16px;
+                color: $dark;
+                font-weight: $font-regular;
+            }
+
+            input[type=text],
+            input[type=email],
+            input[type=tel],
+            input[type=password] {
+                width: 95%;
+                padding: 10px;
+                margin: 10px 0;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                outline: none;
+                font-size: 14px;
+                font-family: 'Ubuntu', sans-serif;
+                font-weight: $font-light;
+            }
+
+            .input-field.error {
+                border: 1px solid $danger;
+                background-color: #ffcccb;
+            }
+
+
+            .permissions-group {
+                .checkbox-container {
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 10px;
+
+                    label {
+                        margin-left: 5px;
+                        font-size: 14px;
+                    }
+                }
+            }
+
+        }
+
+        .password-toggle {
+            position: relative;
+
+            .input-field.error {
+                border: 1px solid $danger;
+                background-color: #ffcccb;
+            }
+
+
+            .toggle-password-visibility {
+                position: absolute;
+                top: 35%;
+                right: 10px;
+                color: $dark;
+            }
+        }
+
+        label.checkbox-label {
+            font-weight: $font-light;
+            padding: 10px 0;
+            font-size: 14px;
+        }
+
+        .error-text {
+            font-size: 13px;
+            font-weight: $font-light;
+            color: $danger;
+        }
+
+        .error {
+            font-size: 12px;
+            font-weight: $font-light;
+            color: $danger;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 1rem;
+
+            button {
+                padding: 10px 20px;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: 'Ubuntu', sans-serif;
+
+                &.prev {
+                    background-color: $danger;
+                }
+
+                &.next {
+                    background-color: $two;
+                }
+            }
+
+            .submit {
+                padding: 10px 20px;
+                background-color: $secondary-color;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
+    }
+}

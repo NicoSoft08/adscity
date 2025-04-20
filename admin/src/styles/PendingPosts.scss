@@ -1,0 +1,170 @@
+@import './fonts';
+@import './variables';
+
+
+.pending-ads {
+    margin-top: 20px;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+    background-color: $white;
+    border-radius: 5px;
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+
+    h3 {
+        color: $white;
+        font-weight: $font-regular;
+    }
+
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch; // For smooth scrolling on iOS
+        scrollbar-width: none; // Hide scrollbar on Firefox
+
+        &::-webkit-scrollbar {
+            display: none; // Hide scrollbar on Chrome/Safari
+        }
+
+        @media (max-width: 768px) {
+            overflow-x: auto;
+            border-radius: 5px;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            min-width: 600px;
+            /* Ajuste la largeur minimale selon tes besoins */
+            border-collapse: collapse;
+            background-color: $white;
+
+            th,
+            td {
+                padding: 12px;
+                text-align: left;
+                font-weight: $font-light;
+                border-bottom: 1px solid #ddd;
+                white-space: nowrap;
+                /* Évite les retours à la ligne */
+            }
+
+            thead {
+                color: $dark;
+                background-color: #f5f5f5;
+
+                th {
+                    text-transform: uppercase;
+                    font-weight: $font-regular;
+                }
+            }
+
+            button {
+                background: $two;
+                color: $dark;
+                border-radius: 50%;
+                border: none;
+                width: 35px;
+                height: 35px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: $white;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+
+                &:hover {
+                    background: darken($two, 10%);
+                }
+            }
+
+            tbody tr {
+                position: relative;
+            }
+
+            tbody tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+            tbody tr:hover {
+                background-color: #f1f1f1;
+            }
+        }
+    }
+
+    p {
+        font-size: 15px;
+        text-align: justify;
+        color: $dark;
+        font-weight: $font-light;
+        font-family: 'Ubuntu', sans-serif;
+    }
+
+
+    label {
+        font-size: 15px;
+        font-family: 'Ubuntu', sans-serif;
+
+        textarea {
+            width: 100%;
+            margin-top: 5px;
+            // padding: 5px;
+            text-align: justify;
+            font-size: 15px;
+            outline: none;
+            font-weight: $font-light;
+            font-family: 'Ubuntu', sans-serif;
+        }
+    }
+
+    .error-text {
+        color: $danger;
+        font-size: 13px;
+        text-align: center;
+        font-weight: $font-light;
+        font-family: 'Ubuntu', sans-serif;
+    }
+
+
+    h4 {
+        font-size: 14px;
+        color: $dark;
+        font-weight: $font-light;
+        text-transform: uppercase;
+    }
+
+    p {
+        font-size: 14px;
+        color: $dark;
+        font-weight: $font-light;
+    }
+
+    .ad-details-buttons {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        .modal-button {
+            background-color: transparent;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-light;
+
+            &.approve-button {
+                background-color: $two;
+            }
+
+            &.reject-button {
+                background-color: $orange;
+            }
+
+            &.delete-button {
+                background-color: $danger;
+            }
+        }
+    }
+}

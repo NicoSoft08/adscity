@@ -1,0 +1,135 @@
+@import '../styles/fonts';
+@import '../styles/variables';
+
+.manage-pubs {
+    margin-top: 4rem;
+
+    @media (max-width: 768px) {
+        margin-top: 8rem;
+    }
+
+    .head {
+        display: flex;
+        align-items: center;
+        flex-direction: row;
+        justify-content: space-between;
+
+        h2 {
+            color: $dark;
+        }
+
+        .filters-container {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            gap: 10px;
+
+            .filter {
+                padding: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                color: $white;
+                background-color: $dark;
+
+                svg {
+                    color: $white;
+                    cursor: pointer;
+                }
+            }
+
+            .create-pubs {
+                padding: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+                color: $white;
+                background-color: $dark;
+
+                svg {
+                    color: $white;
+                    cursor: pointer;
+                }
+
+                span {
+                    font-weight: $font-light;
+                    margin-left: 8px;
+
+                    @media (max-width: 768px) {
+                        display: none;
+                    }
+                }
+            }
+        }
+    }
+
+    .ads-list {
+
+        .card-list {
+            overflow-x: auto;
+            scrollbar-width: thin;
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 800px;
+                background-color: $white;
+                border-radius: 12px;
+
+                th,
+                td {
+                    padding: 12px;
+                    text-align: left;
+                    border: 1px solid #ddd;
+                    white-space: nowrap;
+                    font-size: 14px;
+                    font-weight: $font-light;
+
+                    .img {
+                        border-radius: 50%;
+                    }
+
+                    .see-more {
+                        background-color: $two;
+                        color: white;
+                        padding: 6px 12px;
+                        border: none;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-weight: $font-light;
+                        font-family: 'Ubuntu', sans-serif;
+
+                        &:hover {
+                            background-color: $three;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        padding: 15px;
+        background-color: $gray-dark;
+        border-radius: 8px;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+
+        input[type=text],
+        input[type=date],
+        input[type="number"],
+        select {
+            padding: 10px 8px;
+            font-family: 'Ubuntu', sans-serif;
+            font-size: 16px;
+            font-weight: $font-light;
+            outline: none;
+        }
+    }
+}

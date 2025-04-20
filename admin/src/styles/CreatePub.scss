@@ -1,0 +1,214 @@
+@import './fonts';
+@import './variables';
+
+.create-pub {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 20px;
+
+    .head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        margin-top: 5rem;
+
+        svg {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: $dark;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin: 0;
+            color: $dark;
+        }
+    }
+
+    .creation-form {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+
+        .ad-form {
+            display: flex;
+            flex-direction: column;
+
+            h3 {
+                font-size: 1.25rem;
+                margin-bottom: 15px;
+                color: #333;
+            }
+
+            .form-group {
+                margin-bottom: 15px;
+                display: flex;
+                flex-direction: column;
+
+                label {
+                    font-weight: $font-regular;
+                    margin-bottom: 5px;
+                    color: #333;
+                }
+
+                input,
+                select,
+                textarea {
+                    outline: none;
+                    padding: 10px;
+                    border: 1px solid #ccc;
+                    border-radius: 5px;
+                    font-size: 0.95rem;
+                    font-weight: $font-light;
+                    font-family: 'Ubuntu',sans-serif;
+                }
+
+                option {
+                    font-size: 0.95rem;
+                    font-weight: $font-light;
+                }
+
+                textarea {
+                    resize: vertical;
+                    min-height: 80px;
+                }
+            }
+
+            .file-upload {
+                margin-bottom: 15px;
+
+                .preview-container {
+                    position: relative;
+                    margin-top: 10px;
+                    
+
+                    .preview-media {
+                        width: 100%;
+                        max-width: 250px;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                    }
+
+                    .remove-button {
+                        margin-top: 5px;
+                        padding: 5px 10px;
+                        background-color: #e74c3c;
+                        color: #fff;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+
+                        &:hover {
+                            background-color: #c0392b;
+                        }
+                    }
+                }
+            }
+
+            .preview-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 10px;
+
+                .preview-container {
+                    position: relative;
+                    margin-top: 10px;
+                    
+
+                    .preview-media {
+                        width: 100%;
+                        max-width: 250px;
+                        border: 1px solid #ccc;
+                        border-radius: 5px;
+                    }
+
+                    .remove-button {
+                        position: absolute;
+                        top: 0;
+                        left: 67%;
+                        padding: 5px 10px;
+                        background-color: #e74c3c;
+                        color: $white;
+                        border: none;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        font-size: 0.9rem;
+
+                        &:hover {
+                            background-color: #c0392b;
+                        }
+                    }
+                }
+            }
+
+            .btns {
+                display: flex;
+                gap: 10px;
+                margin-top: 20px;
+                justify-content: space-between;
+
+                .prev-btn,
+                .submit-btn {
+                    padding: 10px 20px;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 0.95rem;
+                    cursor: pointer;
+                    font-weight: $font-light;
+                    font-family: 'Ubuntu',sans-serif;
+                    transition: background-color 0.2s ease;
+
+                    &.prev-btn {
+                        background-color: #aaa;
+                        color: #fff;
+
+                        &:hover {
+                            background-color: #888;
+                        }
+                    }
+
+                    &.submit-btn {
+                        background-color: #007bff;
+                        color: #fff;
+
+                        &:hover {
+                            background-color: #005dc1;
+                        }
+                    }
+                }
+            }
+
+            .next-btn {
+                margin-top: 10px;
+                padding: 10px 20px;
+                background-color: $two;
+                font-family: 'Ubuntu',sans-serif;
+                font-weight: $font-light;
+                border: none;
+                border-radius: 5px;
+                color: $white;
+                font-size: 0.95rem;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+
+                &:hover {
+                    background-color: $three;
+                }
+            }
+        }
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .create-pub {
+        padding: 15px;
+
+        .creation-form {
+            padding: 15px;
+        }
+    }
+}

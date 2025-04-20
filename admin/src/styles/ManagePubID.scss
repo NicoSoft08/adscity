@@ -1,0 +1,27 @@
+@import './fonts';
+@import './variables';
+
+.manage-pub {
+    margin-top: 4rem; 
+
+    @media (max-width: 768px) {
+        margin-top: 8rem;
+    }
+
+    .head {
+        display: flex;
+        align-items: center;
+        // justify-content: space-between;
+
+        h2 {
+            color: $dark;
+            margin-left: 10px;
+        }
+
+        svg {
+            color: $dark;
+            cursor: pointer;
+        }
+    }
+
+}

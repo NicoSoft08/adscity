@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const cron = require('node-cron');
 const path = require('path');
@@ -19,27 +20,13 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const promotionRoutes = require('./routes/promotionRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const translateRoutes = require('./routes/translateRoutes');
-
+const statusRoutes = require('./routes/statusRoutes');
 const updateServices = require('./services/updateServices');
 
-// const { createNodemailerTransport } = require('./func');
-
-const {
-    checkFreeTrialExpiry,
-    paymentStatusChecker,
-    markPostsAsExpired,
-    formatRegisterDate,
-} = require('./cron');
-const {
-    // createDefaultAdmin, 
-    createDefaultSuperAdmin
-} = require('./firebase/admin');
-const { createNodemailerTransport } = require('./func');
+const { checkFreeTrialExpiry, markPostsAsExpired } = require('./cron');
+const { createDefaultSuperAdmin } = require('./firebase/admin');
 const { cleanupVerificationDocuments } = require('./middlewares/documentLifecycle');
 const { deletionReminder, deleteOldAdminLogs, deleteOldClientLogs, cleanupOldProfileVisits } = require('./firebase/cleanup');
-const { pool } = require('./postgres');
-const { migrateUsers, migratePosts } = require('./config/migration-script');
-
 
 // Marquer les annonces comme expirées (Tous les jours à minuit)
 cron.schedule("0 0 * * *", async () => {
@@ -76,34 +63,39 @@ cron.schedule("0 2 * * 0", async () => {
 //     await paymentStatusChecker();
 // });
 
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+    'http://localhost:3003',
+
+    'https://adscity.net',
+    'https://dashboard.adscity.net',
+    'https://auth.adscity.net',
+    'https://id.adscity.net',
+]
 
 const app = express();
-app.use(cors());
+
+
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Middleware pour parser les cookies - IMPORTANT: doit être avant les routes
+app.use(cookieParser());
+
+// Configuration CORS
+app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+        ? ['https://adscity.net', 'https://auth.adscity.net', 'https://dashboard.adscity.net']
+        : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+    credentials: true // Important pour permettre l'envoi de cookies
+}));
 
 app.get('', async (req, res) => {
     res.send('AdsCity Server is running');
 });
-
-app.get('/api/test-email', async (req, res) => {
-    const nodemailerTransport = createNodemailerTransport();
-    const mailOptions = {
-        from: 'support@adscity.net',
-        to: 'n.dahpenielnicolas123@gmail.com',
-        subject: 'Test email',
-        text: 'This is a test email from AdsCity server',
-    };
-
-    try {
-        await nodemailerTransport.sendMail(mailOptions);
-        res.send('Email sent successfully');
-    } catch (error) {
-        console.error('Error sending email:', error);
-        res.status(500).send('Error sending email');
-    }
-})
 
 app.use('/api', updateServices);
 
@@ -112,6 +104,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/storage', storageRoutes);
 app.use('/api/posts', postRoutes);
+app.use('/api/status', statusRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/promotions', promotionRoutes);
 app.use('/api/conversations', chatRoutes);

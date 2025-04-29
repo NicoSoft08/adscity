@@ -1,11 +1,12 @@
-const { 
-    searchQuery, 
-    updateInteraction, 
-    updateContactClick, 
-    contactUs, 
-    collectLocations, 
-    advancedItemSearch, 
-    evaluateUser, 
+const { auth } = require("../config/firebase-admin");
+const {
+    searchQuery,
+    updateInteraction,
+    updateContactClick,
+    contactUs,
+    collectLocations,
+    advancedItemSearch,
+    evaluateUser,
     socialLinksUpdate,
     incrementView,
     incrementClick,
@@ -17,14 +18,15 @@ const {
     logAdminIDAction,
     logClientIDAction,
     collectVerifications,
-    incrementShare
+    incrementShare,
+    emailVerificationLink
 } = require("../firebase/api");
 
 const searchItems = async (req, res) => {
     const { query } = req.query;
-    
+
     try {
-        const  searchResults = await searchQuery(query);
+        const searchResults = await searchQuery(query);
         if (!searchResults || searchResults.length === 0) {
             return res.status(404).json({
                 success: false,
@@ -41,7 +43,7 @@ const searchItems = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plustard'
-        }); 
+        });
     };
 };
 
@@ -73,7 +75,7 @@ const logAdminAction = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plustard'
-        });  
+        });
     };
 };
 
@@ -105,12 +107,12 @@ const logClientAction = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plustard'
-        });  
+        });
     };
 };
 
 const manageInteraction = async (req, res) => {
-   const  { postID, userID, category } = req.body;
+    const { postID, userID, category } = req.body;
 
     try {
         const interactionResult = await updateInteraction(postID, userID, category);
@@ -375,7 +377,7 @@ const fetchFilteredPosts = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erreur technique, réessayez plustard'
-        }); 
+        });
     };
 };
 
@@ -419,7 +421,7 @@ const fetchPubById = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 message: 'Aucune annonce trouvée'
-            }); 
+            });
         }
         res.status(200).json({
             success: true,
@@ -459,7 +461,7 @@ const fetchPubs = async (req, res) => {
 };
 
 const getViewCount = async (req, res) => {
-    const { postID } = req.params; 
+    const { postID } = req.params;
 
     if (!postID) {
         return res.status(400).json({
@@ -513,6 +515,45 @@ const fetchVerifications = async (req, res) => {
     }
 }
 
+const resendVerificationEmail = async (req, res) => {
+    const { userID } = req.params;
+
+    try {
+        // Get user from Firebase Auth
+        const userRecord = await auth.getUser(userID);
+
+        if (userRecord.emailVerified) {
+            return res.status(400).json({
+                success: false,
+                message: "L'email de cet utilisateur est déjà vérifié"
+            });
+        }
+
+        const isSent = await emailVerificationLink(userID);
+        if (!isSent) {
+            return res.status(500).json({
+                success: false,
+                message: "Erreur technique, réessayez plus tard"
+            });
+        }
+        
+        // Log the action
+        console.log(`Verification email sent to ${userRecord.email}`);
+
+        // Return success response
+        res.status(200).json({
+            success: true,
+            message: "Email de vérification envoyé avec succès"
+        });
+    } catch (error) {
+        console.error("Erreur lors du renvoi de l'email de vérification:", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plus tard"
+        });
+    }
+};
+
 module.exports = {
     advancedSearch,
     contactSupportClient,
@@ -531,6 +572,7 @@ module.exports = {
     logAdminAction,
     logClientAction,
     rateUser,
+    resendVerificationEmail,
     searchItems,
     updateUserSocialLinks,
 };

@@ -20,8 +20,10 @@ const {
     logAdminAction,
     logClientAction,
     fetchVerifications,
-    incrementShareCount
+    incrementShareCount,
+    resendVerificationEmail
 } = require('../controllers/apiController');
+const { verifyToken, authenticateAdmin } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
@@ -49,6 +51,7 @@ router.get('/collect/pubs', fetchPubs);
 router.get('/collect/pubs/:pub_id', fetchPubById);
 router.get('/get/view/:postID', getViewCount);
 
-router.get('/collect/verifications', fetchVerifications);
+router.get('/collect/verifications', authenticateAdmin, fetchVerifications);
+router.post('/send/users/:userID/verification', resendVerificationEmail);
 
 module.exports = router;

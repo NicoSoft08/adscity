@@ -368,6 +368,7 @@ const getDataFromPostID = async (req, res) => {
 
 const getPostByID = async (req, res) => {
     const { postID } = req.params;
+    console.log('postID:', postID);
 
     try {
         const postData = await collectPostByID(postID);

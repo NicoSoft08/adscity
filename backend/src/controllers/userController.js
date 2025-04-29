@@ -27,7 +27,8 @@ const {
     clearAdminAllNotifications,
     collectUserIDLoginActivity,
     fetchUserLocations,
-    collectUserVerificationData
+    collectUserVerificationData,
+    updateUserVerificationStatus
 } = require("../firebase/user");
 
 const getAllUsersWithStatus = async (req, res) => {
@@ -121,7 +122,7 @@ const getDataFromUserID = async (req, res) => {
 }
 
 const getAnyUserData = async (req, res) => {
-    const { userID } = req.params;
+
     console.log(userID)
 
     if (!userID) {
@@ -787,6 +788,57 @@ const getUserVerificationData = async (req, res) => {
     }
 };
 
+const updateUserVerificationData = async (req, res) => {
+    const { userID } = req.params;
+    const { updateData } = req.body;
+
+    // Vérifier si userID est fourni
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: "ID de l'utilisateur manquant"
+        });
+    }
+
+    // Vérifier si les données de mise à jour sont valides
+    if (!updateData || (updateData.verificationStatus !== 'approved' &&
+        updateData.verificationStatus !== 'rejected')) {
+        return res.status(400).json({
+            success: false,
+            message: "Données de mise à jour invalides"
+        });
+    }
+
+    // Si le statut est 'rejected', vérifier qu'un motif de rejet est fourni
+    if (updateData.verificationStatus === 'rejected' && !updateData.rejectionReason) {
+        return res.status(400).json({
+            success: false,
+            message: "Motif de rejet requis"
+        });
+    }
+
+    try {
+        const isUpdated = await updateUserVerificationStatus(userID, updateData);
+        if (!isUpdated) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune donnée de vérification trouvée pour cet utilisateur"
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: "Données de vérification mises à jour avec succès",
+            data: isUpdated
+        });
+    } catch (error) {
+        console.error("Erreur lors de la mise à jour des données de vérification de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plustard"
+        });
+    }
+};
+
 module.exports = {
     getUserLocations,
     getAdminNotifications,
@@ -818,4 +870,5 @@ module.exports = {
     updateInteractionByUserID,
     updateDeviceToken,
     updateSearchHistory,
+    updateUserVerificationData,
 };

@@ -316,6 +316,31 @@ const uploadSensitiveVerificationURL = async (userID, documentFile, selfieFile) 
     }
 };
 
+const uploadStatusMediaURL = async (userID, file) => {
+    try {
+        const now = new Date();
+        const formattedDate = now.toISOString().slice(0, 10); // Format: YYYY-MM-DD
+        const formattedTime = now.toTimeString().slice(0, 5).replace(':', '-'); // Format: HH-MM
+        const folderPath = `DOCS/STATUSES/${formattedDate}_${formattedTime}/${userID}/`;
+        const fileName = `${folderPath}_${file.originalname}`;
+        const fileUpload = storage.bucket().file(fileName);
+        await fileUpload.save(file.buffer, {
+            metadata: {
+                contentType: file.mimetype,
+                encrypted: true,
+            },
+        });
+        const [publicUrl] = await fileUpload.getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491',
+        });
+        console.log('URL de téléchargement :', publicUrl);
+        return publicUrl;
+    } catch (error) {
+        console.error('Erreur lors du téléchargement du fichier :', error);
+        return false;
+    }
+};
 
 module.exports = {
     deleteImagesByPostID,
@@ -324,5 +349,6 @@ module.exports = {
     uploadUserCoverPicture,
     uploadMediaURL,
     uploadUserProfilePicture,
+    uploadStatusMediaURL,
     uploadSensitiveVerificationURL,
 };

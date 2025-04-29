@@ -46,10 +46,10 @@ const sendCode = async (displayName, email, code) => {
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -66,7 +66,6 @@ const sendCode = async (displayName, email, code) => {
 };
 
 const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) => {
-
     // Envoi du code par email
     const nodemailerTransport = createNodemailerTransport();
 
@@ -90,14 +89,14 @@ const sendUserAdsApprovedEmail = async (displayName, email, title, posted_at) =>
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -138,14 +137,14 @@ const sendUserAdsRefusedEmail = async (displayName, email, title, posted_at, rea
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -216,14 +215,14 @@ const sendWelcomeEmail = async (displayName, email) => {
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -270,14 +269,14 @@ const sendUserEmailWithTicket = async (displayName, email, object, message, tick
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -410,14 +409,14 @@ const sendNewDeviceAlert = async (email, displayName, deviceInfo, deviceID) => {
 
                     <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                         <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                            <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                            <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                         </a>
                         <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                         <p style="font-size: 12px; color: #777;">
-                            2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone : +7 (951) 516-95-31 |
-                            Email : <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                            Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
+                            Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                         </p>
-                        <p style="font-size: 12px; color: #417abc;">Publiez, Vendez, Échangez</p>
+                        <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                     </footer>
                 </body>
             </html>
@@ -471,14 +470,14 @@ const sendCustomerPaymentIntentEmail = async (paymentData) => {
                     </div>
                     <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                         <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                            <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                            <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                         </a>
                         <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                         <p style="font-size: 12px; color: #777;">
-                            2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone : +7 (951) 516-95-31 |
-                            Email : <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                            Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
+                            Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                         </p>
-                        <p style="font-size: 12px; color: #417abc;">Publiez, Vendez, Échangez</p>
+                        <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                     </footer>
                 </body>
             </html>
@@ -528,14 +527,14 @@ const sendAdminEmail = async (email, password, displayName) => {
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -559,7 +558,7 @@ const sendEmailToAdmin = async = (postData, PostID) => {
 
     const mailOptions = {
         from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
-        to: [
+        bcc: [
             'admin@adscity.net',
             'n.dahpenielnicolas123@gmail.com',
             'koffigalloharistide@gmail.com',
@@ -584,14 +583,14 @@ const sendEmailToAdmin = async = (postData, PostID) => {
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -640,14 +639,14 @@ const sendPasswordResetEmail = async (email, firstName, lastName, resetUrl) => {
                 </div>
                 <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
                     <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
-                        <img src="data:image/png;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
                     </a>
                     <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
                     <p style="font-size: 12px; color: #777;">
-                        2 Kasnodarskaya 113/1, Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 | 
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
                         Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
                     </p>
-                    <p style="font-size: 12px; color: #417abc; font-weight: regular; margin-top: 10px;">Publiez, Vendez, Echangez</p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
                 </footer>
             </body>
         </html>
@@ -663,8 +662,87 @@ const sendPasswordResetEmail = async (email, firstName, lastName, resetUrl) => {
     });
 };
 
+const emailVerification = async (firstName, lastName, email, verificationLink) => {
+    const nodemailerTransport = createNodemailerTransport();
+    console.log(verificationLink)
+
+    const mailOptions = {
+        from: `"AdsCity" <${process.env.SMTP_MAIL}>`,
+        to: email,
+        subject: '✉️ Vérification de votre adresse email',
+        html: `
+        <html>
+            <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border: 1px solid #ddd;">
+                <h3 style="color: #417abc;">Bonjour ${firstName} ${lastName},</h3>
+                
+                <p>
+                    Nous avons remarqué que votre adresse email n’a pas encore été vérifiée sur la plateforme <strong>AdsCity</strong>.
+                </p>
+                <p>
+                    Afin de finaliser l’activation de votre compte et profiter pleinement de nos services, nous vous invitons à confirmer votre adresse email en cliquant sur le bouton ci-dessous :
+                </p>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="${verificationLink}" style="background-color: #417abc; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: bold; display: inline-block;">
+                    Vérifier mon adresse email
+                    </a>
+                </div>
+
+                <p>
+                    Si le bouton ci-dessus ne fonctionne pas, copiez-collez le lien suivant dans votre navigateur :
+                </p>
+
+                <p style="background-color: #f0f0f0; padding: 10px; word-break: break-all; font-size: 14px;">
+                    ${verificationLink}
+                </p>
+
+                <p>
+                    Ce lien est valable pendant <strong>24 heures</strong>.
+                </p>
+
+                <p style="color: red; font-weight: bold; margin-top: 20px;">
+                    Attention : ne communiquez jamais vos informations confidentielles. AdsCity ne vous demandera jamais vos mots de passe ou codes de sécurité.
+                </p>
+
+                <p style="margin-top: 20px;">Merci de faire partie de la communauté AdsCity.</p>
+                <p style="font-style: italic; color: #777;">L'équipe AdsCity</p>
+
+                <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+
+                <small style="color: #777;">
+                    Ce message est généré automatiquement, merci de ne pas y répondre.
+                </small>
+                </div>
+
+                <footer style="text-align: center; margin-top: 20px; padding: 20px 0; background-color: #f4f4f4;">
+                    <a href="${PUBLIC_URL}" style="color: #417abc; text-decoration: none;">
+                        <img src="data:image/jpeg;base64,${logoBase64}" alt="Logo AdsCity" style="width: 100px; height: auto;">
+                    </a>
+                    <p style="font-size: 12px; color: #777;">2025 © AdsCity. Tous droits réservés.</p>
+                    <p style="font-size: 12px; color: #777;">
+                        Rostov-Na-Donu, Russie | Téléphone: +7 (951) 516-95-31 |
+                        Email: <a href="mailto:support@adscity.net" style="color: #417abc; text-decoration: none;">support@adscity.net</a>
+                    </p>
+                    <p style="font-size: 12px; color: #417abc; margin-top: 10px;">Publiez, Vendez, Échangez</p>
+                </footer>
+            </body>
+        </html>
+        `,
+    };
+
+    nodemailerTransport.sendMail(mailOptions, (error, info) => {
+        if (error) {
+            console.error('Erreur lors de l\'envoi de l\'email :', error);
+        } else {
+            console.log('Email envoyé :', info.response);
+        }
+    });
+};
+
 
 module.exports = {
+    emailVerification,
     sendCode,
     sendAdminEmail,
     sendPasswordResetEmail,

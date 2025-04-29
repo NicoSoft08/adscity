@@ -1,3 +1,4 @@
+const { auth } = require("../config/firebase-admin");
 const {
     createUser,
     signinUser,
@@ -91,7 +92,6 @@ const registerUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
     const { userID, deviceInfo, captchaToken } = req.body;
-    console.log(captchaToken)
 
     if (!userID) {
         return res.status(400).json({
@@ -423,6 +423,15 @@ const requestPasswordReset = async (req, res) => {
         return res.status(400).json({
             success: false,
             message: "Échec de la vérification CAPTCHA"
+        });
+    }
+
+    // Check if user exists in Firebase Authentication
+    const userRecord = await auth.getUserByEmail(email);
+    if (!userRecord) {
+        return res.status(404).json({
+            success: false,
+            message: "Utilisateur non trouvé"
         });
     }
 

@@ -1,5 +1,5 @@
 const { firestore, admin, auth } = require('../config/firebase-admin');
-const { sendSupportEmail, sendUserEmailWithTicket } = require('../controllers/emailController');
+const { sendSupportEmail, sendUserEmailWithTicket, emailVerification } = require('../controllers/emailController');
 const { generateTicketID } = require('../func');
 const data = require('../json/data.json');
 
@@ -770,6 +770,45 @@ const collectVerifications = async () => {
     }
 }
 
+const emailVerificationLink = async (userID) => {
+
+    try {
+        // Get user data from Firestore to get first name and last name
+        const userDoc = await firestore.collection('USERS').doc(userID).get();
+        if (!userDoc.exists) {
+            return res.status(404).json({
+                success: false,
+                message: "Utilisateur non trouvé dans la base de données"
+            });
+        }
+
+        const userData = userDoc.data();
+        const firstName = userData.firstName || '';
+        const lastName = userData.lastName || '';
+        const email = userData.email || '';
+
+
+
+        // Generate custom verification link
+        const actionCodeSettings = {
+            url: `${process.env.PUBLIC_URL}/auth/email-verified?uid=${userID}`,
+            handleCodeInApp: true
+        };
+
+        const link = await auth.generateEmailVerificationLink(
+            email,
+            actionCodeSettings
+        );
+
+        // Send email with verification link
+        await emailVerification(firstName, lastName, email, link);
+        return true;
+    } catch (error) {
+        console.error("Erreur lors du renvoi de l'email de vérification:", error);
+        return false;
+    }
+}
+
 module.exports = {
     logAdminIDAction,
     logClientIDAction,
@@ -789,5 +828,6 @@ module.exports = {
     searchQuery,
     updateInteraction,
     updateContactClick,
+    emailVerificationLink,
     socialLinksUpdate,
 };

@@ -29,19 +29,19 @@ const {
     adminSuspendPost,
     deletePost
 } = require('../controllers/postController');
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyToken, authenticateAdmin, authenticateUser } = require('../middlewares/authMiddleware');
 // const { collectPostBySlug } = require('../firebase/post');
 
 const router = express.Router();
 
-router.get('/', getPosts);
+router.get('/', authenticateAdmin, getPosts);
 
-router.post('/create', verifyToken, createPost);
+router.post('/create', authenticateUser, createPost);
 
-router.post('/post/:postID/admin/approve', adminApprovePost);
-router.post('/post/:postID/admin/refuse', adminRefusePost);
-router.delete('/post/:postID/admin/delete', adminDeletePost);
-router.post('/post/:postID/admin/suspend', adminSuspendPost);
+router.post('/post/:postID/admin/approve', authenticateAdmin, adminApprovePost);
+router.post('/post/:postID/admin/refuse', authenticateAdmin, adminRefusePost);
+router.delete('/post/:postID/admin/delete', authenticateAdmin, adminDeletePost);
+router.post('/post/:postID/admin/suspend', authenticateAdmin, adminSuspendPost);
 router.post('/post/:postID/report', reportPostByID)
 
 router.get('/all', getPostsData);

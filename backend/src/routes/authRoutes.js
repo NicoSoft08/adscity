@@ -17,14 +17,14 @@ const {
     requestPasswordReset,
     verifyResetToken
 } = require('../controllers/authController');
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { authenticateAdmin, authenticateUser } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Route liées à l'authentification
 router.post('/create-user', registerUser);
-router.post('/login-user', verifyToken, loginUser);
-router.post('/logout-user', verifyToken, signoutUser);
+router.post('/login-user', authenticateUser, loginUser);
+router.post('/logout-user', authenticateUser, signoutUser);
 router.delete('/delete-user', deleteUser);
 router.post('/disable-user', disableUserAccount);
 router.post('/restore-user', restoreUserAccount);
@@ -32,7 +32,7 @@ router.post('/verify-code', verifyOTPCode);
 // router.post('/verify-device/:deviceID', verifyToken, validateDevice);
 // router.post('/decline-device/:deviceID', verifyToken, refuseDevice);
 router.post('/update-password', changePassword);
-router.post('/new-admin/add', createNewAdmin);
+router.post('/new-admin/add', authenticateAdmin, createNewAdmin);
 router.post('/request-password-reset', requestPasswordReset);
 router.get('/verify-reset-token/:token', verifyResetToken);
 

@@ -130,7 +130,7 @@ const fetchIPAddress = async () => {
 };
 
 const storage = multer.memoryStorage();
-const limits = { fileSize: 10 * 1024 * 1024 }; // 10MB
+const limits = { fileSize: 30 * 1024 * 1024 }; // 30MB
 const upload = multer({
     storage: storage,
     limits: limits,
@@ -139,7 +139,7 @@ const upload = multer({
 const uploadVerif = multer({
     storage: storage,
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB limit
+        fileSize: 30 * 1024 * 1024, // 30MB limit
     },
     fileFilter: (req, file, cb) => {
         // Define allowed file types

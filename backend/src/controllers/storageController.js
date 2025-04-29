@@ -1,5 +1,5 @@
 const { firestore } = require('../config/firebase-admin');
-const { uploadPostImage, uploadUserProfilePicture, collectUserProfilePhoto, deleteImagesByPostID, uploadMediaURL, uploadUserCoverPicture, uploadSensitiveVerificationURL } = require('../firebase/storage');
+const { uploadPostImage, uploadUserProfilePicture, collectUserProfilePhoto, deleteImagesByPostID, uploadMediaURL, uploadUserCoverPicture, uploadSensitiveVerificationURL, uploadStatusMediaURL } = require('../firebase/storage');
 
 const getUserProfilePicture = async (req, res) => {
     const { userID } = req.params;
@@ -163,7 +163,7 @@ const uploadMedia = async (req, res) => {
 const uploadSensitiveVerification = async (req, res) => {
     const { userID } = req.body;
     const files = req.files;
-    
+
     // Check if userID exists
     if (!userID) {
         return res.status(400).json({
@@ -172,7 +172,7 @@ const uploadSensitiveVerification = async (req, res) => {
             errorCode: "MISSING_USER_ID"
         });
     }
-    
+
     // Check if files exist
     if (!files) {
         return res.status(400).json({
@@ -181,7 +181,7 @@ const uploadSensitiveVerification = async (req, res) => {
             errorCode: "NO_FILES_UPLOADED"
         });
     }
-    
+
     // Check if both required files exist
     if (!files.document) {
         return res.status(400).json({
@@ -190,7 +190,7 @@ const uploadSensitiveVerification = async (req, res) => {
             errorCode: "MISSING_DOCUMENT"
         });
     }
-    
+
     if (!files.selfie) {
         return res.status(400).json({
             success: false,
@@ -198,15 +198,15 @@ const uploadSensitiveVerification = async (req, res) => {
             errorCode: "MISSING_SELFIE"
         });
     }
-    
+
     const documentFile = files.document[0];
     const selfieFile = files.selfie[0];
-    
+
     try {
         // Check if user exists in database
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
-        
+
         if (!userDoc.exists) {
             return res.status(404).json({
                 success: false,
@@ -214,7 +214,7 @@ const uploadSensitiveVerification = async (req, res) => {
                 errorCode: "USER_NOT_FOUND"
             });
         }
-        
+
         // Check if user already has a pending verification
         const userData = userDoc.data();
         if (userData.verificationStatus === "pending") {
@@ -224,9 +224,9 @@ const uploadSensitiveVerification = async (req, res) => {
                 errorCode: "VERIFICATION_ALREADY_PENDING"
             });
         }
-        
+
         const publicUrl = await uploadSensitiveVerificationURL(userID, documentFile, selfieFile);
-        
+
         if (!publicUrl || !publicUrl.documentUrl || !publicUrl.selfieUrl) {
             return res.status(500).json({
                 success: false,
@@ -234,10 +234,10 @@ const uploadSensitiveVerification = async (req, res) => {
                 errorCode: "UPLOAD_FAILED"
             });
         }
-        
+
         // Log successful verification submission
         console.log(`Vérification soumise avec succès pour l'utilisateur ${userID}`);
-        
+
         res.status(200).json({
             success: true,
             message: "Documents de vérification téléchargés avec succès",
@@ -245,13 +245,13 @@ const uploadSensitiveVerification = async (req, res) => {
         });
     } catch (error) {
         console.error('Erreur lors du téléchargement des fichiers de vérification:', error);
-        
+
         // Determine specific error type
         let errorMessage = "Erreur technique, réessayez plus tard";
         let errorCode = "INTERNAL_SERVER_ERROR";
         let statusCode = 500;
-        
-        if (error.message.includes("Format de document non autorisé") || 
+
+        if (error.message.includes("Format de document non autorisé") ||
             error.message.includes("Format de selfie non autorisé")) {
             errorMessage = error.message;
             errorCode = "INVALID_FILE_TYPE";
@@ -265,11 +265,51 @@ const uploadSensitiveVerification = async (req, res) => {
             errorCode = "STORAGE_QUOTA_EXCEEDED";
             statusCode = 507;
         }
-        
+
         res.status(statusCode).json({
             success: false,
             message: errorMessage,
             errorCode: errorCode
+        });
+    }
+};
+
+const uploadStatusMedia = async (req, res) => {
+    const file = req.file;
+    const userID = req.body.userID;
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID utilisateur manquant'
+        });
+    }
+
+    if (!file) {
+        return res.status(400).json({
+            success: false,
+            message: 'Média manquant'
+        });
+    }
+
+    try {
+        const publicUrl = await uploadStatusMediaURL(userID, file);
+        if (!publicUrl) {
+            return res.status(500).json({
+                success: false,
+                message: 'Erreur lors du téléchargement de la média'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Média téléchargé avec succès',
+            publicUrl: publicUrl
+        });
+    } catch (error) {
+        console.error('Erreur lors du téléchargement de la média:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
         });
     }
 };
@@ -281,5 +321,6 @@ module.exports = {
     uploadCoverURL,
     uploadMedia,
     uploadProfileURL,
+    uploadStatusMedia,
     uploadSensitiveVerification,
 };

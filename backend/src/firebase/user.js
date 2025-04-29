@@ -660,7 +660,6 @@ const searchHistoryUpdate = async (userID, query) => {
 };
 
 const collectAnyUserData = async (userID) => {
-    console.log(userID)
     try {
         const userRef = firestore.collection('USERS').doc(userID);
         const userDoc = await userRef.get();
@@ -743,6 +742,42 @@ const collectUserVerificationData = async (userID) => {
     }
 };
 
+const updateUserVerificationStatus = async (userID, updateData) => {
+    try {
+        const userRef = firestore.collection('USERS').doc(userID);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            return null;
+        }
+
+        await userRef.update({
+            ...updateData,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        const notificationRef = userRef.collection('NOTIFICATIONS');
+        const notificationData = {
+            type: 'verification_status',
+            title: updateData.verificationStatus === 'approved'
+                ? "Vérification approuvée"
+                : "Vérification rejetée",
+            message: updateData.verificationStatus === 'approved'
+                ? "Votre vérification d'identité a été approuvée."
+                : `Votre vérification d'identité a été rejetée. Motif: ${updateData.rejectionReason}`,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            isRead: false
+        }
+
+        await notificationRef.add(notificationData);
+        console.log(`✅ Notification de ${updateData.verificationStatus} envoyée à l'utilisateur ${userID}`);
+
+        return true;
+    } catch (error) {
+        console.error("❌ Erreur lors de la mise à jour des données de vérification utilisateur :", error);
+        return null;
+    }
+};
+
 module.exports = {
     addRemoveFavorites,
     collectAnyUserData,
@@ -783,4 +818,6 @@ module.exports = {
     updateUserFields,
     updateUserInteraction,
     searchHistoryUpdate,
+
+    updateUserVerificationStatus,
 };

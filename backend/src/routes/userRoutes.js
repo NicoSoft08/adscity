@@ -26,45 +26,47 @@ const {
     deleteAdminAllNotifications,
     getUserIDLoginActivity,
     getUserLocations,
-    getUserVerificationData
+    getUserVerificationData,
+    updateUserVerificationData
 } = require('../controllers/userController');
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyToken, authenticateAdmin, authenticateUser } = require('../middlewares/authMiddleware');
 
 const router = express.Router();
 
 // Route liées à l'uttilisateur
-router.get('/', getUsers);
+router.get('/', authenticateAdmin, getUsers);
 router.get('/locations', getUserLocations);
 router.get('/all/status', getAllUsersWithStatus);
 router.get('/:userID', getUserData);
 router.get('/user/:user_id', getDataFromUserID);
 router.get('/user/:userID', getAnyUserData);
 // router.get('/:interlocutorID', fetchInterlocutorProfile);
-router.post('/user/status', setUserOnline);
-router.get('/:userID/favorites', getUserFavorites);
+router.post('/user/status', authenticateUser, setUserOnline);
+router.get('/:userID/favorites', authenticateUser, getUserFavorites);
 router.put('/:userID/profile-field/update', verifyToken, modifyUserFields);
 router.post('/:userID/favorites/add-remove', toggleFavorites);
 
-router.get('/:userID/admin/notifications', getAdminNotifications);
-router.post('/:userID/admin/notifications/:notificationID/read', readAdminNotification);
-router.post('/:userID/admin/notifications/read-all', readAdminAllNotifications);
+router.get('/:userID/admin/notifications', authenticateAdmin, getAdminNotifications);
+router.post('/:userID/admin/notifications/:notificationID/read', authenticateAdmin, readAdminNotification);
+router.post('/:userID/admin/notifications/read-all', authenticateAdmin, readAdminAllNotifications);
 
-router.get('/:userID/notifications', getUserNotifications);
+router.get('/:userID/notifications', authenticateUser, getUserNotifications);
 
-router.delete('/:userID/notifications/:notificationID/delete', deleteUserNotification);
-router.delete('/:userID/notifications/delete-all', deleteUserAllNotifications);
+router.delete('/:userID/notifications/:notificationID/delete', authenticateUser, deleteUserNotification);
+router.delete('/:userID/notifications/delete-all', authenticateUser, deleteUserAllNotifications);
 
-router.delete('/:userID/admin/notifications/:notificationID/delete', deleteAdminNotification);
-router.delete('/:userID/admin/notifications/delete-all', deleteAdminAllNotifications);
+router.delete('/:userID/admin/notifications/:notificationID/delete', authenticateAdmin, deleteAdminNotification);
+router.delete('/:userID/admin/notifications/delete-all', authenticateAdmin, deleteAdminAllNotifications);
 
-router.post('/:userID/notifications/:notificationID/read', readUserNotification);
-router.post('/:userID/notifications/read-all', readUserAllNotifications);
+router.post('/:userID/notifications/:notificationID/read', authenticateUser, readUserNotification);
+router.post('/:userID/notifications/read-all', authenticateUser, readUserAllNotifications);
 
 router.post('/update-device-token', verifyToken, updateDeviceToken);
-router.post('/:userID/update-search-history', updateSearchHistory);
-router.get('/:userID/login-activity', getUserLoginActivity);
+router.post('/:userID/update-search-history', authenticateUser, updateSearchHistory);
+router.get('/:userID/login-activity', authenticateUser, getUserLoginActivity);
 router.get('/user/:UserID/login-activity', getUserIDLoginActivity);
 
 router.get('/verification/:userID', getUserVerificationData);
+router.put('/:userID/admin/update-verification-status', updateUserVerificationData);
 
 module.exports = router;

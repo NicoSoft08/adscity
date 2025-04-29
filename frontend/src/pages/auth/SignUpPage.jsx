@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import zxcvbn from 'zxcvbn';
 import { countries } from '../../data/countries';
 import { Eye, EyeOff, Search } from 'lucide-react';
@@ -9,14 +9,19 @@ import Toast from '../../customs/Toast';
 import { createUser } from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import '../../styles/SignUpPage.scss';
 import "react-phone-input-2/lib/style.css";
 
-const steps = ['Informations', 'Contact', 'Location', 'Sécurité'];
+const steps = (language) => (language === 'FR'
+    ? ['Informations', 'Contact', 'Location', 'Sécurité']
+    : ['Information', 'Contact', 'Location', 'Security']
+);
 const strengthColors = ['red', 'orange', 'yellow', 'green'];
 
 export default function SignUpPage() {
     const navigate = useNavigate();
+    const { language } = useContext(LanguageContext);
     const [step, setStep] = useState(0);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
@@ -192,7 +197,7 @@ export default function SignUpPage() {
             <div className="signup-form">
                 {/* Progress Bar */}
                 <div className="progress-bar">
-                    {steps.map((label, index) => (
+                    {steps(language).map((label, index) => (
                         <div key={index} className="step">
                             <div className={`bulb ${index <= step ? 'active' : ''}`}>{index + 1}</div>
                             <div className={`label ${index <= step ? 'active' : ''}`}>{label}</div>

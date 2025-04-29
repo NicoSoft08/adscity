@@ -4,7 +4,7 @@ const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
 const fetchUserData = async (userID) => {
     try {
-        const response = await fetch(`${backendUrl}/api/users/user/${userID}`, {
+        const response = await fetch(`${backendUrl}/api/users/${userID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -18,12 +18,13 @@ const fetchUserData = async (userID) => {
     }
 };
 
-const fetchDataByUserID = async (userID) => {
+const fetchDataByUserID = async (userID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             }
         });
 
@@ -46,48 +47,24 @@ const getUserDevices = async (userID) => {
     return result;
 }
 
-const setUserOnlineStatus = async (userID, isOnline) => {
+const setUserOnlineStatus = async (userID, isOnline, idToken) => {
     try {
-        // Get the current user's token
-        let idToken = '';
-        const currentUser = auth.currentUser;
-
-        if (currentUser) {
-            try {
-                // Set a timeout for getting the token
-                idToken = await Promise.race([
-                    currentUser.getIdToken(),
-                    new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error("Token request timeout")), 5000)
-                    )
-                ]);
-            } catch (tokenError) {
-                console.error("Error getting ID token:", tokenError);
-                // Continue without token if we can't get it (e.g., during logout)
-            }
-        }
-
-        const headers = {
-            'Content-Type': 'application/json',
-        };
-
-        // Add authorization header if we have a token
-        if (idToken) {
-            headers['Authorization'] = `Bearer ${idToken}`;
-        }
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000);
 
         const response = await fetch(`${backendUrl}/api/users/user/status`, {
             method: 'POST',
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
             body: JSON.stringify({
                 userID,
                 isOnline,
                 // Add a timestamp to prevent replay attacks
                 timestamp: Date.now()
             }),
+            credentials: 'include',
             signal: controller.signal
         });
 
@@ -109,7 +86,6 @@ const setUserOnlineStatus = async (userID, isOnline) => {
     }
 };
 
-
 const fetchPostsByUserID = async (userID) => {
     try {
         // Get the current user and their token
@@ -118,7 +94,7 @@ const fetchPostsByUserID = async (userID) => {
             throw new Error('User not authenticated');
         }
 
-        const idToken = await user.getIdToken();
+        const idToken = await user.getIdToken(true);
 
         // Verify the user is fetching their own posts or has admin rights
         if (user.uid !== userID) {
@@ -152,8 +128,6 @@ const fetchPostsByUserID = async (userID) => {
         throw error; // Re-throw to handle in the component
     }
 };
-
-
 
 const fetchUserActivePosts = async (UserID) => {
     const response = await fetch(`${backendUrl}/api/posts/user/${UserID}/active`, {
@@ -231,7 +205,6 @@ const updateUserField = async (userID, field) => {
     }
 }
 
-
 const toggleFavorites = async (postID, userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}/favorites/add-remove`, {
@@ -254,12 +227,13 @@ const toggleFavorites = async (postID, userID) => {
     }
 };
 
-const getUserFavorites = async (userID) => {
+const getUserFavorites = async (userID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}/favorites`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
         });
         const result = await response.json();
@@ -271,11 +245,12 @@ const getUserFavorites = async (userID) => {
     }
 };
 
-const fetchNotifications = async (userID) => {
+const fetchNotifications = async (userID, idToken) => {
     const response = await fetch(`${backendUrl}/api/users/${userID}/notifications`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
         },
     });
 
@@ -283,11 +258,12 @@ const fetchNotifications = async (userID) => {
     return result;
 };
 
-const markNotificationAsRead = async (userID, notificationID) => {
+const markNotificationAsRead = async (userID, idToken, notificationID) => {
     const response = await fetch(`${backendUrl}/api/users/${userID}/notifications/${notificationID}/read`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
         },
     });
 
@@ -402,12 +378,13 @@ const updateSearchHistory = async (userID, query) => {
     }
 };
 
-const getUserLoginActivity = async (userID) => {
+const getUserLoginActivity = async (userID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}/login-activity`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
         });
 

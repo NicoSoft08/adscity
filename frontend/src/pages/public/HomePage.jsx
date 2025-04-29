@@ -16,11 +16,14 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import { Banner } from '../../utils/pubs/Pubs';
 import { banner } from '../../config/images';
+import { LanguageContext } from '../../contexts/LanguageContext';
+// import StatusFeed from './StatusFeed';
 import '../../styles/HomePage.scss';
 
 export default function HomePage() {
     const navigate = useNavigate();
     const { currentUser, userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [adsApproved, setAdsApproved] = useState([]);
     // const [businessPosts, setBusinessPosts] = useState([]);
     const [filteredAds, setFilteredAds] = useState([]);
@@ -29,7 +32,7 @@ export default function HomePage() {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
     useEffect(() => {
-        logEvent(analytics, 'view_home_page', { 
+        logEvent(analytics, 'view_home_page', {
             page_path: '/home',
             user_id: currentUser?.uid,
         });
@@ -88,11 +91,8 @@ export default function HomePage() {
             <div style={{ marginTop: '1rem' }}></div>
             <Banner domainName={'adscity.net'} img={banner} />
 
-
-            {/* <MastheadSlider interval={5000} /> */}
-
-            <div style={{ marginBottom: '1rem' }}></div>
-
+            {/* Status Feed */}
+            {/* <StatusFeed /> */}
 
             <div className="home-container">
                 <div className="main-content">
@@ -116,7 +116,9 @@ export default function HomePage() {
                                 <CardItem key={index} post={item} />
                             ))
                         ) : (
-                            <p className='no-ads'>Aucune annonce trouvée.</p>
+                            <p className='no-ads'>
+                                {language === 'fr' ? 'Aucune annonce trouvée' : 'No ads found'}
+                            </p>
                         )}
                     </CardList>
 

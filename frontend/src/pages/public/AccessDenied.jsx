@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { IconNotAllowed } from '../../config/images';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 const styles = {
     container: {
@@ -31,14 +32,23 @@ const styles = {
 };
 
 export default function AccessDenied() {
+    const { language } = useContext(LanguageContext);
+
     return (
         <div style={styles.container}>
             <img src={IconNotAllowed} style={styles.img} alt='access-denied' />
-            <h1 style={styles.title}>Accès Refusé</h1>
+            <h1 style={styles.title}>
+                {language === 'FR' ? "Accès Refusé" : "Access Denied"}
+            </h1>
             <p style={styles.message}>
-                Vous n'avez pas les autorisations nécessaires pour accéder à cette page.
+                {language === 'FR'
+                    ? "Vous n'avez pas l'autorisation d'accéder à cette page."
+                    : "You do not have permission to access this page."
+                }
             </p>
-            <a href="/" style={styles.link}>Retour à la page d'accueil</a>
+            <a href="/" style={styles.link}>
+                {language === 'FR' ? "Retour à l'accueil" : "Back to Home"}
+            </a>
         </div>
     );
 };

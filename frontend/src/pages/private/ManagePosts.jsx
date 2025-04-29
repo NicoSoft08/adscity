@@ -1,8 +1,8 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { fetchPostsByUserID } from '../../routes/userRoutes';
 import { deletePost, markAsSold, updatePost } from '../../routes/postRoutes';
 import { format, formatDistanceToNow } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS, fr } from 'date-fns/locale';
 import { deletePostImagesFromStorage } from '../../routes/storageRoutes';
 import Pagination from '../../components/pagination/Pagination';
 import Toast from '../../customs/Toast';
@@ -10,36 +10,73 @@ import Modal from '../../customs/Modal';
 import Tab from '../../customs/Tab';
 import Spinner from '../../customs/Spinner';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartPie, faEye, faFilter } from '@fortawesome/free-solid-svg-icons';
+import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import data from '../../json/data.json';
 import { useNavigate } from 'react-router-dom';
-import '../../styles/MyPosts.scss';
 import Loading from '../../customs/Loading';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import { debounce } from 'lodash';
+import '../../styles/MyPosts.scss';
 
-const STATUS_ICONS = {
-    pending: "🟠 En attente",
-    approved: "🟢 Accepté",
-    refused: "🔴 Rejetée",
-    expired: "⚫ Expirée",
-    sold: "✅ Vendue"
-};
+const STATUS_ICONS = (language) => ({
+    pending: language === 'FR' ? "🟠 En attente" : "🟠 Pendin",
+    approved: language === 'FR' ? "🟢 Accepté" : "🟢 Approved",
+    refused: language === 'FR' ? "🔴 Rejeté" : "🔴 Rejected",
+    expired: language === 'FR' ? "⚫ Expiré" : "⚫ Expired",
+    sold: language === 'FR' ? "✅ Vendu" : "✅ Sold",
+});
 
-const PostsFilter = ({ onFilterChange }) => {
+const PostsFilter = ({ onFilterChange, onExport, language }) => {
     const [filters, setFilters] = useState({
         search: '',
         status: 'all', // 
         category: 'all', //
         city: '',
-        date: '',
+        startDate: "", // Date de début
+        endDate: "",   // Date de fin
         views: '',
     });
 
+    // Référence pour la fonction debounce
+    const debouncedFilterChangeRef = useRef(null);
+
+    // Initialisation de la fonction debounce
+    useEffect(() => {
+        debouncedFilterChangeRef.current = debounce((newFilters) => {
+            onFilterChange(newFilters);
+        }, 300);
+
+        // Nettoyage lors du démontage du composant
+        return () => {
+            if (debouncedFilterChangeRef.current?.cancel) {
+                debouncedFilterChangeRef.current.cancel();
+            }
+        };
+    }, [onFilterChange]);
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        const updatedFilters = { ...filters, [name]: value };
+
+        // Validation des dates
+        let updatedFilters = { ...filters, [name]: value };
+
+        // S'assurer que la date de début n'est pas après la date de fin
+        if (name === "startDate" && updatedFilters.endDate && updatedFilters.startDate > updatedFilters.endDate) {
+            updatedFilters.endDate = updatedFilters.startDate;
+        }
+
+        // S'assurer que la date de fin n'est pas avant la date de début
+        if (name === "endDate" && updatedFilters.startDate && updatedFilters.endDate < updatedFilters.startDate) {
+            updatedFilters.startDate = updatedFilters.endDate;
+        }
+
         setFilters(updatedFilters);
-        onFilterChange(updatedFilters);
-    }
+
+        // Appel de la fonction debounce
+        if (debouncedFilterChangeRef.current) {
+            debouncedFilterChangeRef.current(updatedFilters);
+        }
+    };
 
 
     return (
@@ -47,93 +84,78 @@ const PostsFilter = ({ onFilterChange }) => {
             <input
                 type="text"
                 name="search"
-                placeholder="Rechercher par titre ou ID"
+                placeholder={language === 'FR' ? "Rechercher par titre ou ID" : "Search by title or ID"}
                 value={filters.search}
                 onChange={handleChange}
             />
-
             <select name="status" value={filters.status} onChange={handleChange}>
-                <option value="all">Tous les statuts</option>
-                <option value="approved">Publiée</option>
-                <option value="pending">En attente</option>
-                <option value="refused">Refusée</option>
-                <option value="expired">Expirée</option>
-                <option value="sold">Vendue</option>
+                <option value="all">{language === 'FR' ? "Toutes les statuts" : "All status"}</option>
+                {Object.keys(STATUS_ICONS).map(status => (
+                    <option key={status} value={status}>{STATUS_ICONS[status]}</option>
+                ))}
             </select>
-
             <select name="category" value={filters.category} onChange={handleChange}>
-                <option value="all">Toutes les catégories</option>
+                <option value="all">{language === 'FR' ? "Toutes les catégories" : "All categories"}</option>
                 {data.categories.map(category => (
-                    <option
-                        key={category.key}
-                        value={category.categoryName}>
+                    <option key={category.key} value={category.categoryName}>
                         {category.categoryTitles.fr}
                     </option>
                 ))}
             </select>
-
             <input
                 type="text"
                 name="city"
-                placeholder="Ville"
+                placeholder={language === 'FR' ? "Ville" : "City"}
                 value={filters.city}
                 onChange={handleChange}
             />
-
-            <input
-                type="date"
-                name="date"
-                value={filters.date}
-                onChange={handleChange}
-            />
-
+            <div className="date-range">
+                <input
+                    type="date"
+                    name="startDate"
+                    placeholder="Date de début"
+                    value={filters.startDate}
+                    onChange={handleChange}
+                />
+                <input
+                    type="date"
+                    name="endDate"
+                    placeholder="Date de fin"
+                    value={filters.endDate}
+                    onChange={handleChange}
+                />
+            </div>
             <input
                 type="number"
                 name="views"
-                placeholder="Nombre de vues minimum"
+                placeholder={language === 'FR' ? "Nombre de vues minimum" : "Minimum views"}
                 value={filters.views}
                 onChange={handleChange}
             />
+            <button onClick={onExport}>
+                {language === 'FR' ? " Exporter en CSV" : " Export to CSV"}
+            </button>
         </div>
     );
 };
 
-const PostRow = ({ index, post, onAction, isSelected, onSelect }) => {
+const PostRow = ({ index, post, onAction, language, setLoading }) => {
 
     return (
-        <tr className={isSelected ? 'selected' : ''}>
-            <td>
-                <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => onSelect(post.PostID)}
-                />
-            </td>
+        <tr onClick={() => onAction(post)}>
             <td>{index + 1}</td>
             <td>{post.PostID}</td>
             <td><img src={post.images[0]} alt='' width={40} height={40} /></td>
             <td>{post.details?.title}</td>
             <td>{post.details?.price} RUB </td>
-            <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: fr, addSuffix: true })}</td>
-            <td>{STATUS_ICONS[post.status] || "⚪ Inconnu"}</td>
-
-            {/* 📌 Div flottante affichée si l'annonce est sélectionnée */}
-            {isSelected && (
-                <div className="floating-menu">
-                    <button title="Voir l'annonce" onClick={() => onAction('view', post.PostID)}>
-                        <FontAwesomeIcon icon={faEye} />
-                    </button>
-                    <button title='Statistiques' onClick={() => onAction('stats', post.PostID)}>
-                        <FontAwesomeIcon icon={faChartPie} />
-                    </button>
-                </div>
-            )}
+            <td>{STATUS_ICONS(language)[post.status] || "⚪ Inconnu"}</td>
+            <td>{formatDistanceToNow(new Date(post.expiry_date), { locale: language === 'FR' ? fr : enUS, addSuffix: true })}</td>
         </tr>
     );
 };
 
 export default function ManagePosts({ currentUser }) {
-    const [selectedPosts, setSelectedPosts] = useState([]);
+    const { language } = useContext(LanguageContext);
     const [posts, setPosts] = useState([]);
     const [filteredPosts, setFilteredPosts] = useState([]);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
@@ -170,7 +192,7 @@ export default function ManagePosts({ currentUser }) {
                 try {
                     const data = await fetchPostsByUserID(userID);
 
-                    if (isMounted) {
+                    if (isMounted && data) {
                         // Validate and set data
                         const postsArray = data.postsData?.allAds || [];
                         setPosts(postsArray);
@@ -207,36 +229,11 @@ export default function ManagePosts({ currentUser }) {
     }, [currentUser]);
 
 
-    const currentPosts = useMemo(() => {
-        const indexOfLastPost = currentPage * postPerPage;
-        const indexOfFirstPost = indexOfLastPost - postPerPage;
-        return filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
-    }, [filteredPosts, currentPage, postPerPage]);
-
-    // Change page
+    // 📍 Gestion du changement de page
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
-
-    // Gérer la sélection d'une annonce
-    const handleSelect = (postID) => {
-        setSelectedPosts(prev => {
-            const newSelection = new Set(prev);
-            if (newSelection.has(postID)) {
-                newSelection.delete(postID);
-            } else {
-                newSelection.add(postID);
-            }
-            return Array.from(newSelection);
-        });
-    };
-
-    // Vérifier si tous les posts sont sélectionnés
-    const allSelected = useMemo(() => selectedPosts.length === posts.length, [selectedPosts, posts]);
-
-    // Sélectionner/Désélectionner tout
-    const toggleSelectAll = () => {
-        setSelectedPosts(allSelected ? [] : posts.map(post => post.PostID));
-    };
-
+    const indexOfLastPost = currentPage * postPerPage;
+    const indexOfFirstPost = indexOfLastPost - postPerPage;
+    const currentPosts = filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
 
     const handleEditPost = (post) => {
         if (!post) return;
@@ -347,32 +344,114 @@ export default function ManagePosts({ currentUser }) {
         }
     };
 
-    const handleAction = (action, postID) => {
-        switch (action) {
-            case 'view':
-                navigate(`${postID}`);
-                break;
-            case 'stats':
-                navigate(`${postID}/statistics`);
-                break;
-            default:
-                break;
+    // 🚀 Gestion des actions (navigation)
+    const handleAction = (post) => {
+        if (post?.PostID) {
+            navigate(`${post.PostID}`);
         }
     };
 
-    // Fonction pour appliquer les filtres
-    const handleFilterChange = useCallback((filters) => {
-        setFilteredPosts(posts.filter(post =>
-            (filters.search === "" ||
-                post.details.title.toLowerCase().includes(filters.search.toLowerCase()) ||
-                post.PostID.toLowerCase().includes(filters.search.toLowerCase())) &&
-            (filters.status === "all" || post.status === filters.status || post.isSold === true) &&
-            (filters.category === "all" || post.category === filters.category) &&
-            (filters.city === "" || post.location.city.toLowerCase().includes(filters.city.toLowerCase())) &&
-            (filters.date === "" || format(new Date(post.expiry_date), "yyyy-MM-dd") === filters.date) &&
-            (filters.views === "" || post.stats?.views >= Number(filters.views))
-        ));
-    }, [posts]);
+    // 🎯 Gestion des filtres
+    const handleFilterChange = (filters) => {
+        let filtered = posts.filter(post => {
+            // Convertir la date d'expiration en objet Date pour la comparaison
+            const expiryDate = post.expiry_date ? new Date(post.expiry_date) : null;
+            const formattedExpiryDate = expiryDate ? format(expiryDate, "yyyy-MM-dd") : null;
+
+            // Filtrage par recherche (titre ou ID)
+            const searchMatch = filters.search === "" ||
+                (post.details?.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
+                    post.PostID?.toLowerCase().includes(filters.search.toLowerCase()));
+
+            // Filtrage par statut
+            const statusMatch = filters.status === "all" || post.status === filters.status;
+
+            // Filtrage par catégorie
+            const categoryMatch = filters.category === "all" || post.category === filters.category;
+
+            // Filtrage par ville
+            const cityMatch = filters.city === "" ||
+                (post.location?.city?.toLowerCase().includes(filters.city.toLowerCase()));
+
+            // Filtrage par plage de dates
+            const startDateMatch = !filters.startDate || !formattedExpiryDate ||
+                formattedExpiryDate >= filters.startDate;
+
+            const endDateMatch = !filters.endDate || !formattedExpiryDate ||
+                formattedExpiryDate <= filters.endDate;
+
+            // Filtrage par nombre de vues
+            const viewsMatch = filters.views === "" ||
+                (post.stats?.views && post.stats.views >= Number(filters.views));
+
+            return searchMatch && statusMatch && categoryMatch && cityMatch &&
+                startDateMatch && endDateMatch && viewsMatch;
+        });
+
+        setFilteredPosts(filtered);
+        setCurrentPage(1); // Réinitialiser à la première page lors du changement de filtres
+    };
+
+    // 📊 Exportation en CSV
+    const handleExportCSV = async () => {
+        try {
+            // Fonction pour échapper les valeurs CSV
+            const escapeCSV = (value) => {
+                if (value === null || value === undefined) return '';
+                const stringValue = String(value);
+                if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+                    return `"${stringValue.replace(/"/g, '""')}"`;
+                }
+                return stringValue;
+            };
+
+            // Créer le contenu CSV
+            const headers = language === 'FR'
+                ? ["ID", "Titre", "Prix", "Statut", "Annonceur", "Date d'expiration", "Vues", "Clicks", "Ville"]
+                : ["ID", "Title", "Price", "Status", "Advertiser", "Expiry Date", "Views", "Clicks", "City"];
+            const csvContent = [
+                headers.join(","),
+                ...filteredPosts.map(post => [
+                    escapeCSV(post.PostID),
+                    escapeCSV(post.details?.title || ""),
+                    post.details?.price || 0,
+                    escapeCSV(post.status || ""),
+                    escapeCSV(post.userID || ""),
+                    post.expiry_date ? format(new Date(post.expiry_date), "yyyy-MM-dd") : "",
+                    post.stats?.views || 0,
+                    post.stats?.clicks || 0,
+                    escapeCSV(post.location?.city || "")
+                ].join(","))
+            ].join("\n");
+
+            // Créer et télécharger le fichier
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `annonces_export_${format(new Date(), "yyyy-MM-dd")}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            setToast({
+                show: true,
+                type: 'success',
+                message: language === 'FR'
+                    ? 'Export réussi!'
+                    : 'Export successful!'
+            });
+        } catch (error) {
+            console.error("Erreur lors de l'exportation:", error);
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Erreur lors de l\'exportation'
+                    : 'Error during export'
+            });
+        }
+    };
 
     const options = [
         {
@@ -397,7 +476,7 @@ export default function ManagePosts({ currentUser }) {
     return (
         <div className='my-ads'>
             <div className="head">
-                <h2>Annonces</h2>
+                <h2>{language === 'FR' ? "Gestion des Annonces" : "Ads Management"} {filteredPosts.length}</h2>
                 <div className="filters-container" onClick={() => setOpenFilter(!openFilter)}>
                     <FontAwesomeIcon icon={faFilter} />
                 </div>
@@ -405,7 +484,7 @@ export default function ManagePosts({ currentUser }) {
 
             {/* Filtres */}
             {openFilter && (
-                <PostsFilter onFilterChange={handleFilterChange} />
+                <PostsFilter onFilterChange={handleFilterChange} language={language} onExport={handleExportCSV} />
             )}
 
             {isLoading && <Loading />}
@@ -415,50 +494,37 @@ export default function ManagePosts({ currentUser }) {
                     <table>
                         <thead>
                             <tr>
-                                <th>
-                                    <input
-                                        type="checkbox"
-                                        checked={allSelected}
-                                        onChange={toggleSelectAll}
-                                    />
-                                </th>
                                 <th>#</th>
                                 <th>ID</th>
                                 <th>Image</th>
-                                <th>Titre</th>
-                                <th>Prix</th>
-                                <th>Expiration</th>
-                                <th>Statut</th>
+                                <th>{language === 'FR' ? "Titre" : "Title"}</th>
+                                <th>{language === 'FR' ? "Prix" : "Price"}</th>
+                                <th>{language === 'FR' ? "Statut" : "Status"}</th>
+                                <th>{language === 'FR' ? "Expiration" : "Expiry Date"}</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {currentPosts.length > 0 ? (
-                                currentPosts.map((post, index) => (
-                                    <PostRow
-                                        key={post.id}
-                                        index={index}
-                                        post={post}
-                                        onAction={handleAction}
-                                        isSelected={selectedPosts.includes(post.PostID)}
-                                        onSelect={handleSelect}
-                                    />
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan="12">Aucune annonce trouvée.</td>
-                                </tr>
+                            {currentPosts.length ? currentPosts.map((post, index) => (
+                                <PostRow
+                                    key={post.PostID || index}
+                                    index={indexOfFirstPost + index}
+                                    post={post}
+                                    currentUser={currentUser}
+                                    onAction={handleAction}
+                                    setLoading={setIsLoading}
+                                    language={language}
+                                />
+                            )) : (
+                                <tr><td colSpan="12">
+                                    {language === 'FR' ? "Aucune annonce trouvée" : "No ads found"}
+                                </td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
 
                 {posts.length > postPerPage && (
-                    <Pagination
-                        currentPage={currentPage}
-                        elements={posts}
-                        elementsPerPage={postPerPage}
-                        paginate={paginate}
-                    />
+                    <Pagination currentPage={currentPage} elements={filteredPosts} elementsPerPage={postPerPage} paginate={paginate} />
                 )}
             </div>
 

@@ -13,8 +13,9 @@ export default function ManageNotifications() {
     useEffect(() => {
         const getNotifications = async () => {
             const userID = currentUser.uid;
+            const idToken = await currentUser.getIdToken(true);
             setIsLoading(true);
-            const result = await fetchNotifications(userID);
+            const result = await fetchNotifications(userID, idToken);
             if (result.success) {
                 setNotifications(result?.data);
                 setIsLoading(false);

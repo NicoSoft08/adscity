@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
-import { Camera, Files, FolderOpen, Home, LinkIcon, Mail, MapPin, Package, Pencil, PhoneCall, Search, User } from 'lucide-react';
+import { Camera, Folder, FolderOpen, Home, LinkIcon, Mail, MapPin, Package, Pencil, PhoneCall, Search, User } from 'lucide-react';
 import { IconAvatar } from '../../config/images';
 import { uploadCoverPhoto, uploadProfilePhoto } from '../../routes/storageRoutes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartSimple, faCheck, faCircleCheck, faCircleExclamation, faCircleXmark, faCog, faMoneyCheck, faSliders, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faChartSimple, faCheck, faCheckCircle, faCircleCheck, faCircleExclamation, faCog, faMoneyCheck, faSliders, faTimes, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import { getUserLoginActivity, updateUserField } from '../../routes/userRoutes';
 import cities from '../../data/ru.json';
 import Modal from '../../customs/Modal';
@@ -15,13 +15,16 @@ import { analytics } from '../../firebaseConfig';
 import Settings from './Settings';
 import ManagePayments from '../../components/payment/ManagePayments';
 import { differenceInDays, format } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS, fr } from 'date-fns/locale';
 import Pagination from '../../components/pagination/Pagination';
 import { logClientAction } from '../../routes/apiRoutes';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import { translations } from '../../langs/translations';
 import '../../styles/UserProfile.scss';
 
 export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [activeSection, setActiveSection] = useState('activity'); // Section active par défaut, 'activity
     const [loginActivity, setLoginActivity] = useState([]);
@@ -44,6 +47,7 @@ export default function UserProfile() {
     });
     const [showEdit, setShowEdit] = useState(false);
     const [field, setField] = useState(null);
+    const t = translations[language] || translations.FR;
 
     useEffect(() => {
         // Early return if no user ID
@@ -71,7 +75,8 @@ export default function UserProfile() {
                     return;
                 }
 
-                const result = await getUserLoginActivity(currentUser.uid);
+                const idToken = await currentUser.getIdToken(true);
+                const result = await getUserLoginActivity(currentUser.uid, idToken);
                 if (result.success && Array.isArray(result.activity)) {
                     setLoginActivity(result.activity);
                 } else {
@@ -90,10 +95,29 @@ export default function UserProfile() {
 
 
     const tabs = [
-        { id: 'activity', icon: faChartSimple, label: 'Activité' },
-        { id: 'payments', icon: faMoneyCheck, label: 'Paiements' },
-        { id: 'settings', icon: faSliders, label: 'Réglages' },
+        { id: 'activity', icon: faChartSimple, label: t.activity_label },
+        { id: 'payments', icon: faMoneyCheck, label: t.payment_label },
+        { id: 'settings', icon: faSliders, label: t.settings_label },
     ];
+
+    const labelsConfirm = {
+        FR: { confirm: "Confirmer" },
+        EN: { confirm: "Confirm" }
+    };
+
+    const labelsCancel = {
+        FR: { cancel: "Annuler" },
+        EN: { cancel: "Cancel" }
+    };
+
+    const identityDocument = userData?.documents?.identityDocument;
+    const selfie = userData?.documents?.selfie;
+    const verificationStatus = userData?.verificationStatus;
+    const userHasDocument = Boolean(identityDocument && selfie);
+
+
+    const confirmText = labelsConfirm[language]?.confirm || "Confirm";
+    const cancelText = labelsCancel[language]?.cancel || "Cancel";
 
     const userProfileLink = `${window.location.origin}/users/user/${userData?.UserID?.toLowerCase()}/profile/show`;
 
@@ -135,16 +159,21 @@ export default function UserProfile() {
         setIsLoading(true);
         let result = null;
         const userID = currentUser?.uid;
+        const idToken = await currentUser.getIdToken(true);
 
         try {
             if (imageType === "profile") {
                 const count = userData?.profilChanges?.count ?? 0;
                 if (count >= 3) {
-                    setToast({ show: true, type: 'error', message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.' });
+                    setToast({
+                        show: true,
+                        type: 'error',
+                        message: 'Vous avez dépassé le nombre maximum de changements de photo de profil.'
+                    });
                     return;
                 }
 
-                result = await uploadProfilePhoto(selectedFile, userID);
+                result = await uploadProfilePhoto(selectedFile, userID, idToken);
                 if (result) setFormData(prevFormData => ({ ...prevFormData, profilURL: result.imageUrl }));
 
                 await logClientAction(
@@ -160,7 +189,7 @@ export default function UserProfile() {
                     return;
                 }
 
-                result = await uploadCoverPhoto(selectedFile, userID);
+                result = await uploadCoverPhoto(selectedFile, userID, idToken);
                 if (result) setFormData(prevFormData => ({ ...prevFormData, coverURL: result.imageUrl }));
 
                 await logClientAction(
@@ -392,39 +421,54 @@ export default function UserProfile() {
         );
 
         const formatDateTimestamp = (adTimestamp) => {
-            if (!adTimestamp) return "Date inconnue";
+            if (!adTimestamp) return language === 'FR' ? "Date inconnue" : "Unknown date";
 
             const adDate = new Date(adTimestamp?._seconds * 1000);
             const now = new Date();
             const diffDays = differenceInDays(now, adDate);
 
-            if (diffDays === 0) return `Auj. à ${format(adDate, 'HH:mm', { locale: fr })}`;
-            if (diffDays === 1) return `Hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
-            if (diffDays === 2) return `Avant-hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
-
-            return `${format(adDate, 'dd/MM/yyyy à HH:mm', { locale: fr })}`;
+            if (language === 'FR') {
+                if (diffDays === 0) return `Auj. à ${format(adDate, 'HH:mm', { locale: fr })}`;
+                if (diffDays === 1) return `Hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
+                if (diffDays === 2) return `Avant-hier à ${format(adDate, 'HH:mm', { locale: fr })}`;
+                return `${format(adDate, 'dd/MM/yyyy à HH:mm', { locale: fr })}`;
+            } else {
+                if (diffDays === 0) return `Today at ${format(adDate, 'HH:mm', { locale: enUS })}`;
+                if (diffDays === 1) return `Yesterday at ${format(adDate, 'HH:mm', { locale: enUS })}`;
+                if (diffDays === 2) return `Day before yesterday at ${format(adDate, 'HH:mm', { locale: enUS })}`;
+                return `${format(adDate, 'MM/dd/yyyy at HH:mm', { locale: enUS })}`; // Note: US date format MM/DD/YYYY
+            }
         };
 
         return (
             <div className='activity'>
-                <h2>Activité de Connexion</h2>
+                <h2>
+                    {language === 'FR' ? "Activité de Connexion" : "Login Activity"}
+                </h2>
                 <p>
-                    {loginActivity.length === 0
-                        ? "Aucune activité récente."
-                        : `Voici votre journal ${loginActivity.length > 1
-                            ? `${loginActivity.length} dernières activités`
-                            : "dernière activité"
-                        } de connexion.`}
+                    {loginActivity.length === 0 ? (
+                        language === 'FR' ? "Aucune activité récente." : "No recent activity."
+                    ) : (
+                        language === 'FR' ? (
+                            `Voici vos ${loginActivity.length > 1
+                                ? `${loginActivity.length} dernières activités`
+                                : "dernière activité"} de connexion.`
+                        ) : (
+                            `Here ${loginActivity.length > 1
+                                ? `are your last ${loginActivity.length} login activities`
+                                : "is your last login activity"}.`
+                        )
+                    )}
                 </p>
 
                 <div className="table-container">
                     <table>
                         <thead>
                             <tr>
-                                <th>Navigateur</th>
-                                <th>Système</th>
-                                <th>Adresse IP</th>
-                                <th>Période</th>
+                                <th>{language === 'FR' ? 'Navigateur' : 'Browser'}</th>
+                                <th>{language === 'FR' ? 'Système' : 'System'}</th>
+                                <th>{language === 'FR' ? 'Adresse IP' : 'IP Address'}</th>
+                                <th>{language === 'FR' ? 'Période' : 'Period'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -467,9 +511,16 @@ export default function UserProfile() {
                                 <h1 className="profile-name">
                                     {userData.firstName} {userData.lastName}
                                 </h1>
-                                <button className="forfait">
+                                <button 
+                                className="forfait" 
+                                onClick={() => setToast({
+                                    show: true,
+                                    type: 'info',
+                                    message: language === 'FR' ? "Pas encore disponible" : "Not available yet"
+                                })}
+                                >
                                     <Package size={18} />
-                                    Changer de forfait
+                                    {language === 'FR' ? "Changer de forfait" : "Change Plan"}
                                 </button>
                                 {/* <p className="profile-username">{dummyUser.short_name_link}</p> */}
                             </div>
@@ -478,7 +529,7 @@ export default function UserProfile() {
                     <div className="profile-bio">
                         <p>
                             {formData.bio}
-                            <span title="Modifier ma bio" onClick={() => handleEdit("bio")}>
+                            <span title={language === 'FR' ? "Modifier ma bio" : "Edit bio"} onClick={() => handleEdit("bio")}>
                                 <Pencil size={16} />
                             </span>
                         </p>
@@ -487,26 +538,39 @@ export default function UserProfile() {
                             <div className="profile-location">
                                 <User className="icon-sm" />
                                 <span>{formData.firstName}</span>
-                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("firstName")}>
+                                <span
+                                    className="edit-icon"
+                                    title={language === 'FR' ? "Modifier prénom" : "Edit first name"}
+                                    onClick={() => handleEdit("firstName")}>
                                     <Pencil size={16} />
                                 </span>
                             </div>
                             <div className="profile-location">
                                 <User className="icon-sm" />
                                 <span>{formData.lastName}</span>
-                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("lastName")}>
+                                <span
+                                    className="edit-icon"
+                                    title={language === 'FR' ? "Modifier nom de famille" : "Edit last name"}
+                                    onClick={() => handleEdit("lastName")}>
                                     <Pencil size={16} />
                                 </span>
                             </div>
                             <div className="profile-location">
                                 <FolderOpen className="icon-sm" />
-                                <span>{userData?.adsCount > 1 ? `${userData?.adsCount} annonces` : `${userData?.adsCount} annonce`}</span>
+                                <span>{
+                                    language === 'FR' ?
+                                        userData?.adsCount > 1 ? `${userData?.adsCount} annonces` : `${userData?.adsCount} annonce`
+                                        : userData?.adsCount > 1 ? `${userData?.adsCount} ads` : `${userData?.adsCount} ad`}</span>
                             </div>
                             <div className="profile-location">
                                 <Mail className="icon-sm" />
                                 <span>{userData.email}</span>
                                 <span
-                                    title={userData.emailVerified ? 'Vérifié' : 'Non vérifié'}
+                                    title={
+                                        userData.emailVerified
+                                            ? (language === 'FR' ? 'Vérifié' : 'Verified')
+                                            : (language === 'FR' ? 'Non vérifié' : 'Not verified')
+                                    }
                                     className='edit-icon'
                                 >
                                     <FontAwesomeIcon
@@ -516,29 +580,32 @@ export default function UserProfile() {
                                 </span>
                             </div>
 
-                            {/* <div className="profile-location">
-                                <Files className="icon-sm" />
-                                <span>Vérification des documents</span>
-                                {userData.verificationStatus === 'pending' ? (
-                                    <FontAwesomeIcon
-                                        icon={faCog}
-                                        spin
-                                        className='edit-icon'
-                                    />
-                                ) : userData.verificationStatus === 'approved' ? (
-                                    <FontAwesomeIcon
-                                        icon={faCircleCheck}
-                                        color='#28a745'
-                                        className='edit-icon'
-                                    />
-                                ) : (
-                                    <FontAwesomeIcon
-                                        icon={faCircleXmark}
-                                        color='#dc3545'
-                                        className='edit-icon'
-                                    />
-                                )}
-                            </div> */}
+                            {userHasDocument && (
+                                <div className="profile-location">
+                                    <Folder className="icon-sm" />
+                                    <span>
+                                        {verificationStatus === 'pending' && "Vérification des documents"}
+                                        {verificationStatus === 'approved' && "Vérification approuvée"}
+                                        {verificationStatus === 'rejected' && "Vérification rejetée"}
+                                    </span>
+                                    {verificationStatus === 'pending' && (
+                                        <FontAwesomeIcon icon={faCog} spin className="edit-icon cog" />
+                                    )}
+                                    {verificationStatus === 'approved' && (
+                                        <FontAwesomeIcon
+                                            icon={faCheckCircle}
+                                            className='edit-icon approved'
+                                        />
+                                    )}
+                                    {verificationStatus === 'rejected' && (
+                                        <FontAwesomeIcon
+                                            icon={faTimesCircle}
+                                            className='edit-icon rejected'
+                                        />
+                                    )}
+                                </div>
+                            )}
+
                             <div className="profile-location">
                                 <PhoneCall className="icon-sm" />
                                 <span>{userData.phoneNumber}</span>
@@ -546,14 +613,18 @@ export default function UserProfile() {
                             <div className="profile-location">
                                 <MapPin className="icon-sm" />
                                 <span>{formData.city}, {formData.country}</span>
-                                <span className="edit-icon" title="Modifier ma localisation" onClick={() => handleEdit("city")}>
+                                <span className="edit-icon"
+                                    title={language === 'FR' ? "Modifier la localisation" : "Edit localization"}
+                                    onClick={() => handleEdit("city")}>
                                     <Pencil size={16} />
                                 </span>
                             </div>
                             <div className="profile-location">
                                 <Home className="icon-sm" />
                                 <span>{formData.address}</span>
-                                <span className="edit-icon" title="Modifier mon adresse" onClick={() => handleEdit("address")}>
+                                <span className="edit-icon"
+                                    title={language === 'FR' ? "Modifier nom de adresse" : "Edit address"}
+                                    onClick={() => handleEdit("address")}>
                                     <Pencil size={16} />
                                 </span>
                             </div>
@@ -590,16 +661,20 @@ export default function UserProfile() {
                     <Modal
                         onShow={isModalOpen}
                         onHide={() => toggleModal('image', false)}
-                        title={`Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`}
+                        title={
+                            language === 'FR'
+                                ? `Confirmer la ${imageType === "profile" ? "photo de profil" : "photo de couverture"}`
+                                : `Confirm ${imageType === "profile" ? "profile picture" : "cover photo"}`
+                        }
                     >
                         <div>
                             <img src={previewImage} alt="Aperçu" className="modal-preview" />
                             <div className="modal-actions">
                                 <button className="btn btn-confirm" onClick={handleConfirm}>
-                                    {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
+                                    {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> {confirmText}</>}
                                 </button>
                                 <button className="btn btn-cancel" onClick={() => toggleModal('image', false)}>
-                                    <FontAwesomeIcon icon={faTimes} /> Annuler
+                                    <FontAwesomeIcon icon={faTimes} /> {cancelText}
                                 </button>
                             </div>
                         </div>
@@ -612,17 +687,33 @@ export default function UserProfile() {
                     <Modal
                         onShow={showEdit}
                         onHide={() => toggleModal('edit', false)}
-                        title={`Modifier ${field === "bio" ? "ma bio" : field === "city" ? "ma localisation" : field === "address" ? "mon adresse" : field === "lastName" ? "mon nom" : field === "firstName" ? "mon prénom" : ""}`}
+                        title={
+                            language === 'FR'
+                                ? `Modifier ${field === "bio" ? "ma bio" :
+                                    field === "city" ? "ma localisation" :
+                                        field === "address" ? "mon adresse" :
+                                            field === "lastName" ? "mon nom" :
+                                                field === "firstName" ? "mon prénom" :
+                                                    ""
+                                }`
+                                : `Edit ${field === "bio" ? "my bio" :
+                                    field === "city" ? "my location" :
+                                        field === "address" ? "my address" :
+                                            field === "lastName" ? "my last name" :
+                                                field === "firstName" ? "my first name" :
+                                                    ""
+                                }`
+                        }
                     >
                         <div className="edit-form">
                             {renderEditForm()}
                         </div>
                         <div className="modal-actions">
                             <button className="btn btn-confirm" onClick={handleConfirmEdit}>
-                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> Valider</>}
+                                {isLoading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> {confirmText}</>}
                             </button>
                             <button className="btn btn-cancel" onClick={() => toggleModal('edit', false)}>
-                                <FontAwesomeIcon icon={faTimes} /> Annuler
+                                <FontAwesomeIcon icon={faTimes} /> {cancelText}
                             </button>
                         </div>
 

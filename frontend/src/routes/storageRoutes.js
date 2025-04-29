@@ -51,13 +51,16 @@ const fetchProfileByUserID = async (userID) => {
     }
 };
 
-const uploadProfilePhoto = async (file, userID) => {
+const uploadProfilePhoto = async (file, userID, idToken) => {
     const formData = new FormData();
     formData.append('profilURL', file);
     formData.append('userID', userID);
 
     const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/profile`, {
         method: 'POST',
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
         body: formData,
     });
 
@@ -65,13 +68,16 @@ const uploadProfilePhoto = async (file, userID) => {
     return result;
 };
 
-const uploadCoverPhoto = async (file, userID) => {
+const uploadCoverPhoto = async (file, userID, idToken) => {
     const formData = new FormData();
     formData.append('coverURL', file);
     formData.append('userID', userID);
 
     const response = await fetch(`${backendUrl}/api/storage/upload/${userID}/cover`, {
         method: 'POST',
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
         body: formData,
     });
 
@@ -79,13 +85,16 @@ const uploadCoverPhoto = async (file, userID) => {
     return result;
 };
 
-const uploadImage = async (file, userID) => {
+const uploadImage = async (file, userID, idToken) => {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('userID', userID);
 
     const response = await fetch(`${backendUrl}/api/storage/upload/image`, {
         method: 'POST',
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
         body: formData,
     });
 
@@ -93,7 +102,48 @@ const uploadImage = async (file, userID) => {
     return result;
 };
 
-const uploadSensitiveVerification = async (userID, document, faceImage) => {
+const uploadMedia = async (media, userID, idToken) => {
+    const formData = new FormData();
+    formData.append('media', media);
+    formData.append('userID', userID);
+
+    const response = await fetch(`${backendUrl}/api/storage/upload/media`, {
+        method: 'POST',
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
+        body: formData,
+    });
+
+    const result = await response.json();
+    return result;
+}
+
+const uploadStatusMedia = async (media, userID, idToken) => {
+    const formData = new FormData();
+    formData.append('media', media);
+    formData.append('userID', userID);
+
+    try {
+        const response = await fetch(`${backendUrl}/api/storage/upload/status-media`, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${idToken}`,
+            },
+            body: formData,
+        })
+
+        const result = await response.json();
+        console.log('Result:', result);
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de l\'upload du média :', error);
+        throw error;
+        
+    }
+};
+
+const uploadSensitiveVerification = async (userID, document, faceImage, idToken) => {
     // Create FormData for secure file upload
     const formData = new FormData();
     formData.append('userID', userID);
@@ -102,11 +152,14 @@ const uploadSensitiveVerification = async (userID, document, faceImage) => {
 
     const response = await fetch(`${backendUrl}/api/storage/upload/sensitive-verification`, {
         method: 'POST',
+        headers: {
+            Authorization: `Bearer ${idToken}`,
+        },
         body: formData,
     });
 
     const result = await response.json();
-    console.log('Result:', result); 
+    console.log('Result:', result);
     return result;
 }
 
@@ -114,9 +167,11 @@ const uploadSensitiveVerification = async (userID, document, faceImage) => {
 export {
     deletePostImagesFromStorage,
     uploadImage,
+    uploadMedia,
     deleteProfilURLByUserID,
     fetchProfileByUserID,
     uploadCoverPhoto,
     uploadProfilePhoto,
+    uploadStatusMedia,
     uploadSensitiveVerification,
 };

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { LanguageContext } from '../contexts/LanguageContext';
+
 
 // styles
 const styles = {
@@ -30,18 +32,23 @@ const styles = {
 
 const AuthLayoutHeader = () => {
     const location = useLocation();
+    const { language } = useContext(LanguageContext);
     const isLogin = location.pathname === '/auth/signin';
-    const isSignup = location.pathname === '/auth/create-user';
-    const isSignupConfirm = location.pathname === '/auth/signup-verify-email';
-    const isPasswordReset = location.pathname === '/auth/reset-password';
-    const isSignupSuccess = location.pathname === '/auth/signup-success';
+    const isSignup = location.pathname === '/auth/signup';
+    const isSignupConfirm = location.pathname === `/auth/signup-confirm`;
+    const isPasswordReset = location.pathname === `/auth/password-reset`;
+    const isSignupSuccess = location.pathname === `/auth/signup-success`;
 
     let leftLink = '/';
-    let leftText = 'Accueil';
+    let leftText = language === 'FR'
+        ? 'Accueil'
+        : 'Home';
 
     if (isSignup || isSignupConfirm || isPasswordReset || isSignupSuccess) {
-        leftLink = '/auth/signin';
-        leftText = 'Connexion';
+        leftLink = `${isLogin ? `/auth/signin` : `/auth/signup`}`;
+        leftText = language === 'FR'
+            ? 'Connexion'
+            : 'Login';
     }
 
     return (
@@ -51,8 +58,10 @@ const AuthLayoutHeader = () => {
                 <span style={styles.leftTitle}>{leftText}</span>
             </a>
             {isLogin && (
-                <a href="/auth/create-user" style={styles.right}>
-                    <span style={styles.rightTitle}>Inscription</span>
+                <a href={`/auth/signup`} style={styles.right}>
+                    <span style={styles.rightTitle}>
+                        {language === 'FR' ? "Inscription" : "Signup"}
+                    </span>
                 </a>
             )}
         </div>

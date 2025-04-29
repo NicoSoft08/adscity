@@ -2,13 +2,12 @@ import React, { useContext, useState } from 'react';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import { useNavigate } from 'react-router-dom';
-import {
-    requestPasswordReset,
-} from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
 import Modal from '../../customs/Modal';
 import { facebook, instagram, whatsapp } from '../../config/images';
 import { updateSocialLinks } from '../../routes/apiRoutes';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import { translations } from '../../langs/translations';
 import '../../styles/Settings.scss';
 
 export default function Settings() {
@@ -18,19 +17,13 @@ export default function Settings() {
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
+    const { language, setLanguage } = useContext(LanguageContext);
+    const t = translations[language] || translations.FR;
     const [socialInfo, setSocialInfo] = useState({
         facebook: "",
         whatsapp: "",
         instagram: "",
     });
-    const [securityInfo, setSecurityInfo] = useState({
-        email: userData?.email || "",
-        newEmail: "",
-        verificationCode: "",
-        password: "",
-    });
-
-
 
     const handleSocialInputChange = (e) => {
         const { name, value } = e.target;
@@ -39,35 +32,6 @@ export default function Settings() {
             [name]: value
         }));
     };
-
-
-    const handleSecurityInfoUpdate = async () => {
-        const newPassword = securityInfo.password;
-
-        if (!newPassword) {
-            setToast({
-                show: true,
-                message: "Veuillez renseigner votre nouveau mot de passe !",
-                type: 'error',
-            });
-            return;
-        }
-
-        const result = await requestPasswordReset(userData.email, newPassword);
-        if (result.error) {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'error',
-            });
-        } else {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'success',
-            });
-        }
-    }
 
     const handleOpen = () => setOpen(true);
 
@@ -136,9 +100,32 @@ export default function Settings() {
         };
     };
 
+    // Composant de toggle de langue
+    const LanguageToggle = () => {
+        const toggleLanguage = () => {
+            setLanguage(language === 'FR' ? 'EN' : 'FR');
+            // translate();
+        };
+
+        return (
+            <div className="language-toggle">
+                <span className={language === 'FR' ? 'active' : ''}>FR</span>
+                <label className="switch">
+                    <input
+                        type="checkbox"
+                        checked={language === 'EN'}
+                        onChange={toggleLanguage}
+                    />
+                    <span className="slider round"></span>
+                </label>
+                <span className={language === 'EN' ? 'active' : ''}>EN</span>
+            </div>
+        );
+    };
+
     return (
         <div className='user-settings'>
-            <h2>Paramètres</h2>
+            <h2>{t.settings}</h2>
 
             {/* PERSONNALISATION POUR LES COMPTES  ENTREPRISES ET PROFESSIONNELS */}
             {currentUser && (userData.profileType === 'Professionnel' || userData.profileType === 'Entreprise') && (
@@ -178,7 +165,7 @@ export default function Settings() {
                 </section>
             )}
 
-            <section className="security-info">
+            {/* <section className="security-info">
                 <h2>Sécurité</h2>
                 <form onSubmit={(e) => e.preventDefault()}>
                     <input
@@ -196,49 +183,54 @@ export default function Settings() {
                         {isLoading ? <Spinner /> : "Enregistrer"}
                     </button>
                 </form>
-            </section>
+            </section> */}
+
+            {/* <section className="preference-zone">
+                <h2>{t.preference}</h2>
+                <div className="preference-item">
+                    <span>{t.language}</span>
+                    <LanguageToggle />
+                </div>
+            </section> */}
 
             <section className="help-zone">
-                <h2>Assistance</h2>
-                <button onClick={() => navigate('/contact-us')} className='help-button'>Support Client</button>
+                <h2>{t.support}</h2>
+                <button onClick={() => navigate('/contact-us')} className='help-button'>{t.supp_client}</button>
                 <button onClick={() => navigate('/help-center/faq')} className='help-button'>FAQs</button>
             </section>
 
             <section className="danger-zone">
-                <h2>Zone Danger</h2>
-                <button className="logout" onClick={handleOpen}>Déconnexion</button>
+                <h2>{t.danger_zone}</h2>
+                <button className="logout" onClick={handleOpen}>{t.logout}</button>
                 <button onClick={handleAccountDeletion} className="delete-button">
-                    Supprimer le compte
+                    {t.delete_account}
                 </button>
             </section>
 
             {open &&
                 <Modal
-                    title={"Déconnexion"}
+                    title={t.logout}
                     onShow={() => setOpen(true)}
                     onHide={() => setOpen(false)}
                     onNext={handleLogout}
                     isNext={true}
                     isHide={false}
-                    nextText={isLoading ? <Spinner /> : "Oui"}
-                    hideText={"Annuler"}
+                    nextText={isLoading ? <Spinner /> : t.yes}
+                    hideText={t.cancel}
                 >
-                    <p>Confirmez-vous vouloir vous déconnecter ?</p>
+                    <p>{t.logout_confirm}</p>
                 </Modal>
             }
 
             {showModal && (
                 <Modal
-                    title={"Supprimer mon compte"}
+                    title={t.delete_title}
                     onShow={() => setShowModal(true)}
                     onHide={closeModal}
                     isNext={false}
 
                 >
-                    <p>
-                        Pour des raisons de sécurité, veuillez contacter notre support client
-                        à <strong>support@adscity.net</strong> pour effectuer cette action.
-                    </p>
+                    <p>{t.delete_alert}</p>
                 </Modal>
             )}
 

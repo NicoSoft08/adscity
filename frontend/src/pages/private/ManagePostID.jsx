@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { faChartPie, faCheckSquare, faChevronLeft, faEllipsisH, faPenToSquare, faShareFromSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -12,9 +12,11 @@ import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import { logClientAction } from '../../routes/apiRoutes';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import '../../styles/ManagePostID.scss';
 
 export default function ManagePostID({ currentUser }) {
+    const { language } = useContext(LanguageContext);
     const [confirm, setConfirm] = useState({ willDelete: false, willUpdate: false, willMarkAsSold: false });
     const menuRef = useRef(null);
     const [showMenu, setShowMenu] = useState(false);
@@ -204,19 +206,35 @@ export default function ManagePostID({ currentUser }) {
         }
     }
 
-    const handleStatistics = async ()=> {
+    const handleStatistics = async () => {
         navigate("statistics");
     }
+
+    const formatDate = (timestamp) => {
+        if (timestamp && timestamp._seconds) {
+            const date = new Date(timestamp._seconds * 1000); // Convert to milliseconds
+            let formattedDate = date.toLocaleDateString(language === 'FR' ? 'fr-FR' : 'en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+            // Capitalize the first letter
+            return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+        }
+        return '';
+    };
 
     return (
         <div className='manage-post'>
             <div className="head">
-                <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
-                <h2>Annonce: {post_id.toLocaleUpperCase()}</h2>
+                <div className="back">
+                    <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
+                </div>
+                <div className="title">
+                    <h2>{language === 'FR' ? "Annonces" : "Ads"} /</h2>
+                    <p>{post?.details.title}</p>
+                </div>
 
-                <span className="more-options" title="Plus d'options" onClick={handleMenuClick}>
+                <div className="more-options" title={language === 'FR' ? "Plus d'options" : "More options"} onClick={handleMenuClick}>
                     <FontAwesomeIcon icon={faEllipsisH} />
-                </span>
+                </div>
                 {showMenu &&
                     <div className="options-menu" ref={menuRef}>
                         {options.map((option, index) => (
@@ -228,8 +246,13 @@ export default function ManagePostID({ currentUser }) {
                     </div>
                 }
             </div>
-            
-            <PostCard post={post} />
+
+            <div className='user-info'>
+                <span>Post ID: <strong>{post?.PostID}</strong></span>
+                <span> {language === 'FR' ? "Date de publication" : "Publication date"}: <strong>{formatDate(post?.moderated_at)}</strong></span>
+            </div>
+
+            <PostCard post={post} language={language} />
 
             {confirm.willDelete && (
                 <Modal title={"Suppression d'annonce"} onShow={confirm.willDelete} onHide={() => setConfirm({ ...confirm, willDelete: false })}>
@@ -245,7 +268,7 @@ export default function ManagePostID({ currentUser }) {
                 </Modal>
             )}
 
-            {confirm.willMarkAsSold && !post.isSold  && (
+            {confirm.willMarkAsSold && !post.isSold && (
                 <Modal title={"Confirmer la vente"} onShow={confirm.willMarkAsSold} onHide={() => setConfirm({ ...confirm, willMarkAsSold: false })}>
                     <p>Êtes-vous sûr de vouloir marquer cette annonce comme vendue ?</p>
                     <div className="ad-details-buttons">

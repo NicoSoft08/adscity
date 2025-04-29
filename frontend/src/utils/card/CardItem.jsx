@@ -9,7 +9,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import { format, isToday, isYesterday } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS, fr } from 'date-fns/locale';
 import { IconAvatar } from '../../config/images';
 import {
     getViewCount,
@@ -27,11 +27,13 @@ import { toggleFavorites } from '../../routes/userRoutes';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import { Truck } from 'lucide-react';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import './CardItem.scss';
 
 export default function CardItem({ post, onToggleFavorite }) {
     const { currentUser, userData } = useContext(AuthContext);
-    const { id, PostID, UserID, userID, details = {}, images = [], location = {}, category, subcategory, isActive, moderated_at, isSold } = post;
+    const { language } = useContext(LanguageContext);
+    const { id, PostID, UserID, userID, details = {}, images = [], location = {}, category, subcategory, isActive, moderated_at, isSold, expiry_date } = post;
     const [showMenu, setShowMenu] = useState(false);
     const [isFavorite, setIsFavorite] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
@@ -110,50 +112,90 @@ export default function CardItem({ post, onToggleFavorite }) {
     const reportReasons = [
         {
             id: 1,
-            label: 'Contenu inapproprié',
+            label: language === 'FR'
+                ? 'Contenu inapproprié'
+                : 'Inappropriate content',
             icon: faBan,
-            action: () => handleReportWithReason(post.id, 'Contenu inapproprié')
+            action: () => handleReportWithReason(post.id,
+                language === 'FR'
+                    ? 'Contenu inapproprié'
+                    : 'Inappropriate content'
+            )
         },
         {
             id: 2,
-            label: 'Produit illégal',
+            label: language === 'FR'
+                ? 'Produit illégal'
+                : 'Illegal product',
             icon: faGavel,
-            action: () => handleReportWithReason(post.id, 'Produit illégal')
+            action: () => handleReportWithReason(post.id,
+                language === 'FR'
+                    ? 'Produit illégal'
+                    : 'Illegal product'
+            )
         },
         {
             id: 3,
-            label: 'Annonce frauduleuse',
+            label: language === 'FR'
+                ? 'Annonce frauduleuse'
+                : 'Fraudulent advertisement',
             icon: faExclamationTriangle,
-            action: () => handleReportWithReason(post.id, 'Annonce frauduleuse')
+            action: () => handleReportWithReason(post.id,
+                language === 'FR'
+                    ? 'Annonce frauduleuse'
+                    : 'Fraudulent advertisement'
+            )
         },
         {
             id: 4,
-            label: 'Violation des règles du site',
+            label: language === 'FR'
+                ? 'Violation des règles du site'
+                : 'Violation of site rules',
             icon: faBalanceScale,
-            action: () => handleReportWithReason(post.id, 'Violation des règles du site')
+            action: () => handleReportWithReason(post.id,
+                language === 'FR'
+                    ? 'Violation des règles du site'
+                    : 'Violation of site rules'
+            )
         },
         {
             id: 5,
-            label: 'Produit contrefait',
+            label: language === 'FR'
+                ? 'Produit contrefait'
+                : 'Counterfeit product',
             icon: faClone,
-            action: () => handleReportWithReason(post.id, 'Produit contrefait')
+            action: () => handleReportWithReason(post.id,
+                language === 'FR'
+                    ? 'Produit contrefait'
+                    : 'Counterfeit product'
+            )
         },
         {
             id: 6,
-            label: 'Informations trompeuses',
+            label: language === 'FR'
+                ? 'Informations trompeuses'
+                : 'Misleading information',
             icon: faQuestionCircle,
-            action: () => handleReportWithReason(post.id, 'Informations trompeuses')
+            action: () => handleReportWithReason(post.id,
+                language === 'FR'
+                    ? 'Informations trompeuses'
+                    : 'Misleading information'
+            )
         },
     ];
 
     const options = [
         {
-            label: 'Signaler l\'annonce',
+            label: language === 'FR'
+                ? 'Signaler l\'annonce'
+                : 'Report the ad',
             icon: faFlag,
             action: () => handleReportAd(post.id)
         },
         {
-            label: 'Partager',
+            label: language === 'FR'
+                ? 'Partager'
+                : 'Share',
             icon: faShareFromSquare,
             action: () => handleShareAd(post.PostID)
         },
@@ -179,7 +221,9 @@ export default function CardItem({ post, onToggleFavorite }) {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Vous devez être connecté pour signaler une annonce.'
+                message: language === 'FR'
+                    ? 'Vous devez être connecté pour signaler une annonce.'
+                    : 'You must be logged in to report an ad.'
             });
             return;
         };
@@ -193,7 +237,9 @@ export default function CardItem({ post, onToggleFavorite }) {
                 setToast({
                     show: true,
                     type: 'success',
-                    message: 'Votre signalement a été envoyé avec succès.'
+                    message: language === 'FR'
+                        ? 'Votre signalement a été envoyé avec succès.'
+                        : 'Your report has been successfully sent.'
                 });
                 setReportSuccess(true);
                 logEvent(analytics, 'report_ad', {
@@ -205,7 +251,9 @@ export default function CardItem({ post, onToggleFavorite }) {
                 setToast({
                     show: true,
                     type: 'error',
-                    message: 'Une erreur est survenue lors du signalement de l\'annonce.'
+                    message: language === 'FR'
+                        ? 'Une erreur est survenue lors du signalement de l\'annonce.'
+                        : 'An error occurred while reporting the ad.'
                 });
                 setReportSuccess(false);
             }
@@ -215,7 +263,9 @@ export default function CardItem({ post, onToggleFavorite }) {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Une erreur est survenue lors du signalement de l\'annonce.'
+                message: language === 'FR'
+                    ? 'Une erreur est survenue lors du signalement de l\'annonce.'
+                    : 'An error occurred while reporting the ad.'
             });
         }
     };
@@ -231,8 +281,12 @@ export default function CardItem({ post, onToggleFavorite }) {
         try {
             // More captivating title and text
             await navigator.share({
-                title: '✨ Annonce exceptionnelle sur AdsCity! ✨',
-                text: '🔥 J\'ai trouvé cette offre incroyable que vous devez absolument voir! Cliquez pour découvrir tous les détails.',
+                title: language === 'FR'
+                    ? '✨ Annonce exceptionnelle sur AdsCity! ✨'
+                    : '✨ Exceptional ad on AdsCity! ✨',
+                text: language === 'FR'
+                    ? '🔥 J\'ai trouvé cette offre incroyable que vous devez absolument voir! Cliquez pour découvrir tous les détails.'
+                    : '🔥 I found this incredible offer that you must absolutely see! Click to discover all the details.',
                 url: shareLink
             }).then(async () => {
                 const postID = id;
@@ -245,7 +299,9 @@ export default function CardItem({ post, onToggleFavorite }) {
             setToast({
                 show: true,
                 type: 'success',
-                message: 'Le lien a été copié dans le presse-papiers.'
+                message: language === 'FR'
+                    ? 'Le lien a été copié dans le presse-papiers.'
+                    : 'The link has been copied to the clipboard.'
             });
             logEvent(analytics, 'share_link');
         } catch (error) {
@@ -253,7 +309,9 @@ export default function CardItem({ post, onToggleFavorite }) {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Une erreur est survenue lors de la copie du lien dans le presse-papiers.'
+                message: language === 'FR'
+                    ? 'Une erreur est survenue lors de la copie du lien dans le presse-papiers.'
+                    : 'An error occurred while copying the link to the clipboard.'
             });
         }
     };
@@ -268,14 +326,20 @@ export default function CardItem({ post, onToggleFavorite }) {
         const date = new Date(posted_at);
 
         if (isToday(date)) {
-            return `Auj. ${format(date, 'HH:mm', { locale: fr })}`;
+            return language === 'FR'
+                ? `Auj. ${format(date, 'HH:mm', { locale: fr })}`
+                : `Today ${format(date, 'HH:mm', { locale: enUS })}`;
         }
 
         if (isYesterday(date)) {
-            return `Hier ${format(date, 'HH:mm', { locale: fr })}`;
+            return language === 'FR'
+                ? `Hier ${format(date, 'HH:mm', { locale: fr })}`
+                : `Yesterday ${format(date, 'HH:mm', { locale: enUS })}`;
         }
 
-        let formattedDate = format(date, 'd MMMM HH:mm', { locale: fr });
+        let formattedDate = language === 'FR'
+            ? format(date, 'd MMMM HH:mm', { locale: fr })
+            : format(date, 'MMMM d HH:mm', { locale: enUS });
 
         return formattedDate;
     };
@@ -321,7 +385,9 @@ export default function CardItem({ post, onToggleFavorite }) {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Vous devez être connecté pour ajouter aux favoris.',
+                message: language === 'FR'
+                    ? 'Vous devez être connecté pour ajouter aux favoris.'
+                    : 'You must be logged in to add to favorites.',
             });
             return;
         }
@@ -339,9 +405,13 @@ export default function CardItem({ post, onToggleFavorite }) {
                 setToast({
                     show: true,
                     type: result.isFavorite ? 'success' : 'info',
-                    message: result.isFavorite
-                        ? 'Annonce ajoutée aux favoris !'
-                        : 'Annonce retirée des favoris.',
+                    message: language === 'FR'
+                        ? result.isFavorite
+                            ? 'Annonce ajoutée aux favoris !'
+                            : 'Annonce retirée des favoris.'
+                        : result.isFavorite
+                            ? 'Ad added to favorites!'
+                            : 'Ad removed from favorites.',
                 });
 
                 // Si la prop onToggleFavorite est définie, l'appeler
@@ -352,7 +422,9 @@ export default function CardItem({ post, onToggleFavorite }) {
                 setToast({
                     show: true,
                     type: 'error',
-                    message: 'Erreur lors de la mise à jour des favoris.',
+                    message: language === 'FR'
+                        ? 'Erreur lors de la mise à jour des favoris.'
+                        : 'Error updating favorites.',
                 });
             }
         } catch (error) {
@@ -360,7 +432,9 @@ export default function CardItem({ post, onToggleFavorite }) {
             setToast({
                 show: true,
                 type: 'error',
-                message: 'Une erreur s\'est produite.',
+                message: language === 'FR'
+                    ? 'Une erreur s\'est produite.'
+                    : 'An error occurred.',
             });
         }
     };
@@ -380,9 +454,37 @@ export default function CardItem({ post, onToggleFavorite }) {
 
     if (!isActive) return null;
 
+    const checkExpiryDate = (expiryDateString) => {
+        // Si pas de date d'expiration, retourner null
+        if (!expiryDateString) return null;
+
+        // Convertir la chaîne de date en objet Date
+        const expiryDate = new Date(expiryDateString);
+        const currentDate = new Date();
+
+        // Vérifier si la date est valide
+        if (isNaN(expiryDate.getTime())) return null;
+
+        // Comparer avec la date actuelle
+        if (expiryDate <= currentDate) {
+            // La date a expiré
+            return null;
+        }
+
+        // La date n'a pas expiré, retourner la date d'expiration
+        return expiryDateString;
+    };
+
+    const expiryDate = checkExpiryDate(expiry_date);
+    if (moderatedAtDate > expiryDate) return null;
+
     return (
         <div ref={cardRef} className={`card-container ${isActive ? 'active' : 'inactive'}`} key={id}>
-            {isSold && <span className="sold-badge">VENDU</span>}
+            {isSold && <span className="sold-badge">
+                {language === 'FR'
+                    ? 'VENDU' : 'SOLD'
+                }
+            </span>}
             {/* Image de l'annonce */}
             <div
                 onClick={() => handlePostClick(`/posts/${category}/${subcategory}/${post_id}`)}
@@ -407,7 +509,7 @@ export default function CardItem({ post, onToggleFavorite }) {
                         : details.title
                     }
                 </h2>
-                <p className="card-price">{details.price} RUB {details.delievery && <span title='Possibilité de livraison'><Truck className='delievery-icon' size={14} /></span>} </p>
+                <p className="card-price">{details.price} RUB {details.delievery && <span title={language === 'FR' ? 'Possibilité de livraison' : 'Possibility of delivery'}><Truck className='delievery-icon' size={14} /></span>} </p>
                 <p className="card-city">{location.city}, {location.country}</p>
                 <div onClick={() => handleProfileClick(`/users/user/${user_id}/profile/show`)} className="announcer">
                     <img src={profileImage} alt="avatar" className="avatar" />
@@ -424,7 +526,7 @@ export default function CardItem({ post, onToggleFavorite }) {
             <div className="card-actions">
                 <button
                     className="options-button"
-                    title="Plus d'options"
+                    title={language === 'FR' ? 'Options' : 'Options'}
                     onClick={(e) => {
                         e.stopPropagation();
                         handleMenuClick();
@@ -444,8 +546,18 @@ export default function CardItem({ post, onToggleFavorite }) {
             {reportSuccess && (
                 <div className="report-success" ref={reportRef} aria-live="polite">
                     <div className="content">
-                        <p className="message">Signalement enregistré !</p>
-                        <p className='text'>Merci ! Un modérateur vérifiera bientôt l'annonce</p>
+                        <p className="message">
+                            {language === 'FR'
+                                ? "Signalement enregistré !"
+                                : "Report submitted!"
+                            }
+                        </p>
+                        <p className='text'>
+                            {language === 'FR'
+                                ? "Merci ! Un modérateur vérifiera bientôt l'annonce"
+                                : "Thank you! A moderator will review the post soon."
+                            }
+                        </p>
                     </div>
                 </div>
             )}

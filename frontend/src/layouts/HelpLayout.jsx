@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import Footer from '../components/footer/Footer';
 import { letterWhiteBgBlue } from '../config/logos';
-import { CreditCard, FileText, Search, ShieldCheck, User } from 'lucide-react';
+import { CreditCard, FileText, Megaphone, Search, ShieldCheck, Store, User } from 'lucide-react';
 import '../styles/HelpLayout.scss';
 
 const helpCategories = [
@@ -19,10 +19,22 @@ const helpCategories = [
         link: 'posts'
     },
     {
+        title: 'Boutiques',
+        description: 'Créer et gérer vos boutiques pour présenter vos produits et services.',
+        icon: <Store size={32} />,
+        link: 'stores'
+    },
+    {
         title: 'Paiements',
         description: 'Comprendre les méthodes de paiement et facturation.',
         icon: <CreditCard size={32} />,
         link: 'payments'
+    },
+    {
+        title: 'Publicités',
+        description: 'Découvrez comment promouvoir votre entreprise sur AdsCity.',
+        icon: <Megaphone size={32} /> ,
+        link: 'pubs'
     },
     {
         title: 'Sécurité',

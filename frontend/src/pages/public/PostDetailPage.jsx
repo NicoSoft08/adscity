@@ -4,8 +4,8 @@ import { fetchPostById } from '../../routes/postRoutes';
 import { fetchDataByUserID } from '../../routes/userRoutes';
 import OwnerProfileCard from '../../components/owner-card/OwnerProfileCard';
 import { FaLocationDot } from "react-icons/fa6";
-import { FaEye, FaRegCalendarAlt } from "react-icons/fa";
-import { formatPostedAt, formatViewCount, parseTimestamp } from '../../func';
+import { FaRegCalendarAlt } from "react-icons/fa";
+import { formatPostedAt, parseTimestamp } from '../../func';
 import RelatedListing from '../../components/related-listing/RelatedListing';
 import { AuthContext } from '../../contexts/AuthContext';
 // import MessageToAnnouncer from '../../components/contact-announcer/MessageToAnnouncer';
@@ -105,10 +105,9 @@ export default function PostDetailPage() {
 
     }, [post_id, currentUser]);
 
-    const { details = {}, location = {}, images = [], posted_at, stats = {}, isSold } = post || {};
+    const { details = {}, location = {}, images = [], posted_at, isSold } = post || {};
     const { title = '', price = 0, price_type = '' } = details || {};
     const { address = '', city = '', country = '' } = location || {};
-    const { views = 0 } = stats || {};
 
     useEffect(() => {
         if (post && post?.userID) {
@@ -172,7 +171,6 @@ export default function PostDetailPage() {
                         <p>
                             <FaLocationDot className='icon' /> {city}, {country}
                             <FaRegCalendarAlt className='icon' /> {formatPostedAt(postedAtDate)}
-                            <FaEye className='icon' /> {formatViewCount(views)}
                         </p>
                     </div>
                     <div className='seperator' />
@@ -206,7 +204,6 @@ export default function PostDetailPage() {
                             <ul>
                                 <li><strong>Catégorie :</strong> {category}</li>
                                 <li><strong>Sous-catégorie :</strong> {subcategory}</li>
-                                <li><strong>Vues :</strong> {views}</li>
                             </ul>
                         </section>
                     </div>

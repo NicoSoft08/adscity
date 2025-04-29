@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { getUserFavorites } from '../../routes/userRoutes';
 import CardList from '../../utils/card/CardList';
 import CardItem from '../../utils/card/CardItem';
@@ -8,10 +8,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisH, faTrash } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
 import Modal from '../../customs/Modal';
+import { AuthContext } from '../../contexts/AuthContext';
+import Loading from '../../customs/Loading';
 
-export default function ManageFavorites({ currentUser }) {
+export default function ManageFavorites() {
     const navigate = useNavigate();
     const menuRef = useRef(null);
+    const { currentUser } = useContext(AuthContext);
     const [favoris, setFavoris] = useState([]);
     const [showMenu, setShowMenu] = useState(false);
     const [confirm, setConfirm] = useState(false);
@@ -33,11 +36,15 @@ export default function ManageFavorites({ currentUser }) {
             console.error("❌ Utilisateur non connecté.");
             navigate('/auth/signin');
         }
+
         const fetchFavoris = async () => {
+            setLoading(true);
             const userID = currentUser?.uid;
-            const result = await getUserFavorites(userID);
+            const idToken = await currentUser.getIdToken(true);
+            const result = await getUserFavorites(userID, idToken);
             if (result.success) {
                 setFavoris(result?.postsSaved);
+                setLoading(false);
             }
         }
 
@@ -73,6 +80,7 @@ export default function ManageFavorites({ currentUser }) {
 
     return (
         <div className='my-favoris'>
+            {loading && <Loading />}
             <div className="head">
                 <h2>Favoris</h2>
                 <span className="more-options" title="Plus d'options">

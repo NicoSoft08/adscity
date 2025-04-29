@@ -5,10 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import CreatePostFlow from '../../hooks/create-ad-flow/CreatePostFlow';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import '../../styles/CreatePostPage.scss';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faExclamationTriangle, faTag } from '@fortawesome/free-solid-svg-icons';
 
 export default function CreatePostPage() {
     const { userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [hasPlan, setHasPlan] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
@@ -42,7 +46,7 @@ export default function CreatePostPage() {
     }, [userData]);
 
     const redirectToPlans = () => {
-        navigate('/pricing'); // Redirige vers la page des plans
+        navigate('/forfait'); // Redirige vers la page des plans
     };
 
     return (
@@ -55,10 +59,27 @@ export default function CreatePostPage() {
                         <CreatePostFlow />
                     ) : (
                         <div className="no-plan-message">
-                            <h2>Vous n'avez pas de plan actif.</h2>
-                            <p>Pour créer une annonce, vous devez avoir un plan actif.</p>
+                            <div className="alert-message">
+                                <FontAwesomeIcon icon={faExclamationTriangle} className="alert-icon" />
+                                <h2>
+                                    {language === 'FR'
+                                        ? 'Vous n\'avez pas de plan actif'
+                                        : 'You don\'t have an active plan'
+                                    }
+                                </h2>
+                                <p>
+                                    {language === 'FR'
+                                        ? 'Pour créer une annonce, vous devez avoir un plan actif.'
+                                        : 'To create an ad, you must have an active plan.'
+                                    }
+                                </p>
+                            </div>
                             <button className="subscribe-button" onClick={redirectToPlans}>
-                                Voir les plans
+                                <FontAwesomeIcon icon={faTag} className="button-icon" />
+                                {language === 'FR'
+                                    ? "Voir les forfaits"
+                                    : "See plans"
+                                }
                             </button>
                         </div>
                     )}

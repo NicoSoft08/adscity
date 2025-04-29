@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+import React, { useContext, useState } from 'react';
+import { useNavigate, Link, useParams, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 import Spinner from '../../customs/Spinner';
@@ -7,18 +7,27 @@ import Loading from '../../customs/Loading';
 import { signinUser } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import '../../styles/LoginPage.scss';
 
 
 export default function LoginPage() {
     const { email } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+    const { language } = useContext(LanguageContext);
     const [errors, setErrors] = useState({ email: '', password: '', agree: false, captcha: '' });
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({ email: email || '', password: '', agree: false });
     const [captchaValue, setCaptchaValue] = useState(null);
+
+    // Récupérer l'URL de redirection depuis location.state ou depuis les query params
+    const redirectUrl =
+        (location.state && location.state.redirectUrl) ||
+        new URLSearchParams(location.search).get('redirect') ||
+        '/user/dashboard';
 
     // Replace with your actual reCAPTCHA site key
     const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
@@ -30,18 +39,26 @@ export default function LoginPage() {
     const validateForm = () => {
         const formErrors = {}
         if (!formData.agree) {
-            formErrors.agree = "Vous devez accepter les termes et conditions";
+            formErrors.agree = language === 'FR'
+                ? "Vous devez accepter les termes et conditions"
+                : "You must agree to the terms and conditions";
         } else {
             if (!formData.email) {
-                formErrors.email = "Email réquis";
+                formErrors.email = language === 'FR'
+                    ? "Email réquis"
+                    : "Email required";
             }
             if (!formData.password) {
-                formErrors.password = "Mot de Passe réquis";
+                formErrors.password = language === 'FR'
+                    ? "Mot de Passe réquis"
+                    : "Password required";
             }
         }
 
         if (!captchaValue) {
-            formErrors.captcha = "Veuillez confirmer que vous n'êtes pas un robot";
+            formErrors.captcha = language === 'FR'
+                ? "Veuillez confirmer que vous n'êtes pas un robot"
+                : "Please confirm that you are not a robot";
         }
 
         return formErrors;
@@ -108,7 +125,7 @@ export default function LoginPage() {
 
             // 🔹 Redirection selon le rôle
             if (result.role === 'user') {
-                navigate('/');
+                navigate(redirectUrl || '/');
             } else {
                 navigate('/access-denied');
             }
@@ -128,15 +145,22 @@ export default function LoginPage() {
     return (
         <div className='login-page'>
             <form className="login-form" onSubmit={handleSubmit}>
-                <h2>Connexion</h2>
+                <h2>
+                    {language === 'FR'
+                        ? "Connexion"
+                        : "Login"
+                    }
+                </h2>
                 <div>
-                    <label htmlFor="email">Identifiant</label>
+                    <label htmlFor="email">
+                        {language === 'FR' ? "Adresse e-mail" : "Email"}
+                    </label>
                     <input
                         className={`input-field ${errors.email ? 'error' : ''}`}
                         type="email"
                         name='email'
                         id="email"
-                        placeholder='Email'
+                        placeholder={language === 'FR' ? "Adresse e-mail" : "Email"}
                         value={formData.email}
                         onChange={handleChange}
                     />
@@ -144,27 +168,33 @@ export default function LoginPage() {
                 </div>
 
                 <div className='password-toggle'>
-                    <label htmlFor="password">Sécurité</label>
+                    <label htmlFor="password">
+                        {language === 'FR' ? "Mot de passe" : "Password"}
+                    </label>
                     <input
                         className={`input-field ${errors.password ? 'error' : ''}`}
                         type={showPassword ? 'text' : 'password'}
                         id="password"
                         name='password'
-                        placeholder='Mot de passe'
+                        placeholder={language === 'FR' ? "Mot de passe" : "Password"}
                         value={formData.password}
                         onChange={handleChange}
                     />
                     <span onClick={toggleShowPassword}>
-                        {
-                            showPassword
-                                ? <FontAwesomeIcon icon={faEyeSlash} title={"Cacher"} />
-                                : <FontAwesomeIcon icon={faEye} title={"Afficher"} />
-                        }
+                        <FontAwesomeIcon
+                            icon={showPassword ? faEyeSlash : faEye}
+                            title={language === 'FR'
+                                ? showPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"
+                                : showPassword ? "Hide password" : "Show password"
+                            }
+                        />
                     </span>
                     {errors.password && <div className="error-text">{errors.password}</div>}
                 </div>
                 <Link to={`/auth/forgot-password`} className="passwrod-forgot">
-                    <span>Mot de passe oublié ?</span>
+                    <span>
+                        {language === 'FR' ? "Mot de passe oublié ?" : "Forgot password ?"}
+                    </span>
                 </Link>
                 <label className="checkbox-label">
                     <input
@@ -173,7 +203,10 @@ export default function LoginPage() {
                         checked={formData.agree}
                         onChange={handleChange}
                     />
-                    En continuant, vous acceptez les Conditions d'utilisation
+                    {language === 'FR'
+                        ? "En continuant, vous acceptez les Conditions d'utilisation"
+                        : "By continuing, you agree to the Terms of Use"
+                    }
                 </label>
                 {errors.agree && (<div className='error-text'>{errors.agree}</div>)}
 
@@ -190,14 +223,19 @@ export default function LoginPage() {
                     type="submit"
                     disabled={loading}
                 >
-                    {loading ? <Spinner /> : "Se connecter"}
+                    {language === 'FR'
+                        ? loading ? <Spinner /> : "Se connecter"
+                        : loading ? <Spinner /> : 'Login'
+                    }
                 </button>
-                <p>Aucun compte utilisateur ? <Link to={'/auth/create-user'}>S'inscrire</Link></p>
+                <p>{language === 'FR' ? "Aucun compte utilisateur ?" : "No user account ?"} <Link to={'/auth/signup'}>
+                    {language === 'FR' ? "S'inscrire" : "Signup"}
+                </Link></p>
 
                 <div className="terms-container">
                     <p>
-                        <Link to="/legal/privacy-policy" target="_blank">Confidentialité</Link>{" - "}
-                        <Link to="/legal/terms" target="_blank">Conditions d'utilisation</Link>
+                        <Link to="/legal/privacy-policy" target="_blank">{language === 'FR' ? "Règles de confidentialité" : "Privacy Policy"}</Link>{" - "}
+                        <Link to="/legal/terms" target="_blank"> {language === 'FR' ? "Conditions d'utilisation" : "Terms of use"}</Link>
                         {/* <Link to="/data-processing" target="_blank">Politique de traitement des données</Link>. */}
                     </p>
                 </div>

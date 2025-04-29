@@ -20,13 +20,13 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
         return (
             <div className="pricing-cards">
                 {forfaits.map((plan) => (
-                    <div 
-                        key={plan.id} 
+                    <div
+                        key={plan.id}
                         className={`pricing-card ${plan.popular ? 'popular' : ''} ${selectedPlan === plan.id ? 'selected' : ''}`}
                         style={{ borderTopColor: plan.color }}
                     >
                         {plan.popular && <div className="popular-badge">Populaire</div>}
-                        
+
                         <div className="plan-header">
                             <h3 className="plan-name">{plan.displayName}</h3>
                             <p className="plan-tagline">{plan.tagline}</p>
@@ -36,7 +36,7 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
                                 <span className="period">/{plan.validity.label}</span>
                             </div>
                         </div>
-                        
+
                         <div className="plan-limits">
                             <div className="limit-item">
                                 <span className="limit-value">{plan.limits.ads}</span>
@@ -51,7 +51,7 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
                                 <span className="limit-label">Boosts</span>
                             </div>
                         </div>
-                        
+
                         <div className="plan-features">
                             {plan.features.map((feature) => (
                                 <div key={feature.id} className="feature-item">
@@ -69,18 +69,28 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
                                 </div>
                             ))}
                         </div>
-                        
+
                         <div className="plan-description">
                             <p>{plan.description}</p>
                         </div>
-                        
-                        <button 
-                            className="plan-cta-button" 
-                            style={{ backgroundColor: plan.color }}
-                            onClick={() => handlePlanSelect(plan.id)}
-                        >
-                            {plan.cta}
-                        </button>
+
+                        {(plan.cta === 'Commencer gratuitement') ? (
+                            <button
+                                className="plan-cta-button"
+                                style={{ backgroundColor: plan.color }}
+                                onClick={() => window.prompt('Commencer gratuitement', 'https://www.google.com')}
+                            >
+                                {plan.cta}
+                            </button>
+                        ) : (
+                            <button
+                                className="plan-cta-button"
+                                style={{ backgroundColor: plan.color }}
+                                onClick={() => handlePlanSelect(plan.id)}
+                            >
+                                {plan.cta}
+                            </button>
+                        )}
                     </div>
                 ))}
             </div>
@@ -101,8 +111,8 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
                         <tr>
                             <th className="feature-column">Fonctionnalités</th>
                             {forfaits.map(plan => (
-                                <th 
-                                    key={plan.id} 
+                                <th
+                                    key={plan.id}
                                     className={`plan-column ${plan.popular ? 'popular' : ''}`}
                                     style={{ borderTop: plan.popular ? `3px solid ${plan.color}` : 'none' }}
                                 >
@@ -113,13 +123,24 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
                                         <span className="currency">{plan.currency}</span>
                                     </div>
                                     <div className="plan-period">{plan.validity.label}</div>
-                                    <button 
-                                        className="plan-select-btn"
-                                        style={{ backgroundColor: plan.color }}
-                                        onClick={() => handlePlanSelect(plan.id)}
-                                    >
-                                        {plan.cta}
-                                    </button>
+
+                                    {(plan.cta === 'Commencer gratuitement') ? (
+                                        <button
+                                            className="plan-select-btn"
+                                            style={{ backgroundColor: plan.color }}
+                                            onClick={() => window.prompt('Commencer gratuitement', 'https://www.google.com')}
+                                        >
+                                            {plan.cta}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="plan-select-btn"
+                                            style={{ backgroundColor: plan.color }}
+                                            onClick={() => handlePlanSelect(plan.id)}
+                                        >
+                                            {plan.cta}
+                                        </button>
+                                    )}
                                 </th>
                             ))}
                         </tr>
@@ -152,17 +173,17 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
                                 <td key={plan.id}>{plan.limits.duration}</td>
                             ))}
                         </tr>
-                        
+
                         <tr className="section-header">
                             <td colSpan={forfaits.length + 1}>Fonctionnalités</td>
                         </tr>
-                        
+
                         {allFeatures.map(featureId => {
                             // Find the feature label from the first plan that has it
                             const featureLabel = forfaits.find(
                                 plan => plan.features.find(f => f.id === featureId)
                             )?.features.find(f => f.id === featureId)?.label || featureId;
-                            
+
                             return (
                                 <tr key={featureId}>
                                     <td>{featureLabel}</td>
@@ -199,31 +220,31 @@ export default function PlanItem({ onSelectPlan, currentPlan }) {
     return (
         <div className="pricing-plans-container">
             <div className="view-toggle">
-                <button 
+                <button
                     className={`toggle-btn ${viewMode === 'card' ? 'active' : ''}`}
                     onClick={() => setViewMode('card')}
                 >
                     <FontAwesomeIcon icon={faThLarge} /> Cartes
                 </button>
-                <button 
+                <button
                     className={`toggle-btn ${viewMode === 'table' ? 'active' : ''}`}
                     onClick={() => setViewMode('table')}
                 >
                     <FontAwesomeIcon icon={faTable} /> Tableau
                 </button>
             </div>
-            
+
             <div className="pricing-content">
                 {viewMode === 'card' ? renderCardView() : renderTableView()}
             </div>
-            
+
             <div className="pricing-info">
                 <div className="info-icon">
                     <FontAwesomeIcon icon={faInfoCircle} />
                 </div>
                 <p>
-                    Tous les forfaits incluent l'accès à notre plateforme de base. 
-                    Pour des besoins spécifiques ou des volumes plus importants, 
+                    Tous les forfaits incluent l'accès à notre plateforme de base.
+                    Pour des besoins spécifiques ou des volumes plus importants,
                     veuillez nous contacter pour une offre personnalisée.
                 </p>
             </div>

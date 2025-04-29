@@ -25,6 +25,13 @@
         border: 1px solid $white;
         outline: none;
 
+        @media (max-width: 768px) {
+            font-size: 14px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         &:focus {
             border-color: $two;
         }
@@ -37,6 +44,10 @@
         right: 10px;
         cursor: pointer;
         color: $gray;
+
+        @media (max-width: 768px) {
+            font-size: 20px;
+        }
     }
 
     .suggestions-list {

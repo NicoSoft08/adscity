@@ -1,12 +1,16 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { faFacebook, faInstagram, faYoutube } from '@fortawesome/free-brands-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Link } from 'react-router-dom';
 import { textWhiteWithoutBg } from '../../config/logos';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import { translations } from '../../langs/translations';
 import './Footer.scss';
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
+    const { language } = useContext(LanguageContext);
+    const t = translations[language] || translations.FR;
 
     return (
         <footer className="footer">
@@ -18,11 +22,19 @@ export default function Footer() {
             <div className="footer-content">
                 {/* About Section */}
                 <div className="footer-section">
-                    <h3>À propos</h3>
+                    <h3>
+                        {language === 'FR' ? 'À propos' : 'About'}
+                    </h3>
                     <ul>
-                        <li><a href="/about">Qui sommes-nous</a></li>
+                        <li><a href="/about">{language === 'FR'
+                            ? 'Qui sommes-nous' : 'Who we are'
+                        }</a></li>
                         {/* <li><a href="/pub">Publicité</a></li> */}
-                        <li><a href="/business">Pour les entreprises</a></li>
+                        <li><a href="/business">
+                            {language === 'FR'
+                                ? "Pour les entreprises" : "For businesses"
+                            }
+                        </a></li>
                         {/* <li><a href="/pricing">Tarifs</a></li> */}
                     </ul>
                 </div>
@@ -31,28 +43,44 @@ export default function Footer() {
                 <div className="footer-section">
                     <h3>Assistance</h3>
                     <ul>
-                        <li><a href="/help">Centre d'aide</a></li>
+                        <li><a href="/help">{language === 'FR'
+                            ? "Centre d'aide" : "Help Center"
+                        }</a></li>
                         <li><a href="/contact-us">Contact</a></li>
                     </ul>
                 </div>
 
                 {/* Legal Section */}
                 <div className="footer-section">
-                    <h3>Légal</h3>
+                    <h3>
+                        {language === 'FR' ? 'Légal' : 'Legal'}
+                    </h3>
                     <ul>
-                        <li><a href="/legal/terms">Conditions d'utilisation</a></li>
-                        <li><a href="/legal/privacy-policy">Règles de confidentialité</a></li>
-                        <li><a href="/legal/post-rules">Règles de publication</a></li>
+                        <li><a href="/legal/terms">
+                            {language === 'FR' ? "Conditions d'utilisation" : "Terms of use"}
+                        </a></li>
+                        <li><a href="/legal/privacy-policy">
+                            {language === 'FR' ? "Règles de confidentialité" : "Privacy Policy"}
+                        </a></li>
+                        <li><a href="/legal/post-rules">
+                            {language === 'FR' ? "Règles de publication" : "Publication rules"}
+                        </a></li>
                     </ul>
                 </div>
 
                 {/* Offres */}
                 <div className="footer-section">
-                    <h3>Offres</h3>
+                    <h3>
+                        {language === 'FR' ? 'Offres' : 'Offers'}
+                    </h3>
                     <ul>
-                        <li><a href="/advertise">AdsCity Publicité</a></li>
-                        <li><a href="/store">Création de boutique</a></li>
-                        {/* <li><a href="/forfait">Forfaits</a></li> */}
+                        <li><a href="/pubs">
+                            {language === 'FR' ? "Publicité" : "Advertising"}
+                        </a></li>
+                        <li><a href="/stores">
+                            {language === 'FR' ? "Boutiques" : "Stores"}
+                        </a></li>
+                        <li><a href="/forfait">Forfaits</a></li>
                     </ul>
                 </div>
 
@@ -83,8 +111,8 @@ export default function Footer() {
 
             {/* Bottom Bar */}
             <div className="footer-bottom">
-                <p>&copy; {currentYear} AdsCity. Tous droits réservés.</p>
-                <p>Publiez, Vendez, Echangez</p>
+                <p>&copy; {currentYear} AdsCity. {language === 'FR' ? "Tous droits réservés." : "All rights reserved."}</p>
+                <p>{t.loading}</p>
                 {/* <div className="app-downloads">
                     <a href="/ios-app">
                         <img src="/app-store.png" alt="Download on App Store" />

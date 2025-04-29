@@ -1,23 +1,54 @@
-@import './fonts';
-@import './variables';
+@import '../../styles/fonts';
+@import '../../styles/variables';
 
 
-.status-component {
-    overflow-x: auto;
-    /* Enable horizontal scrolling */
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    /* width: 80%;
-    margin-left: auto;
-    margin-right: auto; */
-    flex-direction: row;
-    margin-bottom: 4rem;
-    /* padding-inline-start: 15px; */
+.status {
+    padding: 10px;
+    background-color: $white;
+    margin-top: 5rem;
+    border-radius: 12px;
 
 
-    .status-wrap {
+    @media (max-width: 768px) {
+        margin-top: 9rem;
+    }
+
+    .head {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        padding: 0 10px;
+        border-radius: 5px;
+
+        h2 {
+            font-size: 18px;
+            // color: $white;
+            font-family: 'Ubuntu', sans-serif;
+            font-weight: $font-regular;
+        }
+
+        .add-new-ad {
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            background: $gray;
+            color: $white;
+            box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+
+
+            svg {
+                font-size: 16px;
+            }
+
+            span {
+                font-weight: $font-light;
+                margin-left: 5px;
+                font-size: 15px;
+                font-family: 'Ubuntu', sans-serif;
+            }
+        }
     }
 }

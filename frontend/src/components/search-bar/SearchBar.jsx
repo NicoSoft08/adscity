@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useNavigate } from 'react-router-dom';
@@ -7,9 +7,11 @@ import { analytics } from '../../firebaseConfig';
 import { updateSearchHistory } from '../../routes/userRoutes';
 import { extractSuggestions } from '../../func';
 import data from '../../json/data.json';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import './SearchBar.scss';
 
 export default function SearchBar({ currentUser }) {
+    const { language } = useContext(LanguageContext);
     const [keywords, setKeywords] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
@@ -89,7 +91,10 @@ export default function SearchBar({ currentUser }) {
         <div className='search-bar'>
             <input
                 type="text"
-                placeholder="Recherchez une catégorie ou un produit..."
+                placeholder={language === 'FR'
+                    ? "Recherchez une catégorie ou un produit..."
+                    : "Search for a category or product..."
+                }
                 value={keywords}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}

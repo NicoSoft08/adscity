@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { faCheck, faCheckCircle, faEllipsisH, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faCheckCircle, faEllipsisH, faTimes, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { formateDate, parseTimestamp } from '../../func';
 import { letterWhiteBgBlue } from '../../config/logos';
@@ -18,11 +18,13 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import './Notifications.scss';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 
-const NotificationItem = ({ userID, notification, setNotifications }) => {
+const NotificationItem = ({ userID, notification, setNotifications, language }) => {
     const sentAt = parseTimestamp(notification?.timestamp);
     const menuRef = useRef(null);
+    const { currentUser } = useContext(AuthContext);
     const [showMenu, setShowMenu] = useState(false);
     const [loading, setLoading] = useState(false);
     const [confirm, setConfirm] = useState(false);
@@ -41,12 +43,12 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
 
     const options = [
         {
-            label: 'Marquer comme lu',
+            label: language === 'FR' ? 'Marquer comme lu' : 'Mark as read',
             icon: faCheck, // Vous pouvez utiliser une icône appropriée comme une coche
             action: () => handleMarkAsRead(notification?.id)
         },
         {
-            label: 'Supprimer',
+            label: language === 'FR' ? 'Supprimer' : 'Delete',
             icon: faTrash, // Vous pouvez utiliser une icône appropriée comme une poubelle
             action: () => handleDelete(notification?.id)
         }
@@ -63,9 +65,16 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
         setShowMenu(!showMenu);
 
         try {
-            const hasRead = await markNotificationAsRead(userID, notificationID);
+            const idToken = await currentUser.getIdToken();
+            const hasRead = await markNotificationAsRead(userID, idToken, notificationID);
             if (hasRead.success) {
-                setToast({ show: true, type: 'info', message: 'Notification marquée comme lue' })
+                setToast({
+                    show: true,
+                    type: 'info',
+                    message: language === 'FR'
+                        ? 'Notification marquée comme lue'
+                        : 'Notification marked as read'
+                })
                 logEvent(analytics, 'mark_notification_as_read');
                 // Mettre à jour localement
                 setNotifications((prev) =>
@@ -91,14 +100,26 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
             setLoading(true);
             const result = await deleteNotification(userID, notificationID);
             if (result.success) {
-                setToast({ show: true, type: 'success', message: 'Notification supprimée' });
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: language === 'FR'
+                        ? 'Notification supprimée'
+                        : 'Notification deleted'
+                });
                 logEvent(analytics, 'delete_notification');
                 setNotifications((prev) => prev.filter((notif) => notif.id !== notificationID));
                 setConfirm(false);
             }
         } catch (error) {
             console.error(error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue' })
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Une erreur est survenue'
+                    : 'An error occurred'
+            })
             setConfirm(false);
         } finally {
             setLoading(false);
@@ -141,22 +162,28 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
                 <p className='type'>
                     {notification.type === 'ad_approval' && notification.message}
                     {notification.type === 'ad_refusal' && notification.message}
+                    {notification.type === 'verification_status' && notification.message}
                 </p>
                 <span className="timestamp">
-                    {formateDate(sentAt)}
+                    {formateDate(sentAt, language)}
                 </span>
             </div>
             <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ ...toast, show: false })} />
 
             {confirm && (
                 <Modal title={"Suppression de la notification"} onShow={confirm} onHide={() => setConfirm(false)}>
-                    <p>Êtes-vous sûr de vouloir supprimer cette notification ?</p>
+                    <p>
+                        {language === 'FR'
+                            ? "Êtes-vous sûr de vouloir supprimer cette notification ?"
+                            : "Are you sure you want to delete this notification ?"
+                        }
+                    </p>
                     <div className="ad-details-buttons">
                         <button className="modal-button approve-button" onClick={confirmDelete}>
-                            {loading ? <Spinner /> : 'Confirmer'}
+                            {loading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> language === 'FR' ? "Confirmer" : "Confirm"</>}
                         </button>
                         <button className="modal-button reject-button" onClick={() => setConfirm(false)}>
-                            Annuler
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
                         </button>
                     </div>
                 </Modal>
@@ -168,6 +195,7 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
 export default function NotificationList() {
     const menuRef = useRef(null);
     const { currentUser } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const [notifications, setNotifications] = useState([]);
     const [showMenu, setShowMenu] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -182,7 +210,8 @@ export default function NotificationList() {
         const getNotifications = async () => {
             try {
                 const userID = currentUser.uid;
-                const result = await fetchNotifications(userID);
+                const idToken = await currentUser.getIdToken();
+                const result = await fetchNotifications(userID, idToken);
                 if (isMounted && result) {
                     setNotifications(result?.data.notifications || []);
                 }
@@ -215,12 +244,12 @@ export default function NotificationList() {
 
     const options = [
         {
-            label: 'Marquer tout comme lu',
+            label: language === 'FR' ? 'Marquer tout comme lu' : 'Mark all as read',
             icon: faCheck, // Vous pouvez utiliser une icône appropriée comme une coche
             action: () => handleMarkAllAsRead()
         },
         {
-            label: 'Supprimer tout',
+            label: language === 'FR' ? 'Supprimer tout' : 'Delete all',
             icon: faTrash, // Vous pouvez utiliser une icône appropriée comme une poubelle
             action: () => handleDeleteAll()
         }
@@ -241,14 +270,26 @@ export default function NotificationList() {
         try {
             const result = await markAllNotificationsAsRead(userID);
             if (result.success) {
-                setToast({ show: true, type: 'info', message: 'Toutes les notifications ont été marquées comme lues.' });
+                setToast({
+                    show: true,
+                    type: 'info',
+                    message: language === 'FR'
+                        ? 'Toutes les notifications ont été marquées comme lues.'
+                        : 'All notifications have been marked as read.'
+                });
                 logEvent(analytics, 'mark_all_notifications_as_read');
             } else {
                 setToast({ show: true, type: 'error', message: result.message });
             }
         } catch (error) {
             console.error('Erreur lors de la mise à jour des notifications :', error);
-            setToast({ show: true, type: 'error', message: 'Erreur technique, réessayez plus tard.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Erreur technique, réessayez plus tard.'
+                    : 'Technical error, please try again later.'
+            });
         }
     }
 
@@ -265,14 +306,25 @@ export default function NotificationList() {
 
             const result = await deteleteAllNotifications(userID);
             if (result.success) {
-                setToast({ show: true, type: 'success', message: 'Toutes les notifications ont été supprimées.' });
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: language === 'FR'
+                        ? 'Toutes les notifications ont été supprimées.'
+                        : 'All notifications have been deleted.'
+                });
                 logEvent(analytics, 'delete_all_notifications');
                 setNotifications([]);
                 setConfirm(false);
             }
         } catch (error) {
             console.error(error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue' });
+            setToast({
+                show: true, type: 'error',
+                message: language === 'FR'
+                    ? 'Une erreur est survenue'
+                    : 'An error occurred'
+            });
             setConfirm(false);
         } finally {
             setLoading(false);
@@ -283,7 +335,7 @@ export default function NotificationList() {
         <div className='notification-list'>
             <div className="head">
                 <h2>Notifications</h2>
-                <span className="more-options" title="Plus d'options">
+                <span className="more-options" title={language === 'FR' ? 'Plus d\'options' : 'More options'}>
                     <FontAwesomeIcon icon={faEllipsisH} onClick={handleMenuClick} />
                 </span>
                 {showMenu &&
@@ -305,9 +357,12 @@ export default function NotificationList() {
                         userID={currentUser?.uid}
                         notification={notification}
                         setNotifications={setNotifications}
+                        language={language}
                     />
                 ))
-                : <p>Vous n'avez aucunes notifications</p>
+                : <p>
+                    {language === 'FR' ? "Vous n'avez pas de notifications." : "You don't have any notifications."}
+                </p>
             }
 
             {notifications.length > notifPerPage && (
@@ -321,14 +376,22 @@ export default function NotificationList() {
 
 
             {confirm && (
-                <Modal title={"Suppression de toutes les notifications"} onShow={confirm} onHide={() => setConfirm(false)}>
-                    <p>Êtes-vous sûr de vouloir supprimer toutes les notifications ?</p>
+                <Modal title={language === 'FR'
+                    ? "Suppression de toutes les notifications"
+                    : "Deletion of all notifications"
+                } onShow={confirm} onHide={() => setConfirm(false)}>
+                    <p>
+                        {language === 'FR'
+                            ? "Êtes-vous sûr de vouloir supprimer toutes les notifications ?"
+                            : "Are you sure you want to delete all notifications ?"
+                        }
+                    </p>
                     <div className="ad-details-buttons">
                         <button className="modal-button approve-button" onClick={confirmDeleteAll}>
-                            {loading ? <Spinner /> : 'Confirmer'}
+                            {loading ? <Spinner /> : <><FontAwesomeIcon icon={faCheck} /> language === 'FR' ? "Confirmer" : "Confirm"</>}
                         </button>
                         <button className="modal-button reject-button" onClick={() => setConfirm(false)}>
-                            Annuler
+                            <FontAwesomeIcon icon={faTimes} /> {language === 'FR' ? "Annuler" : "Cancel"}
                         </button>
                     </div>
                 </Modal>

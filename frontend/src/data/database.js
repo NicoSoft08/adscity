@@ -5,19 +5,58 @@ export const monthNames = [
 ];
 
 export const businessCategory = [
-    "Service Automobile", "Mode et Vêtements", "Arts et Spectacles",
-    "Beauté, Cosmétique et Soins Personnels", "Éducation",
-    "Planificateur d'Événements", "Finances", "Épicerie", "Hôtel",
-    "Médical & Santé", "Restauration", "Achats et Vente au Détail",
+    "Service Automobile",
+    "Mode et Vêtements",
+    "Arts et Spectacles",
+    "Beauté, Cosmétique et Soins Personnels",
+    "Éducation",
+    "Planificateur d'Événements",
+    "Finances",
+    "Épicerie",
+    "Hôtel",
+    "Médical & Santé",
+    "Restauration",
+    "Achats et Vente au Détail",
     "Immobilier",
+    "Électronique et Informatique",
+    "Sports et Loisirs",
+    "Maison et Jardin",
+    "Bricolage et Construction",
+    "Services Professionnels",
+    "Artisanat",
+    "Animalerie et Services pour Animaux",
+    "Voyages et Tourisme",
+    "Livres et Papeterie",
+    "Jouets et Jeux",
+    "Agriculture et Élevage",
+    "Mobilier et Décoration",
+    "Photographie et Vidéo",
+    "Services Juridiques",
+    "Transport et Logistique",
+    "Musique et Instruments",
+    "Bien-être et Fitness",
+    "Services à Domicile",
+    "Énergie et Environnement",
+    "Médias et Communication",
+    "Industrie et Fabrication",
+    "Associations et Organisations",
+    "Autre"
 ];
+
 
 export const businessCategoryId = [
     "service-automobile", "mode-et-vetements", "arts-et-spectacles",
     "beaute-cosmetique-et-soins-personnels", "education",
     "planificateur-devenements", "finances", "epicerie", "hotel",
     "medical-sante", "restauration", "achats-et-vente-au-detail",
-    "immobilier",
+    "immobilier", "electronique-et-informatique", "sports-et-loisirs",
+    "maison-et-jardin", "bricolage-et-construction", "services-professionnels",
+    "artisanat", "animalerie-et-services-pour-animaux", "voyages-et-tourisme",
+    "livres-et-papeterie", "jouets-et-jeux", "agriculture-et-elevage",
+    "mobilier-et-decoration", "photographie-et-video", "services-juridiques",
+    "transport-et-logistique", "musique-et-instruments", "bien-etre-et-fitness",
+    "services-a-domicile", "energie-et-environnement", "medias-et-communication",
+    "industrie-et-fabrication", "associations-et-organisations", "autre"
 ];
 export const dishesStuff = {
     fr: ["en porcelaine", "en faïence", "en verre", " de grès", "en terre cuite", "de mélamine"],

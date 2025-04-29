@@ -1,36 +1,38 @@
-import {
-    FaTachometerAlt,
-    FaUser,
-    FaBullhorn,
-    FaHeart,
-    FaUserCircle,
-    FaCogs,
-    FaQuestionCircle,
-    FaChartLine,
-    FaUsers,
-    FaBell,
-} from 'react-icons/fa';
 import { calculateEndDate } from '../func';
-import { faChartLine } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faBullhorn, faChartLine, faCirclePlay, faFolder, faHeartCircleCheck, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
-const userLeftBarContent = [
-    { id: 1, name: 'Panel', selectId: 'panel', icon: FaTachometerAlt, activeIcon: FaTachometerAlt, onClick: () => { } },
-    { id: 2, name: 'Compte', selectId: 'users', icon: FaUser, activeIcon: FaUser, onClick: () => { } },
-    { id: 3, name: 'Annonces', selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => { } },
-    { id: 4, name: 'Favoris', selectId: 'favoris', icon: FaHeart, activeIcon: FaHeart, onClick: () => { } },
-    { id: 5, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => { } },
-    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => { } },
-    { id: 7, name: 'Support', selectId: 'support', icon: FaQuestionCircle, activeIcon: FaQuestionCircle, onClick: () => { } },
-];
+const userSidebarData = (language, userPlan, hasDocument) => {
+    const items = [
+        { id: 'panel', name: language === 'FR' ? 'Panel' : 'Panel', icon: faChartLine, path: '/user/dashboard/panel' },
+        { id: 'posts', name: language === 'FR' ? 'Annonces' : 'Ads', icon: faBullhorn, path: '/user/dashboard/posts' },
+        { id: 'favoris', name: language === 'FR' ? 'Favoris' : 'Favorites', icon: faHeartCircleCheck, path: "/user/dashboard/favoris" },
+        { id: 'notifications', name: language === 'FR' ? 'Notifications' : 'Notifications', icon: faBell, path: "/user/dashboard/notifications", badge: 0 },
+        { id: 'profile', name: language === 'FR' ? 'Profile' : 'Profile', icon: faUserCircle, path: "/user/dashboard/profile" },
+    ];
 
-const adminSidebarData = [
-    { id: 1, name: "Panel", selectId: 'panel', icon: FaChartLine, activeIcon: FaChartLine, onClick: () => { } },
-    { id: 2, name: "Annonces", selectId: 'ads', icon: FaBullhorn, activeIcon: FaBullhorn, onClick: () => { } },
-    { id: 3, name: 'Utilisateurs', selectId: 'users', icon: FaUsers, activeIcon: FaUsers, onClick: () => { } },
-    { id: 4, name: 'Profil', selectId: 'profil', icon: FaUserCircle, activeIcon: FaUserCircle, onClick: () => { } },
-    { id: 5, name: "Notifications", selectId: 'notifications', icon: FaBell, activeIcon: FaBell, onClick: () => { } },
-    { id: 6, name: 'Paramètres', selectId: 'settings', icon: FaCogs, activeIcon: FaCogs, onClick: () => { } },
-];
+    // Add status item only for paid plans
+    if (userPlan && !userPlan === 'Particulier') { // userPlan shall be equal to 'Particulier'
+        items.splice(3, 0, {
+            id: 'status',
+            name: language === 'FR' ? 'Statuts' : 'Status',
+            icon: faCirclePlay,
+            path: "/user/dashboard/status"
+        });
+    }
+
+    // Add document item only if user has a document
+    if (hasDocument) {
+        items.splice(4, 0, {
+            id: 'documents',
+            name: language === 'FR' ? 'Document' : 'Document',
+            icon: faFolder,
+            path: "/user/dashboard/documents",
+            badge: 0
+        });
+    }
+
+    return items;
+};
 
 
 
@@ -130,9 +132,8 @@ const securityAdvice = {
 };
 
 export {
-    userLeftBarContent,
-    adminSidebarData,
     plans,
     tabs,
     securityAdvice,
+    userSidebarData,
 };

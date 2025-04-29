@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import Cookies from 'js-cookie';
 import { fetchDataByUserID, setUserOnlineStatus } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
@@ -23,14 +24,14 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         // Check for stored user data on initial load
-        const storedUser = sessionStorage.getItem('user');
+        const storedUser = localStorage.getItem('user');
         if (storedUser) {
             try {
                 const parsedUser = JSON.parse(storedUser);
                 setUserRole(parsedUser.role);
             } catch (error) {
                 console.error("Error parsing stored user data:", error);
-                sessionStorage.removeItem('user'); // Remove invalid data
+                localStorage.removeItem('user'); // Remove invalid data
             }
         }
 
@@ -42,28 +43,35 @@ export const AuthProvider = ({ children }) => {
                 if (user) {
                     setCurrentUser(user);
 
+                    const idToken = await user.getIdToken(true);
+
                     // Fetch user data from backend
-                    const userDataResponse = await fetchDataByUserID(user.uid);
+                    const userDataResponse = await fetchDataByUserID(user.uid, idToken);
                     if (userDataResponse?.data) {
                         setUserData(userDataResponse.data);
                         setUserRole(userDataResponse.data.role);
 
                         // Store user data in localStorage
-                        sessionStorage.setItem('user', JSON.stringify({
+                        localStorage.setItem('user', JSON.stringify({
                             uid: user.uid,
-                            // email: user.email,
-                            // role: userDataResponse.data.role,
-                            lastLogin: Date.now()
+                            email: user.email,
+                            role: userDataResponse.data.role
                         }));
 
                         // Update online status
-                        await setUserOnlineStatus(user.uid, true);
+                        await setUserOnlineStatus(user.uid, true, idToken);
+                        Cookies.set('auth_token', idToken, { expires: 7 }); // Store token for 7 days
                     }
                 } else {
                     // If there was a user before and now there isn't, update online status
                     const previousUserID = currentUser?.uid;
                     if (previousUserID) {
-                        await setUserOnlineStatus(previousUserID, false);
+                        const idToken = await currentUser.getIdToken(true);
+                        await setUserOnlineStatus(previousUserID, false, idToken);
+                        Cookies.remove('auth_token', {
+                            path: '/',
+                            domain: '.adscity.net'
+                        });
                     }
 
                     // Clear user state
@@ -72,8 +80,8 @@ export const AuthProvider = ({ children }) => {
                     setUserRole(null);
 
                     // Clear localStorage
-                    sessionStorage.removeItem('token');
-                    sessionStorage.removeItem('user');
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
                 }
             } catch (error) {
                 console.error("Error in auth state change handler:", error);
@@ -88,32 +96,6 @@ export const AuthProvider = ({ children }) => {
         };
     }, [currentUser]); // No dependencies to avoid re-running this effect
 
-    // Handle user going offline when component unmounts or page closes
-    useEffect(() => {
-        const handleBeforeUnload = () => {
-            if (currentUser?.uid) {
-                // Using a synchronous approach for beforeunload
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', `/api/users/${currentUser.uid}/offline`, false);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.send(JSON.stringify({ isOnline: false }));
-            }
-        };
-
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-
-            // Also try to set offline when component unmounts
-            if (currentUser?.uid) {
-                setUserOnlineStatus(currentUser.uid, false).catch(error => {
-                    console.error("Error updating offline status on unmount:", error);
-                });
-            }
-        };
-    }, [currentUser]);
-
     // Function to handle logout
     const logout = async () => {
         try {
@@ -122,7 +104,12 @@ export const AuthProvider = ({ children }) => {
             // 1. Update online status
             if (user?.uid) {
                 try {
-                    await setUserOnlineStatus(user.uid, false);
+                    const idToken = await user.getIdToken(true);
+                    await setUserOnlineStatus(user.uid, false, idToken);
+                    Cookies.remove('auth_token', {
+                        path: '/',
+                        domain: '.adscity.net'
+                    });
                 } catch (statusError) {
                     console.warn("Failed to update online status:", statusError);
                     // Continue with logout even if this fails

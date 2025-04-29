@@ -1,5 +1,5 @@
 import { format, isToday, isYesterday } from 'date-fns';
-import { fr } from 'date-fns/locale';
+import { enUS, fr } from 'date-fns/locale';
 
 const formatSpecialFeatures = (features) => {
     if (!features) return '';
@@ -51,18 +51,24 @@ const parseTimestamp = (timestamp) => {
 }
 
 
-const formateDate = (newDate) => {
+const formateDate = (newDate, language) => {
     const date = new Date(newDate);
 
     if (isToday(date)) {
-        return `Aujourd'hui à ${format(date, 'HH:mm', { locale: fr })}`;
+        return language === 'FR'
+            ? `Aujourd'hui à ${format(date, 'HH:mm', { locale: fr })}`
+            : `Today at ${format(date, 'HH:mm', { locale: enUS })}`;
     }
 
     if (isYesterday(date)) {
-        return `Hier à ${format(date, 'HH:mm', { locale: fr })}`;
+        return language === 'FR'
+            ? `Hier à ${format(date, 'HH:mm', { locale: fr })}`
+            : `Yesterday at ${format(date, 'HH:mm', { locale: enUS })}`;
     }
 
-    return format(date, "d MMMM yyyy 'à' HH:mm", { locale: fr });
+    return language === 'FR'
+        ? format(date, "d MMMM yyyy 'à' HH:mm", { locale: fr })
+        : format(date, "MMMM d, yyyy 'at' HH:mm", { locale: enUS });
 }
 
 const formatPostedAt = (posted_at) => {

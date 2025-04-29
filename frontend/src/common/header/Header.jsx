@@ -7,10 +7,12 @@ import CreateAdButton from '../../components/create-ad-button/CreateAdButton';
 import { Link } from 'react-router-dom';
 import { AuthContext } from '../../contexts/AuthContext';
 import data from '../../json/data.json';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import './Header.scss';
 
 export default function Header() {
     const { currentUser, userRole } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
 
     const renderCategoryImage = (categoryImage) => {
         return require(`../../imgs/cats/${categoryImage}`);
@@ -22,11 +24,21 @@ export default function Header() {
                 {(!currentUser || userRole !== 'user') && (
                     <div className="top-header">
                         <div className="__left">
-                            <Link to="/help-center"><span>Aide</span></Link>
+                            <Link to="/help"><span>
+                                {language === 'FR'
+                                    ? "Aide" : "Help"
+                                }
+                            </span></Link>
                         </div>
                         <div className="__right">
-                            <Link to="/auth/signin"><span>Connexion</span></Link>
-                            <Link to="/auth/create-user"><span>Inscription</span></Link>
+                            <a href={'/auth/signin'}><span>
+                                {language === 'FR'
+                                    ? "Connexion" : "Login"
+                                }
+                            </span></a>
+                            <a href={'/auth/signup'}><span>{language === 'FR'
+                                ? "Inscription" : "Signup"
+                            }</span></a>
                         </div>
                     </div>
                 )}
@@ -47,7 +59,7 @@ export default function Header() {
                         <div key={key} id={categoryId} className="sub-header-item">
                             <Link to={`/category/${categoryName}`}>
                                 <img src={renderCategoryImage(categoryImage)} alt={categoryName} />
-                                <span>{categoryTitles.fr}</span>
+                                <span>{language === 'FR' ? categoryTitles.fr : categoryTitles.en}</span>
                             </Link>
                         </div>
                     ))}

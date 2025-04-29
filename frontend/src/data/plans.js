@@ -95,8 +95,8 @@ export const forfaits = [
         currency: "RUB",
         billing: "one-time",
         validity: {
-            days: 10,
-            label: "10 jours"
+            days: 30,
+            label: "30 jours"
         },
         popular: false,
         limits: {
@@ -161,8 +161,8 @@ export const forfaits = [
         currency: "RUB",
         billing: "one-time",
         validity: {
-            days: 45,
-            label: "45 jours"
+            days: 30,
+            label: "30 jours"
         },
         popular: false,
         limits: {
@@ -194,8 +194,8 @@ export const forfaits = [
         currency: "RUB",
         billing: "one-time",
         validity: {
-            days: 60,
-            label: "60 jours"
+            days: 30,
+            label: "30 jours"
         },
         popular: false,
         limits: {

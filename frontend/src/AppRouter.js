@@ -27,14 +27,13 @@ import TeamPage from './pages/public/TeamPage';
 import UserHome from './pages/private/UserHome';
 import CheckoutProceed from './pages/private/CheckoutProceed';
 import SecurityAdvices from './pages/public/SecurityAdvices';
-import { DeclineDevice, VerifyDevice } from './pages/auth/DeviceActions';
+// import { DeclineDevice, VerifyDevice } from './pages/auth/DeviceActions';
 import Business from './pages/public/Business';
 import QuickStartGuide from './pages/public/QuickStartGuide';
 import FeedbackForm from './pages/private/FeedbackForm';
 import PostDetailPage from './pages/public/PostDetailPage';
 import CreatePostPage from './pages/public/CreatePostPage';
 // import FiltersPage from './pages/public/FiltersPage';
-import PubCreationForm from './hooks/host-publicity/PubCreationForm';
 import PaymentPage from './pages/private/PaymentPage';
 import UserProfile from './pages/private/UserProfile';
 import DashboardPanel from './pages/private/DashboardPanel';
@@ -50,11 +49,23 @@ import EditPostID from './pages/private/EditPostID';
 import StatsPostID from './pages/private/StatsPostID';
 import ManageFavorites from './pages/private/ManageFavorites';
 // import Forfaits from './pages/public/Forfaits';
-import Account from './pages/public/Account';
-import Announce from './pages/public/Announce';
-// import Verification from './pages/private/Verification';
+import Verification from './pages/private/Verification';
 import PasswordResetPage from './pages/auth/PasswordResetPage';
 import RequestPasswordResetPage from './pages/auth/RequestPasswordResetPage';
+import SignupVerifyEmail from './pages/auth/SignupVerifyEmail';
+import EmailVerified from './pages/auth/EmailVerified';
+import Advertising from './pages/public/Advertising';
+import AdvertisingLayout from './layouts/AdvertisingLayout';
+import PubCreationPage from './pages/public/PubCreationPage';
+import StatusCreator from './components/status/StatusCreator';
+import Status from './components/status/Status';
+import StoreLayout from './layouts/StoreLayout';
+import Stores from './pages/public/Stores';
+import StoreCreationPage from './pages/public/StoreCreationPage';
+import StoreFAQs from './pages/public/StoreFAQs';
+import PubsFAQs from './pages/public/PubsFAQs';
+import AccountFAQs from './pages/public/AccountFAQs';
+import AnnounceFAQs from './pages/public/AnnounceFAQs';
 
 export default function AppRouter() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -79,7 +90,6 @@ export default function AppRouter() {
                     <Route path='/legal/post-rules' element={<RulesPage />} />
 
                     <Route path='/business' element={<Business />} />
-                    <Route path='/pub' element={<PubCreationForm />} />
                     <Route path='/about' element={<TeamPage />} />
                     <Route path="/posts/:category/:subcategory/:post_id" element={<PostDetailPage />} />
                     <Route path="/posts/:category/:subcategory/:postID" element={<PostIDPage />} />
@@ -92,26 +102,42 @@ export default function AppRouter() {
                     <Route path='/feedback-tests' element={<FeedbackForm />} />
                     <Route path='/faq' element={<FAQsPage />} />
                 </Route>
+                <Route path='/pubs' element={<AdvertisingLayout />}>
+                    <Route index element={<Advertising />} />
+                    <Route path='create' element={<PubCreationPage />} />
+                </Route>
+
+                <Route path='/stores' element={<StoreLayout />}>
+                    <Route index element={<Stores />} />
+                    <Route path='create' element={<StoreCreationPage />} />
+                </Route>
+
                 <Route path='/help' element={<HelpLayout />}>
-                    <Route path='account' element={<Account />} />
-                    <Route path='posts' element={<Announce />} />
+                    <Route path='account' element={<AccountFAQs />} />
+                    <Route path='posts' element={<AnnounceFAQs />} />
                     <Route path='safety' element={<SecurityAdvices />} />
+                    <Route path='pubs' element={<PubsFAQs />} />
+                    <Route path='stores' element={<StoreFAQs />} />
                 </Route>
 
                 <Route element={<AuthLayout />}>
                     <Route path='/auth/signin' element={<LoginPage />} />
                     <Route path='/auth/signin/:email?' element={<LoginPage />} />
-                    <Route path='/auth/create-user' element={<SignupPage />} />
+                    <Route path='/auth/signup' element={<SignupPage />} />
                     <Route path='/auth/validate-email' element={<SignupSuccess />} />
+                    <Route path='/auth/signup-verify-email' element={<SignupVerifyEmail />} />
+                    <Route path='/auth/email-verified' element={<EmailVerified />} />
                     <Route path='/auth/forgot-password' element={<RequestPasswordResetPage />} />
                     <Route path='/auth/reset-password/:token' element={<PasswordResetPage />} />
-                    <Route path="/auth/verify-device/:deviceID/:verificationToken" element={<VerifyDevice />} />
-                    <Route path="/auth/decline-device/:deviceID/:verificationToken" element={<DeclineDevice />} />
+                    {/* <Route path="/auth/verify-device/:deviceID/:verificationToken" element={<VerifyDevice />} />
+                    <Route path="/auth/decline-device/:deviceID/:verificationToken" element={<DeclineDevice />} /> */}
                 </Route>
 
                 <Route path='/user/dashboard' element={<UserHome />}>
                     <Route path="panel" element={<DashboardPanel />} />
-                    {/* <Route path="documents" element={<Verification currentUser={currentUser} userData={userData} />} /> */}
+                    <Route path="status" element={<Status />} />
+                    <Route path="status/new" element={<StatusCreator />} />
+                    <Route path="documents" element={<Verification currentUser={currentUser} userData={userData} />} />
                     <Route path="favoris" element={<ManageFavorites currentUser={currentUser} />} />
                     <Route path="posts" element={<ManagePosts currentUser={currentUser} />} />
                     <Route path='posts/:post_id' element={<ManagePostID currentUser={currentUser} />} />

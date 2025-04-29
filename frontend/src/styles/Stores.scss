@@ -1,0 +1,117 @@
+@import './fonts.scss';
+@import './variables.scss';
+
+
+.stores {
+    margin-top: 5rem;
+    display: flex;
+    background-color: #f9f9f9;
+    position: relative;
+
+    @media (max-width: 768px) {
+        flex-direction: column; // Retour à la disposition horizontale sur desktop
+    }
+
+    .stores-content {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+
+        @media (max-width: 768px) {
+            padding: 20px; 
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .stores-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+
+            .store-item {
+                background: $white;
+                border-radius: 10px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+                transition: transform 0.3s;
+
+                .store-cover {
+                    width: 100%;
+                    height: 150px;
+                    overflow: hidden;
+
+                    img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                        display: block;
+                    }
+                }
+
+                .store-details {
+                    padding: 15px;
+                    justify-content: space-between;
+                    align-items: center;
+
+                    .owner-info {
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+
+                        .owner-avatar {
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 50%;
+                            object-fit: cover;
+                            border: 2px solid $two;
+                        }
+
+                        .owner-text {
+                            h3 {
+                                margin: 0;
+                                font-size: 1.1rem;
+                                color: #333;
+                            }
+
+                            .profile-type {
+                                font-size: 0.85rem;
+                                color: #888;
+                                font-weight: $font-light;
+                            }
+                        }
+                    }
+
+                    .like-button {
+                        margin-top: 1rem;
+                        width: 100%;
+                        border: none;
+                        color: $dark;
+                        font-size: 1rem;
+                        font-weight: $font-light;
+                        font-family: 'Ubuntu', sans-serif;
+                        cursor: pointer;
+                        padding: 10px;
+                        border-radius: 8px;
+                        background: #ccc;
+                        transition: background 0.2s;
+
+                        &:hover {
+                            background: darken(#ccc, 10%);
+                        }
+
+                        svg {
+                            margin-right: 5px;
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+}

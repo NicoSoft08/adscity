@@ -24,43 +24,35 @@
             font-weight: $font-regular;
         }
 
-        .add-new-ad {
-            padding: 10px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
+        .buttons {
             display: flex;
             align-items: center;
-            background: $gray;
-            color: $white;
-            box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
-
-
-            svg {
-                font-size: 16px;
+            justify-content: center;
+            gap: 10px;
+            
+            .add-new-ad {
+                padding: 10px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                background: $gray;
+                color: $white;
+                box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    
+    
+                svg {
+                    font-size: 16px;
+                }
+    
+                span {
+                    font-weight: $font-light;
+                    margin-left: 5px;
+                    font-size: 15px;
+                    font-family: 'Ubuntu', sans-serif;
+                }
             }
-
-            span {
-                font-weight: $font-light;
-                margin-left: 5px;
-                font-size: 15px;
-                font-family: 'Ubuntu', sans-serif;
-            }
-        }
-    }
-
-    .chart-container {
-        box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
-        margin-top: 20px;
-        padding: 10px;
-        border-radius: 12px;
-        background-color: $white;
-
-        h4 {
-            font-size: 18px;
-            color: $dark;
-            text-align: center;
-            text-transform: uppercase;
         }
     }
 

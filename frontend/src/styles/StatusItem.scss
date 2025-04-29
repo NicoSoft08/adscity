@@ -1,138 +1,66 @@
 @import './fonts';
 @import './variables';
 
-
-.status-container {
+.status-item {
     display: flex;
-    justify-content: center;
-    padding: 10px 0;
-    /* background-color: #f0f0f0; */
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    margin: 10px;
+    text-align: center;
 
-    .status-list {
+    .status-avatar-container {
+        position: relative;
         display: flex;
-        /* overflow-x: auto; */
-        scrollbar-width: none;
+        flex-direction: column;
+        align-items: center;
+    }
 
-        .status-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            /* margin: 0 10px; */
-            padding: 10px;
-            cursor: pointer;
+    .status-ring {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        padding: 4px;
+        background: linear-gradient(45deg, #4CAF50, #8BC34A);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.3s ease;
 
-            .status-image-container {
-                width: 100px;
-                height: 100px;
-                border-radius: 50%;
-                display: flex;
-                justify-content: center;
-                align-items: center;
+        @media (max-width: 768px) {
+            width: 70px;
+            height: 70px;
+        }
 
-
-                .status-image {
-                    width: 95%;
-                    height: 95%;
-                    border-radius: 50%;
-                    border: 2px solid $white;
-                    object-fit: cover;
-                }
-            }
-
-            .status-image-container.viewed {
-                border: 2px solid $white;
-            }
-
-            .status-image-container.unviewed {
-                border: 2px solid $secondary-color;
-            }
-
-
-            .user-name {
-                margin-top: 5px;
-                font-size: 15px;
-                font-weight: 300;
-                font-weight: $font-regular;
-                font-family: 'Ubuntu', sans-serif;
-            }
-
-
+        .status-avatar {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid white;
         }
     }
 
-    .status-modal {
-        position: fixed;
-        z-index: 1;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.4);
+    .status-username {
+        margin-top: 5px;
+        font-size: 12px;
+        color: #333;
+        font-weight: 500;
+        max-width: 90px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border: 1px solid #888;
-            border-radius: 20px;
-            width: 40%;
-            max-width: 800px;
-            position: relative;
+    &.viewed {
+        .status-ring {
+            background: #ccc; // Couleur plus grise pour "déjà vu"
+        }
+    }
 
-            .close-button {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                font-size: 28px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-
-            .media-container {
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                scrollbar-width: none;
-
-                .progress-indicator {
-                    display: flex;
-                    gap: 5px;
-
-
-                    .progress-indicator div {
-                        width: 70px;
-                        height: 2px;
-                        background-color: gray;
-                        /* border-radius: 50%; */
-                        cursor: pointer;
-                    }
-
-                    .progress-indicator div.active {
-                        background-color: blue;
-                        /* Change color for active indicator */
-                    }
-                }
-
-                .flex-align {
-                    margin-top: 1rem;
-                    display: flex;
-                    align-items: center;
-                    position: relative;
-
-                    .media-item {
-                        margin-right: 10px;
-
-
-                        img,
-                        video {
-                            width: 100%;
-                            height: 300px;
-                        }
-                    }
-                }
-
-            }
+    &.unviewed {
+        .status-ring {
+            background: linear-gradient(90deg, #833AB4, #FD1D1D, #FCB045); // Couleurs plus flashy pour "non vu"
         }
     }
 }

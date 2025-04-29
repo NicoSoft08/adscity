@@ -1,0 +1,394 @@
+@import './fonts.scss';
+@import './variables.scss';
+
+.advertising-landing-container {
+    max-width: 100%;
+    overflow-x: hidden;
+    color: #333;
+
+    section {
+        padding: 80px 5%;
+
+        @media (max-width: 768px) {
+            padding: 60px 5%;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 50px;
+            color: $two;
+
+            @media (max-width: 768px) {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+        }
+    }
+
+    // Hero Section
+    .hero-section {
+        display: flex;
+        align-items: center;
+        min-height: 80vh;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+
+        @media (max-width: 992px) {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .hero-content {
+            flex: 1;
+            padding: 0 5%;
+
+            h1 {
+                font-size: 3.5rem;
+                font-weight: 700;
+                margin-bottom: 20px;
+                color: $two;
+
+                @media (max-width: 768px) {
+                    font-size: 2.5rem;
+                }
+            }
+
+            p {
+                font-size: 1.2rem;
+                line-height: 1.6;
+                margin-bottom: 30px;
+                max-width: 600px;
+
+                @media (max-width: 992px) {
+                    margin: 0 auto 30px;
+                }
+            }
+        }
+
+        .hero-image {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            img {
+                max-width: 100%;
+                height: auto;
+                border-radius: 10px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
+        }
+    }
+
+    // Advantages Section
+    .advantages-section {
+        background-color: $white;
+
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+
+            @media (max-width: 992px) {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            @media (max-width: 576px) {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .advantage-card {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+            &:hover {
+                transform: translateY(-10px);
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
+
+            .advantage-icon {
+                font-size: 2.5rem;
+                color: $two;
+                margin-bottom: 20px;
+            }
+
+            h3 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+                color: #333;
+            }
+
+            p {
+                color: #666;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Ad Options Section
+    .ad-options-section {
+        background-color: #f5f7fa;
+
+        .options-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+
+            @media (max-width: 768px) {
+                flex-direction: column;
+            }
+        }
+
+        .option-card {
+            flex: 1;
+            background-color: $white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+
+            &:hover {
+                transform: translateY(-5px);
+            }
+
+            h3 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+                color: $two;
+            }
+
+            p {
+                color: #666;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Placement Section
+    .placement-section {
+        background-color: $white;
+
+        .options-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+
+            @media (max-width: 768px) {
+                flex-direction: column;
+            }
+        }
+
+        .option-card {
+            flex: 1;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+
+            &:hover {
+                transform: translateY(-5px);
+            }
+
+            h3 {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+                color: $two;
+            }
+
+            p {
+                color: #666;
+                line-height: 1.6;
+            }
+        }
+    }
+
+    // Testimonials Section
+    .testimonials-section {
+        background-color: #f5f7fa;
+
+        .testimonials-container {
+            display: flex;
+            gap: 30px;
+
+            @media (max-width: 768px) {
+                flex-direction: column;
+            }
+        }
+
+        .testimonial-card {
+            flex: 1;
+            background-color: $white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+
+            .testimonial-content {
+                position: relative;
+                padding: 20px 0;
+
+                &:before,
+                &:after {
+                    content: '"';
+                    font-size: 4rem;
+                    color: $two;
+                    opacity: 0.2;
+                    position: absolute;
+                }
+
+                &:before {
+                    top: -20px;
+                    left: -10px;
+                }
+
+                &:after {
+                    bottom: -50px;
+                    right: -10px;
+                }
+
+                p {
+                    font-style: italic;
+                    color: #555;
+                    line-height: 1.8;
+                    font-size: 1.1rem;
+                }
+            }
+
+            .testimonial-author {
+                margin-top: 20px;
+                text-align: right;
+
+                p {
+                    color: #666;
+                }
+            }
+        }
+    }
+
+    // FAQ Section
+    .faq-section {
+        background-color: $white;
+
+        .faq-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            h3 {
+                font-size: 1.3rem;
+                color: $two;
+                margin-bottom: 15px;
+                position: relative;
+                cursor: pointer;
+
+                &:before {
+                    content: "Q:";
+                    margin-right: 10px;
+                    font-weight: bold;
+                }
+            }
+
+            p {
+                color: #666;
+                line-height: 1.6;
+                padding-left: 25px;
+                position: relative;
+
+                &:before {
+                    content: "A:";
+                    position: absolute;
+                    left: 0;
+                    font-weight: bold;
+                    color: $two;
+                }
+            }
+        }
+
+        .faq-more {
+            text-align: center;
+            margin-top: 30px;
+
+            a {
+                color: $two;
+                text-decoration: none;
+                font-weight: 600;
+
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+
+    // CTA Section
+    .cta-section {
+        background: linear-gradient(135deg, $two 0%, #2c5282 100%);
+        color: $white;
+        text-align: center;
+
+        .cta-content {
+            max-width: 800px;
+            margin: 0 auto;
+
+            h2 {
+                color: $white;
+                font-size: 2.8rem;
+                margin-bottom: 20px;
+
+                @media (max-width: 768px) {
+                    font-size: 2.2rem;
+                }
+            }
+
+            p {
+                font-size: 1.2rem;
+                margin-bottom: 40px;
+                opacity: 0.9;
+            }
+        }
+    }
+
+    // Button Styles
+    .cta-button {
+        background-color: #ff6b6b;
+        color: $white;
+        font-family: 'Ubuntu', sans-serif;
+        border: none;
+        padding: 15px 30px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+
+        &:hover {
+            background-color: #ff5252;
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        svg {
+            transition: transform 0.3s ease;
+        }
+
+        &:hover svg {
+            transform: translateX(5px);
+        }
+    }
+}

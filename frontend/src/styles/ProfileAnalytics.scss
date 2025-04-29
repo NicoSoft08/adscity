@@ -1,0 +1,290 @@
+@import './fonts';
+@import './variables';
+
+// Main container for the profile analytics page
+.profile-analytics-container {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+
+    h2 {
+        margin-bottom: 10px;
+        color: #333;
+        font-size: 1.8rem;
+    }
+
+    .analytics-intro {
+        color: #666;
+        margin-bottom: 30px;
+        line-height: 1.5;
+    }
+}
+
+// Styling for the main charts component
+.profile-visits-charts {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-bottom: 30px;
+
+    .chart-container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        padding: 20px;
+
+        h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.2rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .no-data-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            color: #757575;
+            font-style: italic;
+            text-align: center;
+
+            &.small {
+                height: 100px;
+                font-size: 0.9rem;
+            }
+        }
+
+        // Styling for the stats grid in the summary section
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+
+            .stat-card {
+                background-color: #f5f8ff;
+                border-radius: 8px;
+                padding: 15px;
+                text-align: center;
+                transition: transform 0.2s, box-shadow 0.2s;
+
+                &:hover {
+                    transform: translateY(-3px);
+                    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+                }
+
+                .stat-value {
+                    font-size: 2rem;
+                    font-weight: bold;
+                    color: #36a2eb;
+                    margin-bottom: 5px;
+                }
+
+                .stat-label {
+                    font-size: 0.9rem;
+                    color: #666;
+                }
+
+                // Different colors for each stat card
+                &:nth-child(1) {
+                    background-color: #f0f7ff;
+
+                    .stat-value {
+                        color: #2196f3;
+                    }
+                }
+
+                &:nth-child(2) {
+                    background-color: #f0fff5;
+
+                    .stat-value {
+                        color: #4caf50;
+                    }
+                }
+
+                &:nth-child(3) {
+                    background-color: #fffbf0;
+
+                    .stat-value {
+                        color: #ff9800;
+                    }
+                }
+
+                &:nth-child(4) {
+                    background-color: #f0faff;
+
+                    .stat-value {
+                        color: #00bcd4;
+                    }
+                }
+            }
+        }
+    }
+
+    // Responsive adjustments for the stats grid
+    @media (max-width: 992px) {
+        .chart-container {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    }
+
+    @media (max-width: 576px) {
+        .chart-container {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    }
+}
+
+// Styling for the mini charts used in dashboards
+.profile-visits-mini-charts {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+
+    .mini-chart-container {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        padding: 15px;
+
+        h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .no-data-message {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100px;
+            color: #757575;
+            font-style: italic;
+            text-align: center;
+            font-size: 0.9rem;
+
+            &.small {
+                height: 80px;
+            }
+        }
+    }
+
+    @media (max-width: 576px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+// Custom styling for Recharts components
+.recharts-wrapper {
+
+    .recharts-cartesian-grid-horizontal line,
+    .recharts-cartesian-grid-vertical line {
+        stroke: #e0e0e0;
+    }
+
+    .recharts-tooltip-wrapper {
+        .recharts-default-tooltip {
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border: 1px solid #ccc !important;
+            border-radius: 5px !important;
+            padding: 10px !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+
+            .recharts-tooltip-label {
+                color: #333 !important;
+                font-weight: 600 !important;
+                margin-bottom: 5px !important;
+            }
+
+            .recharts-tooltip-item-list {
+                .recharts-tooltip-item {
+                    color: #666 !important;
+
+                    .recharts-tooltip-item-name {
+                        margin-right: 8px !important;
+                    }
+
+                    .recharts-tooltip-item-separator {
+                        margin: 0 5px !important;
+                    }
+
+                    .recharts-tooltip-item-value {
+                        font-weight: 600 !important;
+                    }
+                }
+            }
+        }
+    }
+
+    .recharts-legend-wrapper {
+        .recharts-default-legend {
+            .recharts-legend-item {
+                .recharts-surface {
+                    margin-right: 5px !important;
+                }
+            }
+        }
+    }
+}
+
+// Print styles for reports
+@media print {
+    .profile-analytics-container {
+        padding: 0;
+
+        h2 {
+            font-size: 1.5rem;
+        }
+
+        .analytics-intro {
+            font-size: 0.9rem;
+        }
+    }
+
+    .profile-visits-charts {
+        gap: 20px;
+
+        .chart-container {
+            box-shadow: none;
+            border: 1px solid #ddd;
+            page-break-inside: avoid;
+
+            h3 {
+                font-size: 1rem;
+            }
+
+            .stats-grid {
+                .stat-card {
+                    box-shadow: none;
+                    border: 1px solid #ddd;
+
+                    &:hover {
+                        transform: none;
+                        box-shadow: none;
+                    }
+
+                    .stat-value {
+                        font-size: 1.5rem;
+                    }
+
+                    .stat-label {
+                        font-size: 0.8rem;
+                    }
+                }
+            }
+        }
+    }
+
+    .profile-visits-mini-charts {
+        display: none; // Hide mini charts when printing
+    }
+}

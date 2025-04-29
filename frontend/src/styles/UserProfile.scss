@@ -336,6 +336,17 @@
         }
     }
 
+    .cog {
+        color: $orange;
+    }
+
+    .rejected {
+        color: $danger;
+        &:hover {
+            color: lighten($danger, 10%);
+        }
+    }
+
     a {
         text-decoration: none;
         color: $two;

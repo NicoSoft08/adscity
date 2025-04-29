@@ -41,9 +41,25 @@ export default function ManagePostID() {
 
     useEffect(() => {
         const fetchData = async () => {
-            const result = await fetchPostById(post_id);
-            if (result.success) {
-                setPost(result.data);
+            try {
+                // Get the authentication token if user is logged in
+                let idToken = null;
+                if (currentUser) {
+                    idToken = await currentUser.getIdToken(true);
+                }
+
+                const result = await fetchPostById(post_id, idToken);
+                if (result.success) {
+                    setPost(result.data);
+                } else {
+                    // Handle error from API
+                    console.error("Error fetching post:", result.message);
+                    // You might want to show an error message or redirect
+                }
+            } catch (error) {
+                console.error("Error in fetchData:", error);
+                // Handle unexpected errors
+            } finally {
                 setLoading(false);
             }
         };
@@ -51,7 +67,7 @@ export default function ManagePostID() {
         if (post_id) {
             fetchData();
         }
-    }, [post_id]);
+    }, [post_id, currentUser]); // Add currentUser as a dependency
 
     const options = [
         {
@@ -247,7 +263,7 @@ export default function ManagePostID() {
                 <span> {language === 'FR' ? "Date de publication" : "Publication date"}: <strong>{formatDate(post?.moderated_at)}</strong></span>
             </div>
 
-            <PostCard post={post} toast={toast} setToast={setToast} />
+            <PostCard post={post} toast={toast} setToast={setToast} language={language} />
 
             {confirm?.willDelete && (
                 <Modal

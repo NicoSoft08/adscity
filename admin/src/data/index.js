@@ -7,8 +7,21 @@ import {
     FaCogs,
     FaQuestionCircle,
 } from 'react-icons/fa';
-import { faBell, faBullhorn, faChartLine, faFolder, faImages, faInfoCircle, faMapMarker, faMoneyBill, faTags, faUserCircle, faUsers } from '@fortawesome/free-solid-svg-icons';
+import { 
+    faBell, 
+    faBullhorn, 
+    faChartLine, 
+    faFolder, 
+    faImages, 
+    faInfoCircle, 
+    faMapMarker, 
+    // faMoneyBill, 
+    faTags, 
+    faUserCircle, 
+    faUsers 
+} from '@fortawesome/free-solid-svg-icons';
 import { calculateEndDate } from '../func';
+// import { faBuysellads } from '@fortawesome/free-brands-svg-icons';
 
 const tabs = (language) => ([
     {

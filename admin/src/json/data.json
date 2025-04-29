@@ -4,8 +4,8 @@
             "key": 1,
             "categoryId": 1,
             "categoryTitles": {
-                "fr": "Véhicules",
-                "en": "Vehicles"
+                "fr": "Automobile",
+                "en": "Automotive"
             },
             "categoryName": "vehicles",
             "categoryImage": "cat_1.png",

@@ -1,9 +1,6 @@
 import React, { useContext, useState } from 'react';
 import Toast from '../../customs/Toast';
 import { useNavigate } from 'react-router-dom';
-import {
-    updateUserPassword,
-} from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
 import Modal from '../../customs/Modal';
 import { AuthContext } from '../../contexts/AuthContext';
@@ -11,52 +8,17 @@ import { LanguageContext } from '../../contexts/LanguageContext';
 import { translations } from '../../langs/translations';
 import '../../styles/Settings.scss';
 
-export default function Settings({ userData }) {
+export default function Settings() {
     const { logout } = useContext(AuthContext);
     const navigate = useNavigate();
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
     const [open, setOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
-    const [securityInfo, setSecurityInfo] = useState({
-        email: userData?.email || "",
-        newEmail: "",
-        verificationCode: "",
-        password: "",
-    });
     const { language, setLanguage } = useContext(LanguageContext);
     const t = translations[language] || translations.FR;
 
 
-    const handleSecurityInfoUpdate = async () => {
-        const newPassword = securityInfo.password;
-
-        if (!newPassword) {
-            setToast({
-                show: true,
-                message: language === 'FR'
-                    ? "Veuillez renseigner votre nouveau mot de passe !"
-                    : "Please enter your new password!",
-                type: 'error',
-            });
-            return;
-        }
-
-        const result = await updateUserPassword(userData.email, newPassword);
-        if (result.error) {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'error',
-            });
-        } else {
-            setToast({
-                show: true,
-                message: result.message,
-                type: 'success',
-            });
-        }
-    }
 
     const handleOpen = () => setOpen(true);
 
@@ -125,8 +87,7 @@ export default function Settings({ userData }) {
             {/* <h2>Paramètres</h2> */}
             <h2>{t.settings}</h2>
 
-            <section className="security-info">
-                {/* <h2>Sécurité</h2> */}
+            {/* <section className="security-info">
                 <h2>{t.security}</h2>
                 <form onSubmit={(e) => e.preventDefault()}>
                     <input
@@ -144,7 +105,7 @@ export default function Settings({ userData }) {
                         {isLoading ? <Spinner /> : t.save}
                     </button>
                 </form>
-            </section>
+            </section> */}
 
             <section className="preference-zone">
                 <h2>{t.preference}</h2>

@@ -147,7 +147,15 @@ const UserRow = ({ index, user, onAction, language }) => {
             <td>{user.firstName} {user.lastName}</td>
             <td>{user.phoneNumber || "Non renseigné"}</td>
             <td>{user.email}</td>
-            <td><FontAwesomeIcon icon={user.emailVerified ? faCircleCheck : faCircleExclamation} color={user.emailVerified ? '#28a745' : '#00aaff'} /> Email</td>
+            <td>
+                <FontAwesomeIcon
+                    icon={user.emailVerified
+                        ? faCircleCheck
+                        : faCircleExclamation
+                    }
+                    color={user.emailVerified ? '#28a745' : '#00aaff'}
+                /> Email
+            </td>
             <td>{userStatus}</td>
         </tr>
     );
@@ -169,7 +177,8 @@ export default function ManageUsers() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const data = await fetchUsers();
+                const idToken = await currentUser.getIdToken(true);
+                const data = await fetchUsers(idToken);
                 if (data) {
                     setUsers(data.users?.allUsers || []);
                     setFilteredUsers(data.users?.allUsers || []);
@@ -188,7 +197,7 @@ export default function ManageUsers() {
             }
         };
         fetchData();
-    }, [language]);
+    }, [language, currentUser]);
 
     // Pagination
     const indexOfLastUser = currentPage * userPerPage;

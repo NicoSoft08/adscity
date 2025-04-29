@@ -1,11 +1,12 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-const fetchPosts = async () => {
+const fetchPosts = async (idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/posts`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             }
         });
 
@@ -179,13 +180,20 @@ const adminDeletePost = async (postID) => {
     };
 };
 
-const fetchPostById = async (post_id) => {
+const fetchPostById = async (post_id, idToken = null) => {
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    // Add Authorization header if token exists
+    if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
+    }
+
     try {
         const response = await fetch(`${backendUrl}/api/posts/${post_id}`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers
         });
         const result = await response.json();
         return result;

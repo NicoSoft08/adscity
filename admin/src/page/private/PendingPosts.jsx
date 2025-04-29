@@ -45,7 +45,13 @@ export default function PendingPosts() {
         let isMounted = true;
         const fetchAllData = async () => {
             try {
-                const data = await fetchPosts();
+                // Get the authentication token if user is logged in
+                let idToken;
+
+                if (currentUser) {
+                    idToken = await currentUser.getIdToken(true);
+                }
+                const data = await fetchPosts(idToken);
                 if (isMounted && data) {
                     setPostsPending(data.posts?.pendingAds || []);
                 }
@@ -56,7 +62,7 @@ export default function PendingPosts() {
 
         fetchAllData();
         return () => { isMounted = false; };
-    }, []);
+    }, [currentUser]);
 
     const handleApprove = useCallback(async () => {
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {

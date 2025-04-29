@@ -67,15 +67,32 @@ const logAdminAction = async (userID, action, details) => {
     }
 };
 
-const fetchVerifications = async () => {
+const fetchVerifications = async (idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/collect/verifications`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
             },
         });
         const result = await response.json();
+        return result;
+    } catch (error) {
+        throw error;
+    }
+};
+
+const sendVerificationEmail = async (userID) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/do/send/users/${userID}/verification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        const result = await response.json();
+        console.log(result);
         return result;
     } catch (error) {
         throw error;
@@ -88,4 +105,5 @@ export {
     fetchPubById,
     fetchVerifications,
     logAdminAction,
+    sendVerificationEmail,
 };

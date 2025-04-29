@@ -1,22 +1,42 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchPostById } from '../../routes/postRoutes';
-import { Bar, Pie } from 'react-chartjs-2';
 import Loading from '../../customs/Loading';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft } from '@fortawesome/free-solid-svg-icons';
+import { AuthContext } from '../../contexts/AuthContext';
+import { LanguageContext } from '../../contexts/LanguageContext';
+import PostStatisticsCharts from '../../components/PostStatisticsCharts';
 
 export default function StatsPostID() {
     const { post_id } = useParams();
+    const { language } = useContext(LanguageContext);
+    const { currentUser } = useContext(AuthContext);
     const navigate = useNavigate();
     const [post, setPost] = useState(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
-            const result = await fetchPostById(post_id);
-            if (result.success) {
-                setPost(result.data);
+            try {
+                // Get the authentication token if user is logged in
+                let idToken = null;
+                if (currentUser) {
+                    idToken = await currentUser.getIdToken(true);
+                }
+
+                const result = await fetchPostById(post_id, idToken);
+                if (result.success) {
+                    setPost(result.data);
+                } else {
+                    // Handle error from API
+                    console.error("Error fetching post:", result.message);
+                    // You might want to show an error message or redirect
+                }
+            } catch (error) {
+                console.error("Error in fetchData:", error);
+                // Handle unexpected errors
+            } finally {
                 setLoading(false);
             }
         };
@@ -24,56 +44,9 @@ export default function StatsPostID() {
         if (post_id) {
             fetchData();
         }
-    }, [post_id]);
+    }, [post_id, currentUser]); // Add currentUser as a dependency
 
-    const { stats } = post || {};
-
-    const barData = {
-        labels: ["Vues", "Clics", "Signalements"],
-        datasets: [
-            {
-                label: "Interactions",
-                data: [stats?.views, stats?.clicks, stats?.reportingCount],
-                backgroundColor: ["#4CAF50", "#FF5733", "#FFC107"],
-                borderWidth: 2,
-                fill: true
-            }
-        ]
-    };
-
-    const piesData = {
-        pieOne: {
-            labels: Object.keys(stats?.views_per_city || {}),
-            datasets: [
-                {
-                    label: "Vues par ville",
-                    data: Object.values(stats?.views_per_city || {}),
-                    backgroundColor: ["#FF5733", "#4CAF50", "#FFD700", "#4285F4"]
-                }
-            ]
-        },
-        pieTwo: {
-            labels: Object.keys(stats?.clicks_per_city || {}),
-            datasets: [
-                {
-                    label: "Clics par ville",
-                    data: Object.values(stats?.clicks_per_city || {}),
-                    backgroundColor: ["#FF5733", "#4CAF50", "#FFD700", "#4285F4"]
-                }
-            ]
-        },
-        pieThree: {
-            labels: Object.keys(stats?.report_per_city || {}),
-            datasets: [
-                {
-                    label: "Signalements par ville",
-                    data: Object.values(stats?.report_per_city || {}),
-                    backgroundColor: ["#FF5733", "#4CAF50", "#FFD700", "#4285F4"]
-                }
-            ]
-        }
-    };
-
+    
     const handleBack = () => {
         navigate(`/admin/dashboard/posts/${post_id}`);
     };
@@ -85,32 +58,16 @@ export default function StatsPostID() {
     return (
         <div className='manage-post'>
             <div className="head">
-                <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
-                <h2>Statistiques: {post_id.toLocaleUpperCase()}</h2>
-            </div>
-            <div className="charts">
-                <div className="chart-container">
-                    <h3>Vues, Clics & Signalements</h3>
-                    {/* <Bar data={barData} /> */}
-
-                    <Pie data={barData} />
+                <div className="back">
+                    <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
                 </div>
-
-                <div className="chart-container">
-                    <h3>Répartition des Vues par Ville</h3>
-                    <Bar data={piesData.pieOne} />
-                </div>
-
-                <div className="chart-container">
-                    <h3>Répartition des Clics par Ville</h3>
-                    <Bar data={piesData.pieTwo} />
-                </div>
-
-                <div className="chart-container">
-                    <h3>Répartition des Signalements par Ville</h3>
-                    <Pie data={piesData.pieThree} />
+                <div className="title">
+                    <h2>{language === 'FR' ? "Annonces" : "Ads"} /</h2>
+                    <p>{post?.details.title}</p>
                 </div>
             </div>
+
+            <PostStatisticsCharts post={post} />
         </div>
     );
 };

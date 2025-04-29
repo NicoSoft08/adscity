@@ -24,9 +24,9 @@ import { fr, enUS } from 'date-fns/locale';
 import Pagination from '../../components/pagination/Pagination';
 import { IconAvatar } from '../../config/images';
 import { logAdminAction } from '../../routes/apiRoutes';
-import '../../styles/UserProfile.scss';
 import { translations } from '../../langs/translations';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import '../../styles/UserProfile.scss';
 
 export default function UserProfile() {
     const { currentUser, userData } = useContext(AuthContext);
@@ -61,7 +61,8 @@ export default function UserProfile() {
         logEvent(analytics, 'profile_page_view', { page_path: '/user/dashboard/profile' });
 
         const fetchUserActivity = async () => {
-            const result = await getUserLoginActivity(currentUser.uid);
+            const idToken = await currentUser.getIdToken();
+            const result = await getUserLoginActivity(currentUser.uid, idToken);
             if (result.success && Array.isArray(result.activity)) {
                 setLoginActivity(result.activity);
             } else {
@@ -370,7 +371,7 @@ export default function UserProfile() {
     const renderSection = () => {
         switch (activeSection) {
             case 'activity': return <Activity />;
-            case 'settings': return <Settings userData={userData} />;
+            case 'settings': return <Settings />;
             default: return null;
         }
     };

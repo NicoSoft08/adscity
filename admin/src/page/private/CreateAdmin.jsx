@@ -13,6 +13,7 @@ import { LanguageContext } from '../../contexts/LanguageContext';
 import zxcvbn from 'zxcvbn';
 import { Eye, EyeOff, Search } from 'lucide-react';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { AuthContext } from '../../contexts/AuthContext';
 import "react-phone-input-2/lib/style.css";
 import '../../styles/CreateAdmin.scss';
 
@@ -25,6 +26,7 @@ const strengthColors = ['red', 'orange', 'yellow', 'green'];
 export default function CreateAdmin() {
     const navigate = useNavigate();
     const { language } = useContext(LanguageContext);
+    const { currentUser } = useContext(AuthContext);
     const [confirm, setConfirm] = useState(false);
     const [step, setStep] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
@@ -283,6 +285,7 @@ export default function CreateAdmin() {
 
             const displayName = `${firstName} ${lastName}`;
 
+            const idToken = await currentUser.getIdToken();
             const result = await addNewAdmin(
                 displayName,
                 firstName,
@@ -294,7 +297,8 @@ export default function CreateAdmin() {
                 address,
                 city,
                 country,
-                captchaValue
+                captchaValue,
+                idToken
             );
 
             if (result.success) {

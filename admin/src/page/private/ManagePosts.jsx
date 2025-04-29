@@ -18,7 +18,7 @@ import "../../styles/ManagePosts.scss";
 
 // Status des annonces avec icônes
 const STATUS_ICONS = (language) => ({
-    pending: language === 'FR' ? "🟠 En attente" :  "🟠 Pendin",
+    pending: language === 'FR' ? "🟠 En attente" : "🟠 Pendin",
     approved: language === 'FR' ? "🟢 Accepté" : "🟢 Approved",
     refused: language === 'FR' ? "🔴 Rejeté" : "🔴 Rejected",
     expired: language === 'FR' ? "⚫ Expiré" : "⚫ Expired",
@@ -171,7 +171,7 @@ const PostRow = ({ index, post, onAction, language }) => {
                 "Non défini"
             }</td>
             <td>{STATUS_ICONS(language)[post.status] || "⚪ Inconnu"}</td>
-            <td>{postOwner?.firstName || "Inconnu"} {postOwner?.lastName || ""}</td>
+            <td>{postOwner?.firstName} {postOwner?.lastName}</td>
         </tr>
     );
 };
@@ -193,7 +193,16 @@ export default function ManagePosts() {
     useEffect(() => {
         const fetchAllData = async () => {
             try {
-                const data = await fetchPosts();
+                setLoading(true);
+
+                // Get the authentication token if user is logged in
+                let idToken;
+
+                if (currentUser) {
+                    idToken = await currentUser.getIdToken(true);
+                }
+
+                const data = await fetchPosts(idToken);
                 if (data) {
                     setPosts(data.posts?.allAds || []);
                     setFilteredPosts(data.posts?.allAds || []);
@@ -209,8 +218,9 @@ export default function ManagePosts() {
                 setLoading(false);
             }
         };
+
         fetchAllData();
-    }, []);
+    }, [currentUser]); // Add currentUser as a dependency
 
     // 🎯 Gestion des filtres
     const handleFilterChange = (filters) => {
@@ -351,7 +361,7 @@ export default function ManagePosts() {
                 </div>
             </div>
             {/* 🔍 Filtres */}
-            {openFilter && <PostsFilter onFilterChange={handleFilterChange} onExport={handleExportCSV} />}
+            {openFilter && <PostsFilter onFilterChange={handleFilterChange} language={language} onExport={handleExportCSV} />}
 
             {loading && <Loading />}
             <div className="ads-list">
@@ -361,7 +371,7 @@ export default function ManagePosts() {
                             <tr>
                                 <th>#</th>
                                 <th>Post ID</th>
-                                <th>Photo</th>
+                                <th>Image</th>
                                 <th>{language === 'FR' ? "Titre" : "Title"}</th>
                                 <th>{language === 'FR' ? "Prix" : "Price"}</th>
                                 <th>{language === 'FR' ? "Date d'expiration" : "Expiry Date"}</th>
@@ -375,10 +385,14 @@ export default function ManagePosts() {
                                     key={post.PostID || index}
                                     index={indexOfFirstPost + index}
                                     post={post}
+                                    currentUser={currentUser}
                                     onAction={handleAction}
+                                    language={language}
                                 />
                             )) : (
-                                <tr><td colSpan="8">Aucune annonce trouvée.</td></tr>
+                                <tr><td colSpan="8">
+                                    {language === 'FR' ? "Aucune annonce trouvée" : "No ads found"}
+                                </td></tr>
                             )}
                         </tbody>
                     </table>

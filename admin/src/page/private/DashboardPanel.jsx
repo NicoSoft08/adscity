@@ -9,15 +9,17 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusSquare } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from "chart.js";
 import { fetchUsers } from '../../routes/userRoutes';
-import { Bar, Pie } from 'react-chartjs-2';
 import Loading from '../../customs/Loading';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import PostsAnalytics from '../../components/PostsAnalytics';
+import UsersAnalytics from '../../components/UsersAnalytics';
 import '../../styles/DashboardPanel.scss';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
 export default function DashboardPanel() {
     const navigate = useNavigate();
+    const { language } = useContext(LanguageContext);
     const { currentUser, userData } = useContext(AuthContext);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
@@ -34,7 +36,6 @@ export default function DashboardPanel() {
     const [loadingUsers, setLoadingUsers] = useState(true);
     const [loadingPosts, setLoadingPosts] = useState(true);
     const [loadingPendingPosts, setLoadingPendingPosts] = useState(true);
-    const { language } = useContext(LanguageContext);
 
     // Fetch users data
     useEffect(() => {
@@ -42,7 +43,14 @@ export default function DashboardPanel() {
 
         const fetchData = async () => {
             try {
-                const data = await fetchUsers();
+                // Get the authentication token if user is logged in
+                let idToken;
+
+                if (currentUser) {
+                    idToken = await currentUser.getIdToken(true);
+                }
+
+                const data = await fetchUsers(idToken);
                 if (isMounted && data) {
                     setUsers(data.users?.allUsers || []);
                     setOnline(data.users?.onlineUsers || []);
@@ -68,7 +76,7 @@ export default function DashboardPanel() {
 
         fetchData();
         return () => { isMounted = false };
-    }, [language]);
+    }, [language, currentUser]);
 
     // Fetch all posts data
     useEffect(() => {
@@ -76,7 +84,14 @@ export default function DashboardPanel() {
 
         const fetchAllData = async () => {
             try {
-                const data = await fetchPosts();
+                // Get the authentication token if user is logged in
+                let idToken;
+
+                if (currentUser) {
+                    idToken = await currentUser.getIdToken(true);
+                }
+
+                const data = await fetchPosts(idToken);
                 if (isMounted && data) {
                     setPosts(data.posts?.allAds || []);
                     setPostsApproved(data.posts?.approvedAds || []);
@@ -102,7 +117,7 @@ export default function DashboardPanel() {
 
         fetchAllData();
         return () => { isMounted = false; };
-    }, [language]);
+    }, [language, currentUser]);
 
     // Fetch pending posts
     useEffect(() => {
@@ -139,46 +154,6 @@ export default function DashboardPanel() {
     // Compute overall loading state
     const isLoading = loadingUsers || loadingPosts || loadingPendingPosts;
 
-    // Prepare chart data only when data is available
-    const graphics = {
-        pieData: {
-            labels: language === 'FR'
-                ? ["Toutes", "En attente", "Approuvées", "Refusées"]
-                : ["All", "Pending", "Approved", "Rejected"],
-            datasets: [
-                {
-                    label: language === 'FR'
-                        ? "Statut des annonces"
-                        : "Ads status",
-                    data: [
-                        posts.length || 0,
-                        postsPending.length || 0,
-                        postsApproved.length || 0,
-                        postsRefused.length || 0
-                    ],
-                    backgroundColor: ["#00aaff", "#FFA500", "#4CAF50", "#FF0000"],
-                },
-            ],
-        },
-        barData: {
-            labels: language === 'FR'
-                ? ["Tous", "Online", "Offline"]
-                : ["All", "Online", "Offline"],
-            datasets: [
-                {
-                    label: language === 'FR'
-                        ? "Statut des utilisateurs"
-                        : "Users status",
-                    data: [
-                        users.length || 0,
-                        online.length || 0,
-                        offline.length || 0
-                    ],
-                    backgroundColor: ["#00aaff", "#4CAF50", "#FF0000"],
-                },
-            ],
-        }
-    };
 
     const handleClickAddAdmin = () => {
         if (currentUser && userData?.permissions?.includes('SUPER_ADMIN')) {
@@ -209,15 +184,20 @@ export default function DashboardPanel() {
                 </button>
             </div>
 
-            <div className="chart-container">
-                <h4>{language === 'FR' ? "État des annonces" : "Ads status"}</h4>
-                <Pie data={graphics.pieData} />
-            </div>
+            <PostsAnalytics
+                posts={posts}
+                postsApproved={postsApproved}
+                postsPending={postsPending}
+                postsRefused={postsRefused}
+                isLoading={isLoading}
+            />
 
-            <div className="chart-container">
-                <h4>{language === 'FR' ? "État des utilisateurs" : "Users status"}</h4>
-                <Bar data={graphics.barData} />
-            </div>
+            <UsersAnalytics
+                users={users}
+                online={online}
+                offline={offline}
+                isLoading={isLoading}
+            />
 
             <PaymentStats />
             <PendingPosts />

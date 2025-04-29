@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { faChevronLeft, faEllipsisH, faPauseCircle, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faChevronLeft, faEllipsisH, faPauseCircle, faRefresh, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import { fetchUserById } from '../../routes/userRoutes';
@@ -9,10 +9,10 @@ import { deleteUser, disableUser, restoreUser } from '../../routes/authRoutes';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
 import { AuthContext } from '../../contexts/AuthContext';
-import { logAdminAction } from '../../routes/apiRoutes';
+import { logAdminAction, sendVerificationEmail } from '../../routes/apiRoutes';
 import Toast from '../../customs/Toast';
-import '../../styles/ManageUserID.scss';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import '../../styles/ManageUserID.scss';
 
 export default function ManageUserID() {
     const menuRef = useRef(null);
@@ -61,22 +61,89 @@ export default function ManageUserID() {
     };
 
     const options = [
-        {
+        // Suspend option - only show for active users
+        user?.isActive !== false && {
             label: language === 'FR' ? 'Suspendre' : 'Suspend',
-            icon: faPauseCircle, // Icône pour suspendre
+            icon: faPauseCircle,
             action: () => setOpenModal({ type: 'suspend', open: true })
         },
-        {
+
+        // Restore option - only show for suspended users
+        user?.isActive === false && !user?.isBanned && {
             label: language === 'FR' ? 'Restaurer' : 'Restore',
-            icon: faUndo, // Icône pour restaurer
-            action: () => handleRestore(user?.userID)
+            icon: faUndo,
+            action: () => handleRestore(user?.UserID) // Make sure to use the correct property name
         },
+
+        // Send verification email - only show for unverified emails
+        user?.emailVerified === false && {
+            label: language === 'FR' ? 'Envoyer un email de vérification' : 'Send verification email',
+            icon: faRefresh,
+            action: () => setOpenModal({ type: 'verification', open: true })
+        },
+
+        // Delete option - available for all users
         {
             label: language === 'FR' ? 'Supprimer' : 'Delete',
             icon: faTrash,
             action: () => setOpenModal({ type: 'delete', open: true })
         },
-    ];
+    ].filter(Boolean); // Filter out any false/null values    
+
+    const handleSendVerification = async () => {
+        if (!user || !user.userID || !user.email) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? "Informations utilisateur incomplètes"
+                    : "Incomplete user information"
+            });
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const response = await sendVerificationEmail(user.userID);
+
+            if (response.success) {
+                // Log admin action
+                await logAdminAction(
+                    currentUser.uid,
+                    language === 'FR'
+                        ? "Envoi email de vérification"
+                        : "Send verification email",
+                    language === 'FR'
+                        ? `L'admin a envoyé un email de vérification à ${user.email}`
+                        : `Admin sent verification email to ${user.email}`
+                );
+
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: language === 'FR'
+                        ? `Email de vérification envoyé à ${user.email}`
+                        : `Verification email sent to ${user.email}`
+                });
+
+                // Close the modal
+                setOpenModal({ type: '', open: false });
+            } else {
+                throw new Error(response.message || "Failed to send verification email");
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi de l\'email de vérification:', error);
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? `Erreur lors de l'envoi de l'email: ${error.message}`
+                    : `Error sending email: ${error.message}`
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDelete = async () => {
         if (currentUser && !userData.permissions.includes('MANAGE_USERS')) {
@@ -185,12 +252,9 @@ export default function ManageUserID() {
         return '';
     };
 
-    if (loading) {
-        return <Loading />;
-    }
-
     return (
         <div className='manage-user'>
+            {loading && <Loading />}
             <div className="head">
                 <div className="back">
                     <FontAwesomeIcon icon={faChevronLeft} title='Go Back' onClick={handleBack} />
@@ -222,31 +286,90 @@ export default function ManageUserID() {
 
             <UserCard user={user} />
 
-            {openModal.open && (
+            {openModal.open && openModal.type === 'delete' && (
                 <Modal
                     onShow={openModal.open}
-                    onHide={() => setOpenModal({ ...openModal, open: false })}
-                    title={`${openModal.type === 'delete' ? "Supprimer" : "Suspendre"} l'utilisateur`}
-                    isHide={false}
-                    isNext={false}
-                    hideText="Annuler"
-                    nextText="Supprimer"
+                    onHide={() => setOpenModal({ open: false, type: null })}
+                    title={language === 'FR'
+                        ? "Supprimer l'utilisateur"
+                        : "Delete User"
+                    }
                 >
-                    <p>Êtes-vous sûr de vouloir {openModal.type === 'delete' ? "supprimer" : "suspendre"} cet utilisateur ?</p>
-                    <div className='modal-buttons'>
-                        <button className="modal-button approve" onClick={() => {
-                            if (openModal.type === 'delete') {
-                                handleDelete();
-                            } else if (openModal.type === 'suspend') {
-                                handleSuspend();
-                            }
-                        }}>
-                            {loading ? <Spinner /> : language === 'FR'
-                                ? openModal.type === 'delete' ? 'Supprimer' : 'Suspendre'
-                                : openModal.type === 'delete' ? 'Delete' : 'Suspend'}
+                    <p>{language === 'FR'
+                        ? `Êtes-vous sûr de vouloir supprimer l'utilisateur ${user?.firstName} ${user?.lastName}?`
+                        : `Are you sure you want to delete user ${user?.firstName} ${user?.lastName}?`
+                    }
+                    </p>
+                    <div className="modal-buttons">
+                        <button
+                            className="modal-button cancel"
+                            onClick={() => setOpenModal({ type: '', open: false })}
+                        >
+                            {language === 'FR' ? "Annuler" : "Cancel"}
                         </button>
-                        <button className="modal-button delete" onClick={handleDelete}>
-                            {language === 'FR' ? 'Annuler' : 'Cancel'}
+                        <button
+                            className="modal-button delete"
+                            onClick={handleDelete}
+                            disabled={loading}
+                        >
+                            {loading ? <Spinner /> : (language === 'FR' ? "Supprimer" : "Delete")}
+                        </button>
+                    </div>
+                </Modal>
+            )}
+
+            {openModal.open && openModal.type === 'suspend' && (
+                <Modal
+                    onShow={openModal.open} onHide={() => setOpenModal({ open: false, type: null })}
+                    title={language === 'FR' ? "Suspendre l'utilisateur" : "Suspend User"}
+                >
+                    <p>
+                        {language === 'FR'
+                            ? `Êtes-vous sûr de vouloir suspendre l'utilisateur ${user?.firstName} ${user?.lastName}?`
+                            : `Are you sure you want to suspend user ${user?.firstName} ${user?.lastName}?`}
+                    </p>
+                    <div className="modal-buttons">
+                        <button
+                            className="modal-button cancel"
+                            onClick={() => setOpenModal({ type: '', open: false })}
+                        >
+                            {language === 'FR' ? "Annuler" : "Cancel"}
+                        </button>
+                        <button
+                            className="modal-button delete"
+                            onClick={handleSuspend}
+                            disabled={loading}
+                        >
+                            {loading ? <Spinner /> : (language === 'FR' ? "Suspendre" : "Suspend")}
+                        </button>
+                    </div>
+                </Modal>
+            )}
+
+            {/* New verification modal */}
+            {openModal.open && openModal.type === 'verification' && (
+                <Modal
+                    onShow={openModal.open} onHide={() => setOpenModal({ open: false, type: null })}
+                    title={language === 'FR' ? "Envoyer un email de vérification" : "Send Verification Email"}
+                >
+                    <p>
+                        {language === 'FR'
+                            ? `Voulez-vous envoyer un email de vérification à ${user?.firstName} ${user?.lastName} (${user?.email})?`
+                            : `Do you want to send a verification email to ${user?.firstName} ${user?.lastName} (${user?.email})?`}
+                    </p>
+                    <div className="modal-buttons">
+                        <button
+                            className="modal-button cancel"
+                            onClick={() => setOpenModal({ type: '', open: false })}
+                        >
+                            {language === 'FR' ? "Annuler" : "Cancel"}
+                        </button>
+                        <button
+                            className="modal-button delete"
+                            onClick={handleSendVerification}
+                            disabled={loading}
+                        >
+                            {loading ? <Spinner /> : (language === 'FR' ? "Envoyer" : "Send")}
                         </button>
                     </div>
                 </Modal>

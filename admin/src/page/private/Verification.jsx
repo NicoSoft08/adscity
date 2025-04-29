@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { faFilter } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { fetchVerifications } from '../../routes/apiRoutes';
@@ -7,6 +7,7 @@ import { fr } from 'date-fns/locale';
 import Loading from '../../customs/Loading';
 import { useNavigate } from 'react-router-dom';
 import Pagination from '../../components/pagination/Pagination';
+import { AuthContext } from '../../contexts/AuthContext';
 import '../../styles/Verification.scss';
 
 const STATUS_ICONS = {
@@ -121,6 +122,7 @@ const VerificationItem = ({ index, user, onAction }) => {
 }
 
 export default function Verification() {
+    const { currentUser } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
     const [verifications, setVerifications] = useState([]);
     const [filteredVerifications, setFilteredVerifications] = useState([]);
@@ -133,7 +135,8 @@ export default function Verification() {
         const fetchData = async () => {
             try {
                 setLoading(true);
-                const result = await fetchVerifications();
+                const idToken = await currentUser.getIdToken();
+                const result = await fetchVerifications(idToken);
                 if (result.success) {
                     setVerifications(result.data);
                 } else {
@@ -148,7 +151,7 @@ export default function Verification() {
         };
 
         fetchData();
-    }, []);
+    }, [currentUser]);
 
     useEffect(() => {
         setFilteredVerifications(verifications);

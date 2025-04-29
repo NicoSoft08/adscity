@@ -44,12 +44,13 @@ const fetchUsersLocations = async () => {
     return result;
 }
 
-const fetchUsers = async () => {
+const fetchUsers = async (idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
             }
         });
 
@@ -120,20 +121,42 @@ const getUserDevices = async (userID) => {
     return result;
 }
 
-const setUserOnlineStatus = async (userID, isOnline) => {
+const setUserOnlineStatus = async (userID, isOnline, idToken) => {
     try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
         const response = await fetch(`${backendUrl}/api/users/user/status`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
-            body: JSON.stringify({ userID, isOnline })
+            body: JSON.stringify({
+                userID,
+                isOnline,
+                // Add a timestamp to prevent replay attacks
+                timestamp: Date.now()
+            }),
+            credentials: 'include',
+            signal: controller.signal
         });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+        }
 
         const result = await response.json();
         return result;
     } catch (error) {
-        throw error;
+        console.error("Error setting user online status:", error);
+        // Don't throw the error during logout to prevent blocking the process
+        if (isOnline) {
+            throw error;
+        }
+        return { success: false };
     }
 };
 
@@ -164,14 +187,14 @@ const updateUserFields = async (userID, fields) => {
     return result;
 }
 
-const fetchNotifications = async (userID) => {
+const fetchNotifications = async (userID, idToken) => {
     const response = await fetch(`${backendUrl}/api/users/${userID}/admin/notifications`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`
         },
     });
-
     const result = await response.json();
     return result;
 };
@@ -195,7 +218,7 @@ const deleteNotification = async (userID, notificationID) => {
         headers: {
             'Content-Type': 'application/json',
         },
-    }); 
+    });
 
     const result = await response.json();
     return result;
@@ -225,12 +248,13 @@ const markAllNotificationsAsRead = async (userID) => {
     return result;
 };
 
-const getUserLoginActivity = async (userID) => {
+const getUserLoginActivity = async (userID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}/login-activity`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
             },
         });
 
@@ -258,6 +282,23 @@ const getUserIDLoginActivity = async (UserID) => {
     }
 };
 
+const updateUserVerificationStatus = async (userID, updateData) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/users/${userID}/admin/update-verification-status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ updateData }),
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de la vérification de l\'utilisateur:', error);
+        throw error;
+    }
+};
+
 export {
     fetchUsersLocations,
     getUserLoginActivity,
@@ -277,4 +318,5 @@ export {
     updateUserField,
     updateUserFields,
     fetchUserVerificationData,
+    updateUserVerificationStatus,
 };

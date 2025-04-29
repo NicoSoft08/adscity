@@ -28,35 +28,36 @@ export default function AdminHome() {
     useEffect(() => {
         let isMounted = true;
         setIsLoading(true);
-
+        
         const getNotifications = async () => {
-            const userID = currentUser?.uid;
-
-            if (!userID) {
+            if (!currentUser) {
                 if (isMounted) {
                     setIsLoading(false);
                     setToast({ show: true, type: 'error', message: 'Utilisateur non connecté' });
                 }
                 return;
             }
-
+            
             try {
+                // Get the current user's ID token
+                const idToken = await currentUser.getIdToken(true);
+                
                 const [notifResult, verifResult] = await Promise.all([
-                    fetchNotifications(userID),
-                    fetchVerifications()
+                    fetchNotifications(currentUser.uid, idToken),
+                    fetchVerifications(idToken)
                 ]);
-
+                
                 if (isMounted) {
                     if (notifResult.success) {
                         setNotifications(notifResult.data.unReadNotifs);
                     } else {
                         setToast({ show: true, type: 'error', message: notifResult.message || "Erreur lors de la récupération des notifications" });
                     }
-
+                    
                     if (verifResult.success) {
                         setVerifications(verifResult.data);
                     }
-
+                    
                     setIsLoading(false);
                 }
             } catch (error) {
@@ -67,12 +68,10 @@ export default function AdminHome() {
                 }
             }
         }
-
+        
         getNotifications();
-
         return () => { isMounted = false };
     }, [currentUser]);
-
 
     return (
         <div className='user-home'>

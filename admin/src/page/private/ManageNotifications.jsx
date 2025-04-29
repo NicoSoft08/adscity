@@ -14,7 +14,8 @@ export default function ManageNotifications() {
             const userID = currentUser.uid;
 
             try {
-                const result = await fetchNotifications(userID);
+                const idToken = await currentUser.getIdToken();
+                const result = await fetchNotifications(userID, idToken);
                 if (isMounted && result) {
                     setNotifications(result.data?.notifications || []);
                 }

@@ -6,11 +6,12 @@ import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import { differenceInDays, format } from 'date-fns';
 import { enUS, fr } from 'date-fns/locale';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
-import { getUserIDLoginActivity, updateUserFields } from '../../routes/userRoutes';
+import { getUserIDLoginActivity, updateUserVerificationStatus } from '../../routes/userRoutes';
 import { AuthContext } from '../../contexts/AuthContext';
 import Toast from '../../customs/Toast';
 import '../../styles/UserCard.scss';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import Spinner from '../../customs/Spinner';
 
 // Set up the PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
@@ -52,34 +53,34 @@ const PersonalInformation = ({ userData, language }) => {
                 <div className="info-section">
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Nom complet" : "Full Name"}</div>
-                        <div className="info-value">{userData.firstName || 'Non spécifié'} {userData.lastName || 'Non spécifié'}</div>
+                        <div className="info-value">{userData?.firstName || 'Non spécifié'} {userData?.lastName || 'Non spécifié'}</div>
                     </div>
 
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Pays" : "Country"}</div>
-                        <div className="info-value">{userData.country || 'Non spécifié'}</div>
+                        <div className="info-value">{userData?.country || 'Non spécifié'}</div>
                     </div>
 
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Ville" : "City"}</div>
-                        <div className="info-value">{userData.city || 'Non spécifié'}</div>
+                        <div className="info-value">{userData?.city || 'Non spécifié'}</div>
                     </div>
                 </div>
 
                 <div className="info-section">
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Téléphone" : "Phone Number"}</div>
-                        <div className="info-value">{userData.phoneNumber || 'Non spécifié'}</div>
+                        <div className="info-value">{userData?.phoneNumber || 'Non spécifié'}</div>
                     </div>
 
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Email" : "Email Address"}</div>
-                        <div className="info-value">{userData.email || 'Non spécifié'} {userData.emailVerified ? <CheckCircle2 size={14} /> : <Info size={14} />} </div>
+                        <div className="info-value">{userData?.email || 'Non spécifié'} {userData?.emailVerified ? <CheckCircle2 size={14} /> : <Info size={14} />} </div>
                     </div>
 
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Adresse" : "Address"}</div>
-                        <div className="info-value">{userData.address || 'Non spécifié'}</div>
+                        <div className="info-value">{userData?.address || 'Non spécifié'}</div>
                     </div>
                 </div>
             </div>
@@ -90,7 +91,7 @@ const PersonalInformation = ({ userData, language }) => {
 
                     <div className="info-row">
                         <div className="info-label">{language === 'FR' ? "Date d'inscription" : "Registration date"}</div>
-                        <div className="info-value">{formatDate(userData.createdAt?._seconds)}</div>
+                        <div className="info-value">{formatDate(userData?.createdAt?._seconds)}</div>
                     </div>
 
                     <div className="info-row">
@@ -103,7 +104,7 @@ const PersonalInformation = ({ userData, language }) => {
     );
 };
 
-const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
+const DocumentVerification = ({ currentUser, userData, user, setToast, language }) => {
     const [loading, setLoading] = useState({ identity: true, selfie: true });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showRejectForm, setShowRejectForm] = useState(false);
@@ -188,14 +189,16 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
         }
     };
 
-    const statusBadge = getStatusBadge(userData.verificationStatus);
+    const statusBadge = getStatusBadge(user.verificationStatus);
 
-    const hasDocuments = userData.documents &&
-        (userData.documents.identityDocument || userData.documents.selfie);
+    const hasDocuments = user.documents &&
+        (user.documents.identityDocument || user.documents.selfie);
+
 
     // Approve verification
     const handleApprove = async () => {
-        if (!isAdmin) {
+        const userID = currentUser?.uid;
+        if (!userID || !userData?.permissions.includes('MANAGE_USERS')) {
             setToast({
                 show: true,
                 type: 'error',
@@ -208,9 +211,9 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
 
         setIsSubmitting(true);
         try {
-            const result = await updateUserFields(userData?.userID, {
+            const idToken = await currentUser?.getIdToken();
+            const result = await updateUserVerificationStatus(user?.userID, idToken, {
                 verificationStatus: 'approved',
-                updatedAt: new Date()
             });
 
             if (result.success) {
@@ -240,7 +243,8 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
     const handleReject = async (e) => {
         e.preventDefault();
 
-        if (!isAdmin) {
+        const userID = currentUser?.uid;
+        if (!userID || !userData?.permissions.includes('MANAGE_USERS')) {
             setToast({
                 show: true,
                 type: 'error',
@@ -264,10 +268,9 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
 
         setIsSubmitting(true);
         try {
-            const result = await updateUserFields(userData?.userID, {
+            const result = await updateUserVerificationStatus(user?.userID, {
                 verificationStatus: 'rejected',
                 rejectionReason: rejectionReason.trim(),
-                updatedAt: new Date()
             });
 
             if (result.success) {
@@ -345,34 +348,34 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
                     {statusBadge.text}
                 </span>
 
-                {userData.verificationStatus === 'rejected' && userData.rejectionReason && (
+                {user.verificationStatus === 'rejected' && user.rejectionReason && (
                     <div className="rejection-reason">
-                        <strong>{language === 'FR' ? "Motif du rejet" : "Rejection reason"} :</strong> {userData.rejectionReason}
+                        <strong>{language === 'FR' ? "Motif du rejet" : "Rejection reason"} :</strong> {user.rejectionReason}
                     </div>
                 )}
             </div>
 
             {hasDocuments ? (
                 <div className="documents-container">
-                    {userData.documents.identityDocument && (
+                    {user.documents.identityDocument && (
                         <div className="document-card">
                             <h3>{language === 'FR' ? "Pièce d'identité" : "Identity document"}</h3>
                             <div className="document-image-container">
-                                {renderDocumentPreview(userData.documents.identityDocument)}
+                                {renderDocumentPreview(user.documents.identityDocument)}
                             </div>
                             <div className="document-info">
-                                <p>Document soumis le {formatDate(userData.updatedAt)}</p>
+                                <p>Document soumis le {formatDate(user.updatedAt)}</p>
                             </div>
                         </div>
                     )}
 
-                    {userData.documents.selfie && (
+                    {user.documents.selfie && (
                         <div className="document-card">
                             <h3>{language === 'FR' ? "Selfie" : "Face ID"}</h3>
                             <div className="document-image-container">
                                 {loading.selfie && <div className="loading-spinner">{language === 'FR' ? "Chargement..." : "Loading..."}</div>}
                                 <img
-                                    src={userData.documents.selfie}
+                                    src={user.documents.selfie}
                                     alt="Selfie avec pièce d'identité"
                                     onLoad={() => handleImageLoaded('selfie')}
                                     onError={() => handleImageError('selfie')}
@@ -380,7 +383,7 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
                                 />
                             </div>
                             <div className="document-info">
-                                <p>{language === 'FR' ? "Photo soumise le" : "Photo submitted on"} {formatDate(userData.updatedAt)}</p>
+                                <p>{language === 'FR' ? "Photo soumise le" : "Photo submitted on"} {formatDate(user.updatedAt)}</p>
                             </div>
                         </div>
                     )}
@@ -396,7 +399,7 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
                 </div>
             )}
 
-            {isAdmin && userData.verificationStatus === 'pending' && (
+            {user.verificationStatus === 'pending' && (
                 <div className="admin-controls">
                     <h3>{language === 'FR' ? "Actions administrateur" : "Admin actions"}</h3>
                     <div className="admin-buttons">
@@ -415,7 +418,6 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
                             onClick={() => setShowRejectForm(true)}
                             disabled={isSubmitting}
                         >
-                            Rejeter la vérification
                             {language === 'FR'
                                 ? "Rejeter la vérification"
                                 : "Reject verification"
@@ -458,8 +460,8 @@ const DocumentVerification = ({ isAdmin, userData, setToast, language }) => {
                                     disabled={isSubmitting}
                                 >
                                     {language === 'FR' ?
-                                        isSubmitting ? 'Traitement...' : 'Confirmer le rejet'
-                                        : isSubmitting ? 'Processing...' : 'Confirm rejection'
+                                        isSubmitting ? <Spinner /> : 'Confirmer le rejet'
+                                        : isSubmitting ? <Spinner /> : 'Confirm rejection'
                                     }
                                 </button>
                             </div>
@@ -545,7 +547,6 @@ export default function UserCard({ user }) {
     };
 
 
-    const isAdmin = currentUser.uid && userData.permissions.includes('MANAGE_USERS');
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -560,7 +561,13 @@ export default function UserCard({ user }) {
                     </div>
                 );
             case 'document':
-                return <DocumentVerification userData={user} isAdmin={isAdmin} setToast={setToast} language={language} />;
+                return <DocumentVerification
+                    user={user}
+                    userData={userData}
+                    currentUser={currentUser}
+                    setToast={setToast}
+                    language={language}
+                />;
             case 'activity':
                 return (
                     <div className='tab-content'>
@@ -584,7 +591,6 @@ export default function UserCard({ user }) {
                                 )
                             }
                         </p>
-
 
                         <div className="table-container">
                             <table>

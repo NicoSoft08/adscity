@@ -16,12 +16,13 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import { AuthContext } from '../../contexts/AuthContext';
 import Pagination from '../pagination/Pagination';
-import './Notifications.scss';
 import { logAdminAction } from '../../routes/apiRoutes';
+import './Notifications.scss';
 
 const NotificationItem = ({ userID, notification, setNotifications }) => {
     const sentAt = parseTimestamp(notification?.timestamp);
     const menuRef = useRef(null);
+    const { currentUser } = useContext(AuthContext);
     const [showMenu, setShowMenu] = useState(false);
     const [loading, setLoading] = useState(false);
     const [confirm, setConfirm] = useState(false);
@@ -62,7 +63,8 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
         setShowMenu(!showMenu);
 
         try {
-            const hasRead = await markNotificationAsRead(userID, notificationID);
+            const idToken = await currentUser.getIdToken();
+            const hasRead = await markNotificationAsRead(userID, idToken, notificationID);
             if (hasRead.success) {
                 setToast({ show: true, type: 'info', message: 'Notification marquée comme lue' })
                 logEvent(analytics, 'admin_mark_notification_as_read');
@@ -93,7 +95,8 @@ const NotificationItem = ({ userID, notification, setNotifications }) => {
         const notificationID = notification?.id;
         try {
             setLoading(true);
-            const result = await deleteNotification(userID, notificationID);
+            const idToken = await currentUser.getIdToken();
+            const result = await deleteNotification(userID, idToken, notificationID);
             if (result.success) {
                 setToast({ show: true, type: 'success', message: 'Notification supprimée' });
                 logEvent(analytics, 'admin_delete_notification');

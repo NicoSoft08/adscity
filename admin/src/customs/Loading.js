@@ -6,7 +6,7 @@ import { translations } from '../langs/translations';
 
 export default function Loading() {
     const { language } = useLanguage();
-        const t = translations[language] || translations.FR;
+    const t = translations[language] || translations.FR;
 
     return (
         <div className="loading-modal">

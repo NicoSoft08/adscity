@@ -17,6 +17,7 @@ import Details from '../post-ad-form/Details';
 import SelectCategory from '../category-selection/SelectCategory';
 import ImageUpload from '../image-upload/ImageUpload';
 import { logClientAction } from '../../routes/apiRoutes';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 const createSearchableItem = (text) => {
     if (!text) return [];
@@ -40,6 +41,7 @@ const createSearchableItem = (text) => {
 
 export default function CreatePostFlow() {
     const { currentUser, userData } = useContext(AuthContext);
+    const { language } = useContext(LanguageContext);
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [toast, setToast] = useState({ show: false, type: '', message: '' })
@@ -68,7 +70,7 @@ export default function CreatePostFlow() {
             return newData;
         });
     };
-    
+
 
     const { details, images, location, category, subcategory } = formData;
     const searchableTerms = [
@@ -102,12 +104,18 @@ export default function CreatePostFlow() {
             if (result.success) {
                 setToast({
                     type: 'success',
-                    message: 'Annonce créée avec succès'
+                    message: language === 'FR'
+                        ? 'Annonce créée avec succès'
+                        : 'Ad created successfully'
                 });
                 await logClientAction(
                     userID,
-                    "Publication d'annonce",
-                    "Vous avez publié une annonce sur le site.",
+                    language === 'FR'
+                        ? "Publication d'annonce"
+                        : "Post creation",
+                    language === 'FR'
+                        ? "Vous avez publié une annonce sur le site."
+                        : "You have posted an ad on the site.",
                 )
                 logEvent(analytics, 'post_created');
                 setHasSucceed(true);
@@ -129,11 +137,11 @@ export default function CreatePostFlow() {
     };
 
     const steps = [
-        { id: 1, title: "Catégorisation", component: SelectCategory, progress: 20 },
-        { id: 2, title: "Détails", component: Details, progress: 40 },
-        { id: 3, title: "Images", component: ImageUpload, progress: 60 },
-        { id: 4, title: "Emplacement", component: Location, progress: 80 },
-        { id: 5, title: "Vérification", component: Review, progress: 100 },
+        { id: 1, title: language === 'FR' ? "Catégorisation" : 'Categorization', component: SelectCategory, progress: 20 },
+        { id: 2, title: language === 'FR' ? "Détails" : 'Details', component: Details, progress: 40 },
+        { id: 3, title: language === 'FR' ? "Images" : 'Images', component: ImageUpload, progress: 60 },
+        { id: 4, title: language === 'FR' ? "Emplacement" : 'Location', component: Location, progress: 80 },
+        { id: 5, title: language === 'FR' ? "Vérification" : 'Verification', component: Review, progress: 100 },
     ];
 
     if (hasSucceed) {

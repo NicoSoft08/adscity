@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import formFields from '../../json/formFields.json';
 import InputField from '../input-field/InputField';
 import Toast from '../../customs/Toast';
 import './Details.scss';
+import { LanguageContext } from '../../contexts/LanguageContext';
 
 export default function Details({ formData, setFormData, onChange, onNext, onBack }) {
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const { language } = useContext(LanguageContext);
 
     useEffect(() => {
         if (formData.subcategory) {
@@ -14,7 +16,7 @@ export default function Details({ formData, setFormData, onChange, onNext, onBac
             setFormData(prev => {
                 const currentDetails = prev.details || {};
                 const updatedDetails = fields.reduce((acc, field) => {
-                    acc[field.name] = currentDetails[field.name] ?? 
+                    acc[field.name] = currentDetails[field.name] ??
                         (field.type === "checkbox" || field.type === "file" ? [] : "");
                     return acc;
                 }, {});
@@ -60,7 +62,13 @@ export default function Details({ formData, setFormData, onChange, onNext, onBac
             });
 
         if (missingFields.length > 0) {
-            setToast({ show: true, type: 'error', message: `Veuillez remplir tous les champs obligatoires.` });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? `Veuillez remplir tous les champs obligatoires.`
+                    : `Please fill in all required fields.`
+            });
 
             // Auto-hide Toast après 3 secondes
             setTimeout(() => {
@@ -91,8 +99,12 @@ export default function Details({ formData, setFormData, onChange, onNext, onBac
             ))}
 
             <div className="form-navigation">
-                <button type="button" className='back-button' onClick={onBack}>Retour</button>
-                <button type="button" className='next-button' onClick={handleNext}>Suivant</button>
+                <button type="button" className='back-button' onClick={onBack}>
+                    {language === 'FR' ? "Retour" : "Back"}
+                </button>
+                <button type="button" className='next-button' onClick={handleNext}>
+                    {language === 'FR' ? "Suivant" : "Next"}
+                </button>
             </div>
 
             {toast.show && <Toast show={toast.show} type={toast.type} message={toast.message} onClose={() => setToast({ show: false, type: '', message: '' })} />}

@@ -89,6 +89,27 @@
 
     .verification-box {
         background: $white;
+        max-height: 80vh;
+        overflow-y: auto;
+
+        &::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
 
         .verification-success {
             display: flex;
@@ -216,9 +237,27 @@
             .preview {
                 margin: 1rem 0;
                 border-radius: 8px;
-                overflow: hidden;
+                overflow-y: auto;
                 box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
                 background-color: #f8f9fa;
+
+                &::-webkit-scrollbar {
+                    width: 8px;
+                }
+
+                &::-webkit-scrollbar-track {
+                    background: #f1f1f1;
+                    border-radius: 4px;
+                }
+
+                &::-webkit-scrollbar-thumb {
+                    background: #c1c1c1;
+                    border-radius: 4px;
+                }
+
+                &::-webkit-scrollbar-thumb:hover {
+                    background: #a8a8a8;
+                }
 
                 .pdf-preview,
                 .image-preview {

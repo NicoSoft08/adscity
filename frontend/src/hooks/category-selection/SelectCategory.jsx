@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import data from '../../json/data.json';
 import sensitive_cats from '../../json/sensitiveCategories.json';
@@ -8,9 +8,11 @@ import Spinner from '../../customs/Spinner';
 import { uploadSensitiveVerification } from '../../routes/storageRoutes';
 import Toast from '../../customs/Toast';
 import { CheckCircle } from 'lucide-react';
+import { LanguageContext } from '../../contexts/LanguageContext';
 import './SelectCategory.scss';
 
-export default function SelectCategory({ onNext, formData, setFormData, currentUser }) {
+export default function SelectCategory({ onNext, formData, setFormData, currentUser, userData }) {
+    const { language } = useContext(LanguageContext);
     const [document, setDocument] = useState(null);
     const [faceImage, setFaceImage] = useState(null);
     const [activeTab, setActiveTab] = useState('document');
@@ -58,10 +60,16 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
         // Security: Validate file type
         const allowedDocTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
         const allowedSelfieTypes = ['image/jpeg', 'image/png', 'image/jpg'];
-        const maxSize = 5 * 1024 * 1024; // 5MB - reduced for security
+        const maxSize = 10 * 1024 * 1024; // 10MB - reduced for security
 
         if (!file) {
-            setToast({ type: 'error', message: 'Aucun fichier sélectionné.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Aucun fichier sélectionné.'
+                    : 'No file selected.'
+            });
             return false;
         }
 
@@ -80,12 +88,18 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
         }
 
         if (file.size > maxSize) {
-            setToast({ type: 'error', message: 'Le fichier dépasse la taille maximale de 5MB.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Le fichier dépasse la taille maximale de 5MB.'
+                    : 'File exceeds maximum size of 5MB.'
+            });
             return false;
         }
 
         return true;
-    }, [activeTab, setToast]);
+    }, [activeTab, setToast, language]);
 
     // Reset modal state
     const closeModal = useCallback(() => {
@@ -126,18 +140,36 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
     const handleVerify = async () => {
         const userID = currentUser?.uid;
         if (!userID) {
-            setToast({ show: true, type: 'error', message: 'Vous devez être connecté pour effectuer cette action.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Vous devez être connecté pour effectuer cette action.'
+                    : 'You must be logged in to perform this action.'
+            });
             return;
         }
 
         if (!document) {
-            setToast({ show: true, type: 'error', message: 'Veuillez télécharger une pièce d\'identité.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Veuillez télécharger une pièce d\'identité.'
+                    : 'Please upload an identity document.'
+            });
             setActiveTab('document');
             return;
         }
 
         if (!faceImage) {
-            setToast({ show: true, type: 'error', message: 'Veuillez télécharger un selfie.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Veuillez télécharger un selfie.'
+                    : 'Please upload a selfie.'
+            });
             setActiveTab('face');
             return;
         }
@@ -149,12 +181,19 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
 
         try {
             setLoading(true);
+            const idToken = await currentUser.getIdToken();
 
-            const result = await uploadSensitiveVerification(userID, document, faceImage);
+            const result = await uploadSensitiveVerification(userID, document, faceImage, idToken);
 
             if (result.success) {
                 setVerificationStatus('success');
-                setToast({ show: true, type: 'success', message: 'Vérification soumise avec succès. Vous serez notifié une fois traitée.' });
+                setToast({
+                    show: true,
+                    type: 'success',
+                    message: language === 'FR'
+                        ? 'Vérification soumise avec succès. Vous serez notifié une fois traitée.'
+                        : 'Verification submitted successfully. You will be notified once processed.'
+                });
             } else {
                 setVerificationStatus('failed');
 
@@ -163,29 +202,39 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
 
                 switch (result.errorCode) {
                     case 'INVALID_FILE_TYPE':
-                        errorMessage = 'Format de fichier non autorisé. Veuillez vérifier les formats acceptés.';
+                        errorMessage = language === 'FR'
+                            ? 'Format de fichier non autorisé. Veuillez vérifier les formats acceptés.'
+                            : 'Invalid file type. Please check accepted formats.';
                         setToast({ show: true, type: 'error', message: errorMessage });
                         setActiveTab(errorMessage.includes('selfie') ? 'face' : 'document');
                         break;
 
                     case 'VERIFICATION_ALREADY_PENDING':
-                        errorMessage = 'Vous avez déjà une demande de vérification en cours.';
+                        errorMessage = language === 'FR'
+                            ? 'Vous avez déjà une demande de vérification en cours.'
+                            : 'You already have a pending verification request.';
                         setToast({ show: true, type: 'error', message: errorMessage });
                         break;
 
                     case 'STORAGE_QUOTA_EXCEEDED':
-                        errorMessage = 'Service temporairement indisponible. Veuillez réessayer plus tard.';
+                        errorMessage = language === 'FR'
+                            ? 'Service temporairement indisponible. Veuillez réessayer plus tard.'
+                            : 'Service temporarily unavailable. Please try again later.';
                         setToast({ show: true, type: 'error', message: errorMessage });
                         break;
 
                     case 'MISSING_DOCUMENT':
-                        errorMessage = 'Veuillez télécharger une pièce d\'identité.';
+                        errorMessage = language === 'FR'
+                            ? 'Veuillez télécharger une pièce d\'identité.'
+                            : 'Please upload an identity document.';
                         setToast({ show: true, type: 'error', message: errorMessage });
                         setActiveTab('document');
                         break;
 
                     case 'MISSING_SELFIE':
-                        errorMessage = 'Veuillez télécharger un selfie.';
+                        errorMessage = language === 'FR'
+                            ? 'Veuillez télécharger un selfie.'
+                            : 'Please upload a selfie.';
                         setToast({ show: true, type: 'error', message: errorMessage });
                         setActiveTab('face');
                         break;
@@ -203,7 +252,13 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
         } catch (error) {
             console.error('Erreur lors de la vérification:', error);
             setVerificationStatus('failed');
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue. Veuillez réessayer plus tard.' });
+            setToast({
+                show: true,
+                type: 'error',
+                message: language === 'FR'
+                    ? 'Une erreur est survenue. Veuillez réessayer plus tard.'
+                    : 'An error occurred. Please try again later.'
+            });
             setLoading(false);
         } finally {
             setLoading(false);
@@ -248,27 +303,38 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
         <div className='select-cat'>
             {/* Sélection de la catégorie */}
             <select className="input-field" value={formData.category} onChange={handleChangeCategory}>
-                <option value="">-- Sélectionner une catégorie --</option>
+                <option value="">-- {language === 'FR'
+                    ? "Sélectionner une catégorie" : "Select a category"
+                } --</option>
                 {data.categories.map(({ key, categoryName, categoryTitles }) => (
                     <option key={key} value={categoryName}>
-                        {categoryTitles.fr}
+                        {language === 'FR' ? categoryTitles.fr : categoryTitles.en}
                     </option>
                 ))}
             </select>
 
             {/* Si une catégorie est sélectionnée */}
             {formData.category && (
-                isCatSensitive ? (
+                isCatSensitive && userData?.verificationStatus !== 'approved' ? (
                     <div className="sensitive-warning">
-                        <p>🔒 <strong>Vérification requise pour cette catégorie</strong></p>
+                        <p>🔒 <strong>{language === 'FR'
+                            ? "Vérification requise pour cette catégorie"
+                            : "Verification required for this category"
+                        }</strong></p>
                         <p>
-                            Pour garantir la sécurité et la qualité des annonces, une vérification supplémentaire est requise.
-                            <a href="/help/posts">En savoir plus</a>
+                            {language === 'FR'
+                                ? "Pour garantir la sécurité et la qualité des annonces, une vérification supplémentaire est requise."
+                                : "To guarantee the safety and quality of the ads, additional verification is required."
+                            }
+                            <a href="/help/posts">{language === 'FR' ? "En savoir plus" : "Learn more"}</a>
                         </p>
-                        <p>ℹ️ Ce système est en cours de mise en place. Merci de votre patience.</p>
-                        {/* <button onClick={() => setOpenModal(true)}>
-                            Lancer la vérification
-                        </button> */}
+                        {/* <p>ℹ️ {language === 'FR'
+                            ? "Ce système est en cours de mise en place. Merci de votre patience."
+                            : "This system is being implemented. Thank you for your patience."
+                        }</p> */}
+                        <button onClick={() => setOpenModal(true)}>
+                            Démarrer
+                        </button>
                     </div>
                 ) : (
                     <select
@@ -276,10 +342,10 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
                         value={formData.subcategory}
                         onChange={handleChangeSubcategory}
                     >
-                        <option value="">-- Sélectionner une sous-catégorie --</option>
+                        <option value="">-- {language === 'FR' ? "Sélectionner une sous-catégorie" : "Select a subcategory"} --</option>
                         {subcategories.map(({ sousCategoryName, sousCategoryTitles }) => (
                             <option key={sousCategoryName} value={sousCategoryName}>
-                                {sousCategoryTitles.fr}
+                                {language === 'FR' ? sousCategoryTitles.fr : sousCategoryTitles.en}
                             </option>
                         ))}
                     </select>
@@ -288,12 +354,14 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
 
             {/* Contact support */}
             <div className="contact-support">
-                <p>Vous ne trouvez pas la catégorie ? <Link to='/contact-us'>Contactez le support</Link></p>
+                <p>{language === 'FR' ? "Vous ne trouvez pas la catégorie ?" : "Can't find the category?"} <Link to='/contact-us'>{language === 'FR' ? "Contactez le support" : "Contact support"}</Link></p>
             </div>
 
             {/* Bouton Suivant */}
             {formData.subcategory && (
-                <button className='next' onClick={onNext} disabled={isCatSensitive}>Suivant</button>
+                <button className='next' onClick={onNext} disabled={isCatSensitive}>
+                    {language === 'FR' ? "Suivant" : "Next"}
+                </button>
             )}
 
             {/* Modal de vérification */}
@@ -303,20 +371,39 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
                         {verificationStatus === 'success' ? (
                             <div className="verification-success">
                                 <CheckCircle size={50} className="success-icon" />
-                                <h3>Vérification soumise avec succès</h3>
-                                <p>Nous traiterons votre demande dans les plus brefs délais.</p>
+                                <h3>{language === 'FR'
+                                    ? "Vérification soumise avec succès"
+                                    : "Verification successfully submitted"
+                                }
+                                </h3>
+                                <p>{language === 'FR'
+                                    ? "Nous traiterons votre demande dans les plus brefs délais."
+                                    : "We will process your request as soon as possible."
+                                }</p>
                             </div>
                         ) : (
                             <>
                                 {/* Instructions */}
                                 <div className="verification-instructions">
-                                    <p>Pour vérifier votre identité, nous avons besoin de :</p>
+                                    <p>{language === 'FR'
+                                        ? "Pour vérifier votre identité, nous avons besoin de"
+                                        : "To verify your identity, we need"
+                                    } :</p>
                                     <ol>
-                                        <li>Une pièce d'identité officielle (carte d'identité, passeport, permis)</li>
-                                        <li>Un selfie montrant clairement votre visage</li>
+                                        <li>{language === 'FR'
+                                            ? "Une pièce d'identité officielle (carte d'identité, passeport, permis)"
+                                            : "An official identity document (identity card, passport, license)"
+                                        }</li>
+                                        <li>{language === 'FR'
+                                            ? "Un selfie montrant clairement votre visage"
+                                            : "A selfie clearly showing your face"
+                                        }</li>
                                     </ol>
                                     <p className="security-note">
-                                        <strong>🔒 Sécurité :</strong> Vos documents sont transmis de manière sécurisée et ne seront utilisés que pour la vérification.
+                                        <strong>🔒 {language === 'FR' ? "Sécurité" : "Security"} :</strong> {language === 'FR'
+                                            ? "Vos documents sont transmis de manière sécurisée et ne seront utilisés que pour la vérification."
+                                            : "Your documents are transmitted securely and will only be used for verification."
+                                        }
                                     </p>
                                 </div>
 
@@ -349,7 +436,12 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
                                     <div className="tab-content">
                                         <label className="upload-box">
                                             <input type="file" accept="image/*" hidden onChange={handleFaceImageUpload} disabled={loading} />
-                                            <span>{faceImage ? 'Changer la photo' : 'Télécharger un selfie'}</span>
+                                            <span>
+                                                {language === 'FR'
+                                                    ? faceImage ? 'Changer la photo' : 'Télécharger un selfie'
+                                                    : faceImage ? 'Change photo' : 'Upload a selfie'
+                                                }
+                                            </span>
                                         </label>
                                         {faceImage && (
                                             <div className="preview">
@@ -365,12 +457,14 @@ export default function SelectCategory({ onNext, formData, setFormData, currentU
                                         onClick={handleVerify}
                                         disabled={!document || !faceImage || loading}
                                     >
-                                        {loading ? <Spinner /> : "Lancer la vérification"}
+                                        {language === 'FR'
+                                            ? loading ? <Spinner /> : "Lancer la vérification"
+                                            : loading ? <Spinner /> : "Start verification"
+                                        }
                                     </button>
                                 </div>
                             </>
                         )}
-
                     </div>
                 </Modal>
             )}

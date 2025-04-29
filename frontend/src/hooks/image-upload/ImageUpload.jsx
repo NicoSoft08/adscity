@@ -5,7 +5,7 @@ import Toast from '../../customs/Toast';
 import { uploadImage } from '../../routes/storageRoutes';
 import './ImageUpload.scss';
 
-const MAX_FILE_SIZE_MB = 5; // 5MB maximum file size
+const MAX_FILE_SIZE_MB = 10; // 10MB maximum file size
 
 export default function ImageUpload({ onNext, onBack, formData, setFormData, userData, currentUser }) {
     const [toast, setToast] = useState({ show: false, message: '', type: '' });
@@ -112,10 +112,11 @@ export default function ImageUpload({ onNext, onBack, formData, setFormData, use
 
         try {
             const userID = currentUser?.uid;
+            const idToken = await currentUser.getIdToken();
             const uploadPromises = validFiles.map(file => {
                 const sanitizedName = sanitizeFileName(file.name);
                 const sanitizedFile = new File([file], sanitizedName, { type: file.type });
-                return uploadImage(sanitizedFile, userID);
+                return uploadImage(sanitizedFile, userID, idToken);
             })
             const results = await Promise.all(uploadPromises);
 

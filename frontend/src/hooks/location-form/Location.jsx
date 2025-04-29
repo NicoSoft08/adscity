@@ -15,6 +15,7 @@ export default function Location({ onNext, onBack, userData, formData, setFormDa
                 ...prev,
                 location: {
                     ...prev.location,
+                    country: userData.country,
                     city: userData.city,
                     address: userData.address
                 }

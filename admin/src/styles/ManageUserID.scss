@@ -138,8 +138,9 @@
 
     .modal-buttons {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
+        gap: 10px;
 
         .modal-button {
             background-color: transparent;
@@ -150,6 +151,10 @@
             cursor: pointer;
             font-family: 'Ubuntu', sans-serif;
             font-weight: $font-light;
+
+            &.cancel {
+                background-color: $light;
+            }
 
             &.approve {
                 background-color: $two;

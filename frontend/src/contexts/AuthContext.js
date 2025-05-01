@@ -42,6 +42,7 @@ export const AuthProvider = ({ children }) => {
             try {
                 if (user) {
                     setCurrentUser(user);
+                    console.log("User is signed in.", user);
 
                     const idToken = await user.getIdToken(true);
 
@@ -106,7 +107,7 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const idToken = await user.getIdToken(true);
                     await setUserOnlineStatus(user.uid, false, idToken);
-                    Cookies.remove('auth_token', {
+                    Cookies.remove('authToken', {
                         path: '/',
                         domain: '.adscity.net'
                     });

@@ -5,8 +5,8 @@ import { fetchPostsByUserID } from '../../routes/userRoutes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusSquare } from '@fortawesome/free-solid-svg-icons';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from "chart.js";
-import PostsAnalytics from '../../utils/PostsAnalytics';
 import ProfileAnalytics from '../../utils/ProfileAnalytics';
+import PostsAnalytics from '../../utils/PostsAnalytics'
 import Loading from '../../customs/Loading';
 import '../../styles/DashboardPanel.scss';
 // import StatusCreator from '../../components/status/StatusCreator';

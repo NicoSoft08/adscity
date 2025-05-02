@@ -106,6 +106,10 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const idToken = await user.getIdToken(true);
                     await setUserOnlineStatus(user.uid, false, idToken);
+                    Cookies.remove('authToken', {
+                        path: '/',
+                        domain: '.adscity.net'
+                    });
                 } catch (statusError) {
                     console.warn("Failed to update online status:", statusError);
                     // Continue with logout even if this fails

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 // layouts
-// import AuthLayout from './layouts/AuthLayout';
+import AuthLayout from './layouts/AuthLayout';
 import HelpLayout from './layouts/HelpLayout';
 import HomeLayout from './layouts/HomeLayout';
 
@@ -14,15 +14,15 @@ import ConditionPage from './pages/public/ConditionPage';
 import ContactPage from './pages/public/ContactPage';
 import FAQsPage from './pages/public/FAQsPage';
 import HomePage from './pages/public/HomePage';
-// import LoginPage from './pages/auth/LoginPage';
+import LoginPage from './pages/auth/LoginPage';
 import NotFoundPage from './pages/public/NotFoundPage';
 // import PlansPage from './pages/public/PlansPage';
 import PrivacyPage from './pages/public/PrivacyPage';
 import RulesPage from './pages/private/RulesPage';
 import SearchResultPage from './pages/public/SearchResultPage';
 import ShowUserPage from './pages/public/ShowUserPage';
-// import SignupPage from './pages/auth/SignUpPage';
-// import SignupSuccess from './pages/auth/SignupSuccess';
+import SignupPage from './pages/auth/SignUpPage';
+import SignupSuccess from './pages/auth/SignupSuccess';
 import TeamPage from './pages/public/TeamPage';
 import UserHome from './pages/private/UserHome';
 import CheckoutProceed from './pages/private/CheckoutProceed';
@@ -50,10 +50,10 @@ import StatsPostID from './pages/private/StatsPostID';
 import ManageFavorites from './pages/private/ManageFavorites';
 // import Forfaits from './pages/public/Forfaits';
 import Verification from './pages/private/Verification';
-// import PasswordResetPage from './pages/auth/PasswordResetPage';
-// import RequestPasswordResetPage from './pages/auth/RequestPasswordResetPage';
-// import SignupVerifyEmail from './pages/auth/SignupVerifyEmail';
-// import EmailVerified from './pages/auth/EmailVerified';
+import PasswordResetPage from './pages/auth/PasswordResetPage';
+import RequestPasswordResetPage from './pages/auth/RequestPasswordResetPage';
+import SignupVerifyEmail from './pages/auth/SignupVerifyEmail';
+import EmailVerified from './pages/auth/EmailVerified';
 import Advertising from './pages/public/Advertising';
 import AdvertisingLayout from './layouts/AdvertisingLayout';
 import PubCreationPage from './pages/public/PubCreationPage';
@@ -120,7 +120,7 @@ export default function AppRouter() {
                     <Route path='stores' element={<StoreFAQs />} />
                 </Route>
 
-                {/* <Route element={<AuthLayout />}>
+                <Route element={<AuthLayout />}>
                     <Route path='/auth/signin' element={<LoginPage />} />
                     <Route path='/auth/signin/:email?' element={<LoginPage />} />
                     <Route path='/auth/signup' element={<SignupPage />} />
@@ -129,7 +129,7 @@ export default function AppRouter() {
                     <Route path='/auth/email-verified' element={<EmailVerified />} />
                     <Route path='/auth/forgot-password' element={<RequestPasswordResetPage />} />
                     <Route path='/auth/reset-password/:token' element={<PasswordResetPage />} />
-                </Route> */}
+                </Route>
 
                 <Route path='/user/dashboard' element={<UserHome />}>
                     <Route path="panel" element={<DashboardPanel />} />

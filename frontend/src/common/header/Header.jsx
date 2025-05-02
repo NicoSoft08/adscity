@@ -10,9 +10,6 @@ import data from '../../json/data.json';
 import { LanguageContext } from '../../contexts/LanguageContext';
 import './Header.scss';
 
-const authURL = process.env.REACT_APP_AUTH_URL;
-const helpURL = process.env.REACT_APP_HELP_URL;
-
 export default function Header() {
     const { currentUser, userRole } = useContext(AuthContext);
     const { language } = useContext(LanguageContext);
@@ -27,19 +24,19 @@ export default function Header() {
                 {(!currentUser || userRole !== 'user') && (
                     <div className="top-header">
                         <div className="__left">
-                            <Link to={helpURL}><span>
+                            <Link to={'/help'}><span>
                                 {language === 'FR'
                                     ? "Aide" : "Help"
                                 }
                             </span></Link>
                         </div>
                         <div className="__right">
-                            <a href={`${authURL}/signin`}><span>
+                            <a href={`/auth/signin`}><span>
                                 {language === 'FR'
                                     ? "Connexion" : "Login"
                                 }
                             </span></a>
-                            <a href={`${authURL}/signup`}><span>{language === 'FR'
+                            <a href={`/auth/signup`}><span>{language === 'FR'
                                 ? "Inscription" : "Signup"
                             }</span></a>
                         </div>

@@ -4,8 +4,6 @@ import { IconAvatar } from '../../config/images';
 import { useNavigate } from 'react-router-dom';
 import './NavLinks.scss';
 
-const dashboardurl = process.env.REACT_APP_DASHBOARD_URL;
-const authURL = process.env.REACT_APP_AUTH_URL;
 
 export default function NavLinks() {
     const { currentUser, userRole, userData } = useContext(AuthContext);
@@ -13,11 +11,11 @@ export default function NavLinks() {
 
     const handleNavigate = () => {
         if (!currentUser) {
-            window.location.href = `${authURL}/signin`;
+            navigate('/auth/signin');
         } else if (currentUser && userRole !== 'user') {
             navigate('/access-denied');
         } else {
-            window.location.href = `${dashboardurl}/panel`;
+            navigate('/user/dashboard/panel');
         }
     };
 

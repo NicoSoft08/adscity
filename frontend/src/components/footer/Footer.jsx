@@ -7,7 +7,6 @@ import { LanguageContext } from '../../contexts/LanguageContext';
 import { translations } from '../../langs/translations';
 import './Footer.scss';
 
-const helpURL = process.env.REACT_APP_HELP_URL;
 
 export default function Footer() {
     const currentYear = new Date().getFullYear();
@@ -45,7 +44,7 @@ export default function Footer() {
                 <div className="footer-section">
                     <h3>Assistance</h3>
                     <ul>
-                        <li><a href={helpURL} target="_blank" rel="noopener noreferrer">{language === 'FR'
+                        <li><a href={'/help'} target="_blank" rel="noopener noreferrer">{language === 'FR'
                             ? "Centre d'aide" : "Help Center"
                         }</a></li>
                         <li><a href="/contact-us">Contact</a></li>

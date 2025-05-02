@@ -42,7 +42,6 @@ export const AuthProvider = ({ children }) => {
             try {
                 if (user) {
                     setCurrentUser(user);
-                    console.log("User is signed in.", user);
 
                     const idToken = await user.getIdToken(true);
 

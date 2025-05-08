@@ -129,11 +129,12 @@ const updatePostStatus = async (postID, newStatus) => {
 
 };
 
-const onApprovePost = async (postID) => {
+const onApprovePost = async (postID, idToken) => {
     const response = await fetch(`${backendUrl}/api/posts/post/${postID}/admin/approve`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
         },
     });
 
@@ -162,13 +163,13 @@ const onRefusePost = async (postID, reason) => {
     }
 };
 
-const adminDeletePost = async (postID) => {
-    console.log(postID);
+const adminDeletePost = async (postID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/posts/post/${postID}/admin/delete`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
         });
 

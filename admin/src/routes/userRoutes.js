@@ -93,12 +93,13 @@ const fetchUserById = async (user_id) => {
     }
 };
 
-const fetchDataByUserID = async (userID) => {
+const fetchDataByUserID = async (userID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`
             }
         });
 

@@ -65,6 +65,8 @@ export default function PendingPosts() {
     }, [currentUser]);
 
     const handleApprove = useCallback(async () => {
+        const idToken = await currentUser.getIdToken();
+
         if (!currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
             setToast({
                 show: true,
@@ -88,7 +90,7 @@ export default function PendingPosts() {
 
         if (!selectedPost) return;
         setIsLoading(true);
-        const result = await onApprovePost(selectedPost.postID);
+        const result = await onApprovePost(selectedPost.postID, idToken);
         setIsLoading(false);
 
         if (result.success) {

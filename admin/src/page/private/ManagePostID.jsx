@@ -152,6 +152,8 @@ export default function ManagePostID() {
 
     // Supprimer une annonce
     const handleDelete = useCallback(async () => {
+        const idToken = await currentUser.getIdToken();
+
         if (currentUser && !userData.permissions.includes('MANAGE_POSTS')) {
             setToast({
                 show: true,
@@ -167,7 +169,7 @@ export default function ManagePostID() {
 
         setLoading(true);
         try {
-            const result = await adminDeletePost(post.postID);
+            const result = await adminDeletePost(post.postID, idToken);
             if (result.success) {
                 await logAdminAction(
                     currentUser.uid,

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-import { fetchDataByUserID, setUserOnlineStatus } from '../routes/userRoutes';
+import { fetchMe, setUserOnlineStatus } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -43,24 +43,17 @@ export const AuthProvider = ({ children }) => {
                 if (user) {
                     setCurrentUser(user);
 
-                    const idToken = await user.getIdToken(true);
+                    const idToken = await user.getIdToken();
 
                     // Fetch user data from backend
-                    const userDataResponse = await fetchDataByUserID(user.uid, idToken);
+                    const userDataResponse = await fetchMe(idToken);
                     if (userDataResponse?.data) {
                         setUserData(userDataResponse.data);
                         setUserRole(userDataResponse.data.role);
 
-                        // Store user data in localStorage
-                        localStorage.setItem('user', JSON.stringify({
-                            uid: user.uid,
-                            email: user.email,
-                            role: userDataResponse.data.role
-                        }));
-
                         // Update online status
                         await setUserOnlineStatus(user.uid, true, idToken);
-                        Cookies.set('auth_token', idToken, { expires: 7 }); // Store token for 7 days
+                        Cookies.set('authToken', idToken, { expires: 7 }); // Store token for 7 days
                     }
                 } else {
                     // If there was a user before and now there isn't, update online status
@@ -68,7 +61,7 @@ export const AuthProvider = ({ children }) => {
                     if (previousUserID) {
                         const idToken = await currentUser.getIdToken(true);
                         await setUserOnlineStatus(previousUserID, false, idToken);
-                        Cookies.remove('auth_token', {
+                        Cookies.remove('authToken', {
                             path: '/',
                             domain: '.adscity.net'
                         });
@@ -78,10 +71,6 @@ export const AuthProvider = ({ children }) => {
                     setCurrentUser(null);
                     setUserData(null);
                     setUserRole(null);
-
-                    // Clear localStorage
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
                 }
             } catch (error) {
                 console.error("Error in auth state change handler:", error);
@@ -128,10 +117,6 @@ export const AuthProvider = ({ children }) => {
 
             // 3. Firebase signout
             await signOut(auth);
-
-            // 4. Clear storage
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
 
             // 5. Return success for UI handling
             return { success: true, message: "Déconnexion réussie." };

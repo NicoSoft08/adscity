@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }) => {
                 setUserRole(parsedUser.role);
             } catch (error) {
                 console.error("Error parsing stored user data:", error);
-                localStorage.removeItem('user'); // Remove invalid data
             }
         }
 
@@ -51,16 +50,9 @@ export const AuthProvider = ({ children }) => {
                         setUserData(userDataResponse.data);
                         setUserRole(userDataResponse.data.role);
 
-                        // Store user data in localStorage
-                        localStorage.setItem('user', JSON.stringify({
-                            uid: user.uid,
-                            email: user.email,
-                            role: userDataResponse.data.role
-                        }));
-
                         // Update online status
                         await setUserOnlineStatus(user.uid, true, idToken);
-                        Cookies.set('auth_token', idToken, { expires: 7 }); // Store token for 7 days
+                        Cookies.set('authToken', idToken, { expires: 7 }); // Store token for 7 days
                     }
                 } else {
                     // If there was a user before and now there isn't, update online status
@@ -68,7 +60,7 @@ export const AuthProvider = ({ children }) => {
                     if (previousUserID) {
                         const idToken = await currentUser.getIdToken(true);
                         await setUserOnlineStatus(previousUserID, false, idToken);
-                        Cookies.remove('auth_token', {
+                        Cookies.remove('authToken', {
                             path: '/',
                             domain: '.adscity.net'
                         });
@@ -78,10 +70,6 @@ export const AuthProvider = ({ children }) => {
                     setCurrentUser(null);
                     setUserData(null);
                     setUserRole(null);
-
-                    // Clear localStorage
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
                 }
             } catch (error) {
                 console.error("Error in auth state change handler:", error);
@@ -129,9 +117,6 @@ export const AuthProvider = ({ children }) => {
             // 3. Firebase signout
             await signOut(auth);
 
-            // 4. Clear storage
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
 
             // 5. Return success for UI handling
             return { success: true, message: "Déconnexion réussie." };

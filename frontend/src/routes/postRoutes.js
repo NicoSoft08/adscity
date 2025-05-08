@@ -222,6 +222,26 @@ const fetchPostById = async (post_id) => {
     }
 };
 
+const repostPost = async (postID, userID, idToken, postData) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/posts/${postID}/repost`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ userID, postData }),
+            credentials: 'include',
+        });
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la répétition de l\'annonce:', error);
+        throw error;
+    }
+};
+
 export {
     createPost,
     deletePost,
@@ -235,4 +255,5 @@ export {
     fetchRelatedListings,
     reportPost,
     updatePost,
+    repostPost,
 };

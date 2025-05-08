@@ -12,6 +12,7 @@ import Toast from '../../customs/Toast';
 import { LanguageContext } from '../../contexts/LanguageContext';
 import { userSidebarData } from '../../data';
 import '../../styles/UserHome.scss';
+import { fetchUserConversations } from '../../routes/chatRoutes';
 
 export default function UserHome() {
     const location = useLocation();
@@ -20,6 +21,7 @@ export default function UserHome() {
     const { language } = useContext(LanguageContext);
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [notifications, setNotifications] = useState([]);
+    const [unreadMessages, setUnreadMessages] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [toast, setToast] = useState({ show: false, type: '', message: '' });
 
@@ -53,6 +55,19 @@ export default function UserHome() {
         // Set loading state
         setIsLoading(true);
 
+        // Fonction pour récupérer le nombre de messages non lus
+        // const fetchUnreadMessagesCount = async () => {
+        //     try {
+        //         const idToken = await currentUser.getIdToken();
+        //         const result = await fetchUserConversations(userID, idToken);
+        //         if (result.success) {
+        //             setUnreadMessages(result.data.totalUnreadCount || 0);
+        //         }
+        //     } catch (error) {
+        //         console.error('Erreur lors de la récupération des messages non lus:', error);
+        //     }
+        // };
+
         const getNotifications = async () => {
             try {
                 const idToken = await currentUser.getIdToken(true);
@@ -81,6 +96,7 @@ export default function UserHome() {
             }
         }
 
+        // fetchUnreadMessagesCount();
         getNotifications();
         return () => { isMounted = false };
     }, [currentUser, navigate]);
@@ -108,6 +124,10 @@ export default function UserHome() {
                                         {id === "notifications" && notifications.length > 0 && (
                                             <span className="badge">{notifications.length}</span>
                                         )}
+
+                                        {/* {id === "messages" && unreadMessages > 0 && (
+                                            <span className="badge">{unreadMessages}</span>
+                                        )} */}
                                     </Link>
                                 </li>
                             ))}

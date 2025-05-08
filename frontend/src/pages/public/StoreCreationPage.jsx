@@ -5,6 +5,7 @@ import { AuthContext } from '../../contexts/AuthContext';
 import { businessCategory } from '../../data/database';
 import ReCAPTCHA from 'react-google-recaptcha';
 import '../../styles/StoreCreationPage.scss';
+import Spinner from '../../customs/Spinner';
 
 const MAX_FILE_SIZE_MB = 10; // 10MB maximum file size
 
@@ -139,7 +140,7 @@ export default function StoreCreationPage() {
             // Gérer les cases à cocher
             setFormData({
                 ...formData,
-                [name]: checked
+                termsAccepted: checked
             });
         } else {
             // Gérer les champs texte et select
@@ -199,6 +200,15 @@ export default function StoreCreationPage() {
     const handleSubmit = (e) => {
         e.preventDefault();
         // Ajoutez ici la logique pour soumettre le formulaire de création de boutique
+
+        const errors = validateForm();
+        if (Object.keys(errors).length > 0) {
+            setErrors(errors);
+            return;
+        }
+
+        setLoading(true);
+        setErrors({}); // Réinitialiser les erreurs
     };
 
     return (
@@ -451,7 +461,7 @@ export default function StoreCreationPage() {
                         {/* Bouton de soumission */}
                         <div className="button-group">
                             <button type="submit" className="submit-button">
-                                Créer la boutique
+                                {loading ? <Spinner /> : "Passer au paiement"}
                             </button>
 
                             <Link to="/">

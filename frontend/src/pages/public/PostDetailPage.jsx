@@ -1,21 +1,24 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { fetchPostById } from '../../routes/postRoutes';
-import { fetchDataByUserID } from '../../routes/userRoutes';
-import OwnerProfileCard from '../../components/owner-card/OwnerProfileCard';
+import { fetchDataByUserID, fetchUserData } from '../../routes/userRoutes';
 import { FaLocationDot } from "react-icons/fa6";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { formatPostedAt, parseTimestamp } from '../../func';
 import RelatedListing from '../../components/related-listing/RelatedListing';
 import { AuthContext } from '../../contexts/AuthContext';
-// import MessageToAnnouncer from '../../components/contact-announcer/MessageToAnnouncer';
-// import { sendMessage } from '../../routes/chatRoutes';
+import { fetchUserConversations, sendMessage } from '../../routes/chatRoutes';
 import Toast from '../../customs/Toast';
 import Loading from '../../customs/Loading';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import FormData from '../../hooks/FormData';
 import data from '../../json/data.json';
+import Spinner from '../../customs/Spinner';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPaperPlane, faPhone } from '@fortawesome/free-solid-svg-icons';
+import { updateContactClick } from '../../routes/apiRoutes';
+import { IconAvatar } from '../../config/images';
 import '../../styles/PostDetailPage.scss';
 
 const ImageGallery = ({ images = [] }) => {
@@ -75,16 +78,74 @@ const ImageGallery = ({ images = [] }) => {
     );
 }
 
+const predefinedMessages = [
+    "Bonjour, votre annonce m'intéresse. Est-elle toujours disponible ?",
+    "Pouvez-vous me donner plus de détails sur l'annonce ?",
+    "Est-il possible de négocier le prix ?",
+    "Où et quand puis-je voir l'article en personne ?",
+];
+
 export default function PostDetailPage() {
     const params = useParams();
     const { currentUser, userData } = useContext(AuthContext);
     const [post, setPost] = useState(null);
     const [profilData, setProfilData] = useState({});
     const [isLoading, setIsLoading] = useState(true);
-    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const { post_id } = params;
+    const [message, setMessage] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [toast, setToast] = useState({ show: false, type: '', message: '' });
+    const [showPhone, setShowPhone] = useState(false);
+    const [selectedChat, setSelectedChat] = useState(null);
+    const [interlocutor, setInterlocutor] = useState(null);
+    const [conversations, setConversations] = useState([]);
+    const navigate = useNavigate();
 
     const userCity = userData?.city || '';
+
+    // 📌 Récupérer les conversations de l'utilisateur
+    useEffect(() => {
+        const fetchMessages = async () => {
+            if (!currentUser) return;
+            setLoading(true);
+            try {
+                const userID = currentUser?.uid;
+                const idToken = await currentUser.getIdToken();
+                const result = await fetchUserConversations(userID, idToken);
+                if (result.success) {
+                    setConversations(result.data.conversations || []);
+                }
+            } catch (error) {
+                console.error("❌ Erreur lors de la récupération des conversations :", error);
+            }
+            setLoading(false);
+        };
+
+        fetchMessages();
+    }, [currentUser]);
+
+    // 📌 Récupérer les infos de l’interlocuteur
+    useEffect(() => {
+        if (!selectedChat || !currentUser) return;
+
+        const fetchInterlocutor = async () => {
+            if (selectedChat && selectedChat.participants) {
+                const userID = currentUser.uid;
+                const participants = selectedChat.participants || [];
+                const interlocutorID = participants.find(participant => participant !== userID);
+
+                if (interlocutorID) {
+                    const result = await fetchUserData(interlocutorID);
+                    if (result.success) {
+                        setInterlocutor(result.data);
+                        console.log("👤 Interlocuteur :", result.data);
+                    }
+                }
+            }
+        };
+
+        fetchInterlocutor();
+    }, [selectedChat, currentUser]);
 
     useEffect(() => {
         logEvent(analytics,
@@ -122,16 +183,36 @@ export default function PostDetailPage() {
 
     const postedAtDate = parseTimestamp(posted_at);
 
-    
 
-    // const handleSendMessage = async ({ senderID, receiverID, text }) => {
-    //     const result = await sendMessage(senderID, receiverID, text);
-    //     if (result.success) {
-    //         setToast({ show: true, type: 'info', message: result.message });
-    //     } else {
-    //         setToast({ show: true, type: 'error', message: result.message });
-    //     }
-    // };
+
+    const handleSendMessage = async ({ senderID, receiverID, text }) => {
+        if (!currentUser) {
+            setToast({ show: true, type: 'error', message: 'Vous devez être connecté pour envoyer un message.' });
+            return;
+        }
+        setLoading(true);
+
+        try {
+            const senderID = currentUser.uid;
+            const receiverID = post?.userID;
+            const idToken = await currentUser.getIdToken();
+
+            const result = await sendMessage(senderID, receiverID, idToken, message);
+            if (result.success) {
+                setToast({ show: true, type: 'info', message: result.message });
+                setMessage('');
+                setLoading(false);
+            } else {
+                setToast({ show: true, type: 'error', message: result.message });
+                setLoading(false);
+            }
+        } catch (error) {
+            console.error('Erreur lors de l\'envoi du message :', error);
+            setToast({ show: true, type: 'error', message: 'Une erreur est survenue lors de l\'envoi du message.' });
+
+        }
+
+    };
 
     const formatCategorization = () => {
         let category = "";
@@ -153,6 +234,55 @@ export default function PostDetailPage() {
         return { category, subcategory };
     };
 
+    const handlePhoneClick = () => {
+        if (!currentUser?.userID) {
+            setToast({
+                show: true,
+                type: 'error',
+                message: "Oups ! Il semble que vous n'êtes pas connecté"
+            });
+            return;
+        };
+
+        setShowPhone(true);
+        logEvent(analytics, 'contact_click');
+    };
+
+
+    const handleProfileClick = async (url) => {
+        navigate(url);
+
+        if (!currentUser?.userID) return null;
+
+        await updateContactClick(profilData.userID, userCity);
+    }
+
+    const formatDate = (timestamp) => {
+        if (timestamp && timestamp._seconds) {
+            const date = new Date(timestamp._seconds * 1000); // Convert to milliseconds
+            let formattedDate = date.toLocaleDateString('fr-FR', { year: 'numeric', month: 'long' });
+
+            // Capitalize the first letter
+            return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+        }
+        return '';
+    };
+
+    // const handleContact = async () => {
+    //     if (!currentUser) {
+    //         navigate('/auth/signin?redirect=/user/dashboard/messages');
+    //         return;
+    //     }
+
+    //     setIsBottomSheetOpen(true);
+    // }
+
+    // const closeBottomSheet = () => {
+    //     setIsBottomSheetOpen(false);
+    // };
+
+    const user_id = profilData.UserID?.toLowerCase();
+
     const { category, subcategory } = formatCategorization();
 
     if (isLoading) {
@@ -162,7 +292,7 @@ export default function PostDetailPage() {
     return (
         <div className="ad-details">
             <ImageGallery images={images} />
-           
+
             <div className="display">
 
                 <div className='under_score'>
@@ -208,16 +338,68 @@ export default function PostDetailPage() {
                         </section>
                     </div>
 
-                    {/* <MessageToAnnouncer currentUser={currentUser} announcerID={post?.userID} onSendMessage={handleSendMessage} /> */}
+                    <div className='owner-card'>
+                        <div className='owner-image'>
+                            <img
+                                className='profil-image'
+                                src={profilData?.profilURL === null ? IconAvatar : profilData?.profilURL}
+                                alt={profilData.displayName}
+                            />
+                            {profilData?.isOnline ? <div className="online-badge" /> : null}
+                        </div>
+                        <span className='profile-type'> {profilData?.profileType} </span>
+                        <p className='member-since'>Membre depuis: {formatDate(profilData.createdAt)}</p>
+                        <a onClick={handleProfileClick} href={`/users/user/${user_id}/profile/show`}>
+                            <h2 className='name'>{profilData.firstName} {profilData.lastName}</h2>
+                        </a>
+                        <p className='review'>{profilData.ratings?.total || 0} ⭐ {profilData.reviews?.totalReviews || 0} avis</p>
+                        <div className='contact-info'>
+                            <button onClick={handlePhoneClick} className='contact-button'>
+                                {showPhone ? profilData.phoneNumber : "Voir le Numéro"}
+                                <FontAwesomeIcon icon={faPhone} className='icon' />
+                            </button>
+                        </div>
+                        {/* <div className='action-buttons'>
+                            <button className='message' onClick={handleContact}>
+                                Ecrire un message
+                                <FontAwesomeIcon icon={faEnvelope} className='icon' />
+                            </button>
+                        </div> */}
 
-                    <div className='owner'>
-                        <OwnerProfileCard
-                            owner={profilData}
-                            userID={currentUser?.uid}
-                            city={userCity}
-                        />
+                        {/* {isBottomSheetOpen && (
+                            <BottomSheet
+                                isOpen={isBottomSheetOpen}
+                                onClose={closeBottomSheet}
+                                sellerData={profilData}
+                                adData={post}
+                                unreadMessagesCount={conversations.length}
+                            />
+                        )} */}
                     </div>
                 </div>
+
+                {/* <div className="message-to-advertiser">
+                    <label htmlFor="message-textarea">✉️ Écrire à l'annonceur :</label>
+
+                    <div className="predefined-messages">
+                        {predefinedMessages.map((msg, index) => (
+                            <button key={index} onClick={() => setMessage(msg)}>
+                                {msg}
+                            </button>
+                        ))}
+                    </div>
+
+                    <textarea
+                        id="message-textarea"
+                        placeholder="Tapez votre message ici..."
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        rows="4"
+                    ></textarea>
+                    <button className='send' onClick={handleSendMessage} disabled={loading || !message.trim()}>
+                        {loading ? <Spinner /> : <FontAwesomeIcon icon={faPaperPlane} />}
+                    </button>
+                </div> */}
             </div>
             <div className="pubs"></div>
 

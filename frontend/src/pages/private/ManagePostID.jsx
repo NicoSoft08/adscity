@@ -1,9 +1,9 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { faChartPie, faCheckSquare, faChevronLeft, faEllipsisH, faPenToSquare, faShareFromSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faChartPie, faCheckSquare, faChevronLeft, faEllipsisH, faPenToSquare, faRotate, faShareFromSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate, useParams } from 'react-router-dom';
 import Loading from '../../customs/Loading';
-import { deletePost, fetchPostById, markAsSold } from '../../routes/postRoutes';
+import { deletePost, fetchPostById, markAsSold, repostPost } from '../../routes/postRoutes';
 import PostCard from '../../components/card/PostCard';
 import Modal from '../../customs/Modal';
 import Spinner from '../../customs/Spinner';
@@ -58,33 +58,60 @@ export default function ManagePostID({ currentUser }) {
         }
     }, [post_id]);
 
-    const options = [
-        {
-            label: 'Modifier',
-            icon: faPenToSquare, // Vous pouvez utiliser une icône appropriée comme une coche
-            action: () => handleEdit(post?.id)
-        },
-        {
-            label: 'Marquer comme vendu',
-            icon: faCheckSquare, // Vous pouvez utiliser une icône appropriée comme une coche
-            action: () => handleMarkAsSold(postID)
-        },
-        {
-            label: 'Partager',
-            icon: faShareFromSquare,
-            action: () => handleShareLink(post?.id)
-        },
-        {
-            label: 'Statistiques',
-            icon: faChartPie,
-            action: () => handleStatistics(post?.id)
-        },
-        {
-            label: 'Supprimer',
-            icon: faTrash, // Vous pouvez utiliser une icône appropriée comme une poubelle
-            action: () => handleDelete(post?.id)
+    // Créez une fonction pour vérifier si l'annonce a expiré
+    const isPostExpired = (post) => {
+        if (!post || !post.expiry_date) return false;
+
+        const expiryDate = new Date(post.expiry_date);
+        const currentDate = new Date();
+
+        return expiryDate <= currentDate;
+    };
+
+    // Définissez vos options avec la condition pour le bouton "Reposter"
+    const getPostOptions = (post) => {
+        const baseOptions = [
+            {
+                label: 'Modifier',
+                icon: faPenToSquare,
+                action: () => handleEdit(post?.id)
+            },
+            {
+                label: 'Marquer comme vendu',
+                icon: faCheckSquare,
+                action: () => handleMarkAsSold(post?.id)
+            },
+            {
+                label: 'Partager',
+                icon: faShareFromSquare,
+                action: () => handleShareLink(post?.id)
+            },
+            {
+                label: 'Statistiques',
+                icon: faChartPie,
+                action: () => handleStatistics(post?.id)
+            },
+            {
+                label: 'Supprimer',
+                icon: faTrash,
+                action: () => handleDelete(post?.id)
+            }
+        ];
+
+        // Ajouter l'option "Reposter" uniquement si l'annonce a expiré
+        if (isPostExpired(post)) {
+            baseOptions.push({
+                label: 'Reposter',
+                icon: faRotate, // Icône de rotation/rafraîchissement
+                action: () => handleRepost(post?.id)
+            });
         }
-    ]
+
+        return baseOptions;
+    }
+
+    // Utilisez cette fonction pour obtenir les options
+    const options = getPostOptions(post);
 
     if (loading) {
         return <Loading />;
@@ -219,6 +246,27 @@ export default function ManagePostID({ currentUser }) {
             return formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
         }
         return '';
+    };
+
+    const handleRepost = async () => {
+        try {
+            const idToken = await currentUser.getIdToken();
+            const result = await repostPost(post?.id, idToken);
+            if (result.success) {
+                setToast({ show: true, type: 'success', message: result.message });
+                logEvent(analytics, 'repost_post');
+                logClientAction(
+                    currentUser?.uid,
+                    "Repost d'annonce.",
+                    "Vous avez reposté une annonce."
+                );
+                handleBack();
+            } else {
+                setToast({ show: true, type: 'error', message: result.message });
+            }
+        } catch (error) {
+            console.error('Erreur lors du repost de l\'annonce :', error);
+        }
     };
 
     return (

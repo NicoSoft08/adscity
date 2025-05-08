@@ -2,6 +2,21 @@ import { auth } from "../firebaseConfig";
 
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+const fetchMe = async (idToken) => {
+    if (!idToken) {
+        throw new Error('Token d\'authentification manquant');
+    }
+    const response = await fetch(`${backendUrl}/api/users/me`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        }
+    });
+    const result = await response.json();
+    return result;
+}
+
 const fetchUserData = async (userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/${userID}`, {
@@ -397,6 +412,7 @@ const getUserLoginActivity = async (userID, idToken) => {
 }
 
 export {
+    fetchMe,
     fetchUserData,
     fetchDataByUserID,
     fetchNotifications,

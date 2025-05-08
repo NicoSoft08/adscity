@@ -1,19 +1,19 @@
+
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-const sendMessage = async (senderID, receiverID, text) => {
-    const participants = [senderID, receiverID].sort();
-    const conversationID = participants.join('_'); // 🔹 Assurer une conversation unique
-
+const sendMessage = async (senderID, receiverID, idToken, text) => {
     try {
-        const response = await fetch(`${backendUrl}/api/conversations/${conversationID}/send`, {
+        const response = await fetch(`${backendUrl}/api/conversations/message/send`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
             body: JSON.stringify({ senderID, receiverID, text })
         });
 
         const result = await response.json();
+        console.log('Message envoyé avec succès:', result);
         return result;
     } catch (error) {
         console.error('Erreur lors de l\'envoi du message', error);
@@ -21,12 +21,13 @@ const sendMessage = async (senderID, receiverID, text) => {
     }
 };
 
-const fetchUserConversations = async (userID) => {
+const fetchUserConversations = async (userID, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/conversations/user/${userID}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             },
         });
 
@@ -37,6 +38,24 @@ const fetchUserConversations = async (userID) => {
         throw error;
     }
 };
+
+const markConversationAsRead = async (conversationID, userID, idToken) => {
+    try {
+        const response = await fetch(`${backendUrl}/api/conversations/${conversationID}/read`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
+            },
+            body: JSON.stringify({ userID }),
+        });
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('Erreur lors de la mise à jour de la conversation:', error);
+        throw error;
+    }
+}
 
 const fetchUserChat = async (senderID, receiverID) => {
     const participants = [senderID, receiverID].sort();
@@ -79,4 +98,5 @@ export {
     fetchUserChat,
     fetchChatMessages,
     sendMessage,
+    markConversationAsRead,
 }

@@ -70,7 +70,7 @@ export default function Footer() {
                 </div>
 
                 {/* Offres */}
-                <div className="footer-section">
+                {/* <div className="footer-section">
                     <h3>
                         {language === 'FR' ? 'Offres' : 'Offers'}
                     </h3>
@@ -83,7 +83,7 @@ export default function Footer() {
                         </a></li>
                         <li><a href="/forfait">Forfaits</a></li>
                     </ul>
-                </div>
+                </div> */}
 
                 {/* Business Section */}
                 {/* <div className="footer-section">

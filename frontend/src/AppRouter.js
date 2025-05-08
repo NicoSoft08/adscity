@@ -39,7 +39,7 @@ import UserProfile from './pages/private/UserProfile';
 import DashboardPanel from './pages/private/DashboardPanel';
 import { AuthContext } from './contexts/AuthContext';
 // import Settings from './pages/private/Settings';
-// import Messages from './pages/private/Messages';
+import Messages from './pages/private/Messages';
 import ManagePosts from './pages/private/ManagePosts';
 import ManagePostID from './pages/private/ManagePostID';
 import PostIDPage from './pages/public/PostIDPage';
@@ -142,7 +142,7 @@ export default function AppRouter() {
                     <Route path='posts/:post_id/edit' element={<EditPostID currentUser={currentUser} userData={userData} />} />
                     <Route path='posts/:post_id/statistics' element={<StatsPostID />} />
                     <Route path="payments" element={<ManagePayments userID={currentUser?.uid} />} />
-                    {/* <Route path="messages" element={<Messages currentUser={currentUser} />} /> */}
+                    <Route path="messages" element={<Messages />} />
                     <Route path="notifications" element={<ManageNotifications />} />
                     <Route path="profile" element={<UserProfile />} />
                     {/* <Route path="settings" element={<Settings />} /> */}

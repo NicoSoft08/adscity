@@ -27,7 +27,8 @@ const {
     adminRefusePost,
     adminApprovePost,
     adminSuspendPost,
-    deletePost
+    deletePost,
+    repostPostByID
 } = require('../controllers/postController');
 const { verifyToken, authenticateAdmin, authenticateUser } = require('../middlewares/authMiddleware');
 // const { collectPostBySlug } = require('../firebase/post');
@@ -66,6 +67,7 @@ router.post('/related-category', getRelatedPosts);
 router.put('/:postID/update', updatePost);
 router.delete('/:postID/delete', deletePost);
 router.post('/:postID/mark/sold', markPostAsSold);
+router.post('/:postID/repost', authenticateUser, repostPostByID);
 
 router.get('/collect/nearby', fetchNearbyPosts);
 

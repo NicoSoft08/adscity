@@ -880,6 +880,37 @@ const fetchNearbyPostsByLocation = async (country, city) => {
     }
 };
 
+const repostPost = async (userID, postID, postData) => {
+    try {
+        const postRef = firestore.collection('POSTS').doc(postID);
+        const postDoc = await postRef.get();
+        if (!postDoc.exists) {
+            console.error('Annonce non trouvée.');
+            return false;
+        };
+        const data = postDoc.data();
+        if (data.userID !== userID) {
+            console.error('Vous n\'êtes pas autorisé à répposter cette annonce.');
+            return false;
+        }
+
+        const repostedAt = new Date();
+        const expiryDate = new Date(repostedAt.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 jours
+        const newPostData = {
+            ...postData,
+            reposted_at: repostedAt,
+            expiry_date: expiryDate,
+        };
+
+        await postRef.update(newPostData);
+        console.log('Annonce répposter avec succès.');
+        return true;
+    } catch (error) {
+        console.error('Erreur lors de la répposte de l\'annonce:', error);
+        return false;
+    }
+}
+
 module.exports = {
     adminDeletePostByID,
     collectActivePostsByUserID,
@@ -906,4 +937,5 @@ module.exports = {
     suspendPostByID,
     updatePostByID,
     collectDataFromPostID,
+    repostPost,
 };

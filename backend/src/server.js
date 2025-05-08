@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const cron = require('node-cron');
 const path = require('path');
+const fs = require('fs');
 
 const dotenv = require('dotenv');
 dotenv.config();
@@ -27,6 +28,7 @@ const { checkFreeTrialExpiry, markPostsAsExpired } = require('./cron');
 const { createDefaultSuperAdmin } = require('./firebase/admin');
 const { cleanupVerificationDocuments } = require('./middlewares/documentLifecycle');
 const { deletionReminder, deleteOldAdminLogs, deleteOldClientLogs, cleanupOldProfileVisits } = require('./firebase/cleanup');
+const { verifyImport } = require('./func/exportData');
 
 // Marquer les annonces comme expirées (Tous les jours à minuit)
 cron.schedule("0 0 * * *", async () => {
@@ -63,17 +65,6 @@ cron.schedule("0 2 * * 0", async () => {
 //     await paymentStatusChecker();
 // });
 
-const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001',
-    'http://localhost:3002',
-    'http://localhost:3003',
-
-    'https://adscity.net',
-    'https://dashboard.adscity.net',
-    'https://auth.adscity.net',
-    'https://id.adscity.net',
-]
 
 const app = express();
 
@@ -88,8 +79,8 @@ app.use(cookieParser());
 // Configuration CORS
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
-        ? ['https://adscity.net', 'https://auth.adscity.net', 'https://dashboard.adscity.net']
-        : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002'],
+        ? ['https://adscity.net', 'https://admin.adscity.net', 'https://auth.adscity.net', 'https://dashboard.adscity.net', 'https://help.adscity.net']
+        : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004'],
     credentials: true // Important pour permettre l'envoi de cookies
 }));
 
@@ -116,4 +107,5 @@ app.listen(PORT, async () => {
     // await createDefaultAdmin(); // Créer un compte administrateur par défaut
     await createDefaultSuperAdmin(); // Créer un compte super administrateur par défaut
     // await formatRegisterDate(); // Mettre à jour la date de création des utilisateurs
+
 });

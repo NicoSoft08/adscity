@@ -235,103 +235,122 @@ const migrateUsers = async () => {
         if (client) {
             client.release();
         }
-        // Fermer le pool
-        await pool.end();
     }
 };
 
 const migratePosts = async () => {
     let client;
-
     try {
+        // Vérifier d'abord si les tables existent
+        const checkClient = await pool.connect();
+        try {
+            const tableCheck = await checkClient.query(`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = 'posts'
+          )
+        `);
+
+            if (!tableCheck.rows[0].exists) {
+                console.error('La table "posts" n\'existe pas. Veuillez exécuter le script de création des tables d\'abord.');
+                return;
+            }
+        } finally {
+            checkClient.release();
+        }
+
         client = await pool.connect();
         console.log('Connexion à PostgreSQL établie');
 
         // Récupérer tous les annonces de Firestore
         console.log('Récupération des annonces depuis Firestore...');
-
         const postsSnapshot = await firestore.collection('POSTS').get();
-
         console.log(`${postsSnapshot.size} annonces trouvées à migrer`);
 
         // Commencer la transaction
         await client.query('BEGIN');
-
         let postCount = 0;
+
         for (const postDoc of postsSnapshot.docs) {
             const postData = postDoc.data();
             const postID = postDoc.id;
             const userID = postData.userID;
             const stats = postData.stats || {};
 
-            console.log(`Migration de l'annonce: ${postID || userID}`);
-            // Insérer l'annonce dans la table posts
-            await client.query(
-                `INSERT INTO posts (
-                    id, 
-                    user_id, 
-                    details, 
-                    category, 
-                    subcategory, 
-                    location, 
-                    images, 
-                    status, 
-                    created_at, 
-                    updated_at
-                ) VALUES (
-                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-                )
-                ON CONFLICT (id) DO NOTHING`,
-                [
-                    postID,
-                    userID,
-                    JSON.stringify(postData.details || {}),
-                    postData.category || null,
-                    postData.subcategory || null,
-                    JSON.stringify(postData.location || {}),
-                    JSON.stringify(postData.images || []),
-                    postData.status || 'active',
-                    postData.createdAt ? new Date(postData.createdAt.toDate()) : new Date(),
-                    postData.updatedAt ? new Date(postData.updatedAt.toDate()) : new Date()
-                ]
-            );
+            console.log(`Migration de l'annonce: ${postID}`);
+            postCount++;
 
-            // Insérer les statistiques de l'annonce
-            await client.query(
-                `INSERT INTO post_stats (
-                post_id, 
-                views, 
-                clicks, 
-                reporting_count, 
-                views_per_city, 
-                clicks_per_city, 
-                report_per_city, 
-                views_history, 
-                clicks_history, 
-                report_history
-                ) VALUES (
-                    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
-                )
-                ON CONFLICT (post_id) DO NOTHING`,
-                [
-                    postID,
-                    stats.views || 0,
-                    stats.clicks || 0,
-                    stats.reportingCount || 0,
-                    JSON.stringify(stats.viewsPerCity || {}),
-                    JSON.stringify(stats.clicksPerCity || {}),
-                    JSON.stringify(stats.reportPerCity || {}),
-                    JSON.stringify(stats.viewsHistory || {}),
-                    JSON.stringify(stats.clicksHistory || {}),
-                    JSON.stringify(stats.reportHistory || {})
-                ]
-            );
+            try {
+                // Insérer l'annonce dans la table posts
+                await client.query(
+                    `INSERT INTO posts (
+              id,
+              user_id,
+              details,
+              category,
+              subcategory,
+              location,
+              images,
+              status,
+              created_at,
+              updated_at
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+            )
+            ON CONFLICT (id) DO NOTHING`,
+                    [
+                        postID,
+                        userID,
+                        JSON.stringify(postData.details || {}),
+                        postData.category || null,
+                        postData.subcategory || null,
+                        JSON.stringify(postData.location || {}),
+                        JSON.stringify(postData.images || []),
+                        postData.status || 'active',
+                        postData.createdAt ? new Date(postData.createdAt.toDate()) : new Date(),
+                        postData.updatedAt ? new Date(postData.updatedAt.toDate()) : new Date()
+                    ]
+                );
 
-        };
+                // Insérer les statistiques de l'annonce
+                await client.query(
+                    `INSERT INTO post_stats (
+              post_id,
+              views,
+              clicks,
+              reporting_count,
+              views_per_city,
+              clicks_per_city,
+              report_per_city,
+              views_history,
+              clicks_history,
+              report_history
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10
+            )
+            ON CONFLICT (post_id) DO NOTHING`,
+                    [
+                        postID,
+                        stats.views || 0,
+                        stats.clicks || 0,
+                        stats.reportingCount || 0,
+                        JSON.stringify(stats.viewsPerCity || {}),
+                        JSON.stringify(stats.clicksPerCity || {}),
+                        JSON.stringify(stats.reportPerCity || {}),
+                        JSON.stringify(stats.viewsHistory || []),
+                        JSON.stringify(stats.clicksHistory || []),
+                        JSON.stringify(stats.reportHistory || [])
+                    ]
+                );
+            } catch (insertError) {
+                console.error(`Erreur lors de l'insertion de l'annonce ${postID}:`, insertError);
+                // Continuer avec la prochaine annonce au lieu d'échouer toute la migration
+            }
+        }
 
         // Valider la transaction
         await client.query('COMMIT');
-
         console.log('=== MIGRATION TERMINÉE AVEC SUCCÈS ===');
         console.log(`Annonces migrées: ${postCount}`);
     } catch (error) {
@@ -345,8 +364,6 @@ const migratePosts = async () => {
         if (client) {
             client.release();
         }
-        // Fermer le pool
-        await pool.end();
     }
 };
 
@@ -383,13 +400,74 @@ const verifyMigration = async () => {
         });
 
     } finally {
-        client.release();
+        // Libérer le client
+        if (client) {
+            client.release();
+        }
+        // Fermer le pool
         await pool.end();
+    }
+};
+
+const createTables = async () => {
+    const client = await pool.connect();
+
+    try {
+        await client.query('BEGIN');
+
+        // Créer la table posts
+        await client.query(`
+        CREATE TABLE IF NOT EXISTS posts (
+          id VARCHAR(255) PRIMARY KEY,
+          user_id VARCHAR(255),
+          details JSONB DEFAULT '{}',
+          category VARCHAR(100),
+          subcategory VARCHAR(100),
+          location JSONB DEFAULT '{}',
+          images JSONB DEFAULT '[]',
+          status VARCHAR(50) DEFAULT 'pending',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          moderated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        )
+      `);
+
+        // Créer la table post_stats
+        await client.query(`
+        CREATE TABLE IF NOT EXISTS post_stats (
+          post_id VARCHAR(255) PRIMARY KEY REFERENCES posts(id) ON DELETE CASCADE,
+          views INTEGER DEFAULT 0,
+          clicks INTEGER DEFAULT 0,
+          reporting_count INTEGER DEFAULT 0,
+          views_per_city JSONB DEFAULT '{}',
+          clicks_per_city JSONB DEFAULT '{}',
+          report_per_city JSONB DEFAULT '{}',
+          views_history JSONB DEFAULT '{}',
+          clicks_history JSONB DEFAULT '{}',
+          report_history JSONB DEFAULT '{}'
+        )
+      `);
+
+        // Créer des index pour améliorer les performances
+        await client.query(`
+        CREATE INDEX IF NOT EXISTS idx_posts_user_id ON posts(user_id);
+        CREATE INDEX IF NOT EXISTS idx_posts_category ON posts(category);
+        CREATE INDEX IF NOT EXISTS idx_posts_status ON posts(status);
+      `);
+
+        await client.query('COMMIT');
+        console.log('Tables créées avec succès');
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Erreur lors de la création des tables:', error);
+    } finally {
+        client.release();
     }
 };
 
 module.exports = {
     migrateUsers,
     migratePosts,
-    verifyMigration
+    verifyMigration,
+    createTables,
 };

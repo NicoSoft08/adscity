@@ -1,3 +1,4 @@
+// const { collectPosts } = require("../database/post");
 const {
     makePost,
     validatePost,
@@ -23,7 +24,8 @@ const {
     markPostSold,
     fetchNearbyPostsByLocation,
     collectDataFromPostID,
-    adminDeletePostByID
+    adminDeletePostByID,
+    repostPost
 } = require("../firebase/post");
 const { verifyCaptcha } = require("../middlewares/authMiddleware");
 
@@ -544,6 +546,7 @@ const getOutdatedPostsByUserID = async (req, res) => {
 
 const getPostsByCategoryName = async (req, res) => {
     const { categoryName } = req.body;
+    console.log(categoryName);
 
     try {
         const postsByCategoryName = await collectPostsByCategoryName(categoryName);
@@ -728,6 +731,52 @@ const fetchNearbyPosts = async (req, res) => {
     };
 };
 
+const repostPostByID = async (req, res) => {
+    const { postID } = req.params;
+    const { userID, postData } = req.body;
+
+    if (!postID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'annonce requis pour la républication.'
+        });
+    }
+
+    if (!userID) {
+        return res.status(400).json({
+            success: false,
+            message: 'ID de l\'utilisateur requis pour la républication.'
+        });
+    }
+
+    if (!postData) {
+        return res.status(400).json({
+            success: false,
+            message: 'Données de l\'annonce requises pour la républication.'
+        });
+    }
+
+    try {
+        const isReposted = await repostPost(postID, userID, postData);
+        if (!isReposted) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erreur lors de la républication de l\'annonce'
+            });
+        };
+        res.status(200).json({
+            success: true,
+            message: 'Annonce républiée avec succès',
+        });
+    } catch (error) {
+        console.error('Erreur pendant la républication de l\'annonce:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erreur technique, réessayez plus tard'
+        });
+    }
+};
+
 module.exports = {
     adminApprovePost,
     createPost,
@@ -755,4 +804,5 @@ module.exports = {
     adminSuspendPost,
     updatePost,
     getDataFromPostID,
+    repostPostByID,
 };

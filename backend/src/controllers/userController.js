@@ -1,4 +1,5 @@
 const { firestore, messaging } = require("../config/firebase-admin");
+// const { fetchMyData } = require("../database/user");
 const {
     getUser,
     setUserOnlineStatus,
@@ -28,8 +29,36 @@ const {
     collectUserIDLoginActivity,
     fetchUserLocations,
     collectUserVerificationData,
-    updateUserVerificationStatus
+    updateUserVerificationStatus,
+    fetchMyData
 } = require("../firebase/user");
+
+
+const fetchMe = async (req, res) => {
+    const user = req.user;
+    const userID = user.uid;
+
+    try {
+        const data = await fetchMyData(userID);
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                message: "Aucune donnée de l'utilisateur trouvée"
+            })
+        }
+        res.status(200).json({
+            success: true,
+            message: "Données de l'utilisateur récupérées avec succès",
+            data: data
+        });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données de l'utilisateur :", error);
+        res.status(500).json({
+            success: false,
+            message: "Erreur technique, réessayez plustard"
+        });
+    }
+}
 
 const getAllUsersWithStatus = async (req, res) => {
     try {
@@ -840,6 +869,7 @@ const updateUserVerificationData = async (req, res) => {
 };
 
 module.exports = {
+    fetchMe,
     getUserLocations,
     getAdminNotifications,
     getAnyUserData,

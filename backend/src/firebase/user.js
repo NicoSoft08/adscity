@@ -1,5 +1,18 @@
 const { auth, firestore, admin } = require("../config/firebase-admin");
 
+const fetchMyData = async (userID) => {
+    try {
+        const userDoc = await firestore.collection('USERS').doc(userID).get();
+        if (!userDoc.exists) {
+            return false;
+        }
+        return userDoc.data();
+    } catch (error) {
+        console.error("Erreur lors de la récupération des données de l'utilisateur", error);
+        return false;
+    }
+};
+
 const getUsersData = async () => {
     try {
         const adsCollection = firestore.collection('USERS').orderBy('createdAt', 'desc');
@@ -779,6 +792,8 @@ const updateUserVerificationStatus = async (userID, updateData) => {
 };
 
 module.exports = {
+    fetchMyData,
+    
     addRemoveFavorites,
     collectAnyUserData,
     collectInterlocutorProfile,

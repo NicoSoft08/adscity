@@ -2,6 +2,30 @@ const db = require('../config/database');
 const { auth } = require('../config/firebase-admin');
 const { snakeCaseKey } = require('../helpers');
 
+const fetchMyData = async (userID) => {
+    console.log('fetchMyData called with userID:', userID);
+    const client = await db.pool.connect();
+    try {
+        await client.query('BEGIN');
+        
+        const userResult = await client.query(
+            'SELECT * FROM users WHERE id = $1',
+            [userID]
+        );
+
+        if (userResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return null;
+        }
+
+        const userData = userResult.rows[0];
+        return userData;
+    } catch (error) {
+        console.error('Erreur lors de la récupération des données utilisateur:', error);
+        throw error;
+    }
+}
+
 const getUsersData = async () => {
     const client = await db.pool.connect();
     try {
@@ -1244,6 +1268,8 @@ const collectUserVerificationData = async (userID) => {
 };
 
 module.exports = {
+    fetchMyData,
+
     addRemoveFavorites,
 
     clearAdminNotification,

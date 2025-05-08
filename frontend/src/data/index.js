@@ -1,11 +1,12 @@
 import { calculateEndDate } from '../func';
-import { faBell, faBullhorn, faChartLine, faCirclePlay, faFolder, faHeartCircleCheck, faUserCircle } from '@fortawesome/free-solid-svg-icons';
+import { faBell, faBullhorn, faChartLine, faCirclePlay, faFolder, faHeartCircleCheck, faMessage, faUserCircle } from '@fortawesome/free-solid-svg-icons';
 
 const userSidebarData = (language, userPlan, hasDocument) => {
     const items = [
         { id: 'panel', name: language === 'FR' ? 'Panel' : 'Panel', icon: faChartLine, path: '/user/dashboard/panel' },
         { id: 'posts', name: language === 'FR' ? 'Annonces' : 'Ads', icon: faBullhorn, path: '/user/dashboard/posts' },
         { id: 'favoris', name: language === 'FR' ? 'Favoris' : 'Favorites', icon: faHeartCircleCheck, path: "/user/dashboard/favoris" },
+        // { id: 'messages', name: language === 'FR' ? 'Messages' : 'Messages', icon: faMessage, path: "/user/dashboard/messages", badge: 0 },
         { id: 'notifications', name: language === 'FR' ? 'Notifications' : 'Notifications', icon: faBell, path: "/user/dashboard/notifications", badge: 0 },
         { id: 'profile', name: language === 'FR' ? 'Profile' : 'Profile', icon: faUserCircle, path: "/user/dashboard/profile" },
     ];

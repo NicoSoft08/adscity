@@ -629,6 +629,14 @@ const sendPasswordResetEmail = async (email, firstName, lastName, resetUrl) => {
                         </a>
                     </p>
 
+                    <p>
+                        Si le bouton ci-dessus ne fonctionne pas, copiez-collez le lien suivant dans votre navigateur :
+                    </p>
+
+                    <p style="background-color: #f0f0f0; padding: 10px; word-break: break-all; font-size: 14px;">
+                        ${resetUrl}
+                    </p>
+
                     <p style="font-size: 14px; color: #555;">Ce lien est valable pendant 1 heure. Passé ce délai, vous devrez refaire une demande.</p>
                     <p style="font-size: 14px; color: #555;">Si vous n'êtes pas à l'origine de cette demande, vous pouvez ignorer cet email en toute sécurité.</p>
 

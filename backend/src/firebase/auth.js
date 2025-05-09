@@ -398,7 +398,7 @@ const verifyCode = async (email, code) => {
     }
 };
 
-const updatePassword = async (email, newPassword, captchaToken) => {
+const updatePassword = async (email, newPassword) => {
     try {
         const userRecord = await auth.getUserByEmail(email);
         await auth.updateUser(userRecord.uid, {
@@ -517,11 +517,14 @@ const requestPasswordResetEmail = async (email) => {
             createdAt: admin.firestore.FieldValue.serverTimestamp()
         });
 
+        // const resetLink = await auth.generatePasswordResetLink(email, { url: `${process.env.PUBLIC_URL}/auth/reset-password/${resetToken}` });
+
         // Create reset URL with the unhashed token
         const resetUrl = `${process.env.PUBLIC_URL}/auth/reset-password/${resetToken}`;
 
         // Send email with reset link
         await sendPasswordResetEmail(email, firstName, lastName, resetUrl);
+        return true;
     } catch (error) {
         console.error('Erreur lors de la demande de réinitialisation du mot de passe:', error);
         return false;
@@ -537,22 +540,23 @@ const verifyPasswordResetToken = async (email, token) => {
             .where('email', '==', email)
             .limit(1)
             .get();
-        
+
         if (resetSnapshot.empty) {
+            console.log('Token invalide ou expiré');
             return false;
         }
-        
+
         const resetDoc = resetSnapshot.docs[0];
         const resetData = resetDoc.data();
-        
-        // Check if token is expired
-        const expiresAt = resetData.expiresAt.toDate();
-        if (expiresAt < new Date()) {
-            // Delete expired token
-            await resetDoc.ref.delete();
+        console.log('Token trouvé dans la base de données:', resetData);
+        const { createdAt, expiresAt } = resetData;
+
+        // Check if the token is expired
+        if (expiresAt.toDate() < new Date()) {
+            console.log('Le lien de réinitialisation a expiré');
             return false;
         }
-        
+
         return true;
     } catch (error) {
         console.error("Erreur lors de la vérification du token:", error);
@@ -568,11 +572,11 @@ const deletePasswordResetToken = async (email, token) => {
             .where('email', '==', email)
             .limit(1)
             .get();
-        
+
         if (!resetSnapshot.empty) {
             await resetSnapshot.docs[0].ref.delete();
         }
-        
+
         return true;
     } catch (error) {
         console.error("Erreur lors de la suppression du token:", error);
@@ -609,7 +613,7 @@ const verifyResetTokenValidity = async (token) => {
             console.log('Le lien de réinitialisation a expiré');
             return false;
         }
-        
+
         // Token is valid
         console.log('Le lien de réinitialisation est valide');
         return {

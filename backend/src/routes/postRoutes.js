@@ -69,7 +69,7 @@ router.delete('/:postID/delete', deletePost);
 router.post('/:postID/mark/sold', markPostAsSold);
 router.post('/:postID/repost', authenticateUser, repostPostByID);
 
-router.get('/collect/nearby', fetchNearbyPosts);
+router.get('/collect/nearby', authenticateUser, fetchNearbyPosts);
 
 
 module.exports = router;

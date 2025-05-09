@@ -3,13 +3,13 @@ const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const cron = require('node-cron');
 const path = require('path');
-const fs = require('fs');
 
 const dotenv = require('dotenv');
 dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Importation des routes
 const apiRoutes = require('./routes/apiRoutes');
@@ -68,6 +68,22 @@ cron.schedule("0 2 * * 0", async () => {
 
 const app = express();
 
+const allowedOrigins = isProduction
+    ? ['https://adscity.net', 'https://admin.adscity.net', 'https://auth.adscity.net', 'https://dashboard.adscity.net', 'https://help.adscity.net']
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004', 'https://adscity.net', 'https://admin.adscity.net'];
+
+// Configuration CORS
+const corsOptions = {
+    origin: allowedOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true, // Permet d'envoyer des cookies
+    maxAge: 86400 // Cache la réponse preflight pendant 24 heures
+};
+
+
+// Enregistrer CORS en premier
+app.use(cors());
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -75,14 +91,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Middleware pour parser les cookies - IMPORTANT: doit être avant les routes
 app.use(cookieParser());
-
-// Configuration CORS
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
-        ? ['https://adscity.net', 'https://admin.adscity.net', 'https://auth.adscity.net', 'https://dashboard.adscity.net', 'https://help.adscity.net']
-        : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'http://localhost:3003', 'http://localhost:3004'],
-    credentials: true // Important pour permettre l'envoi de cookies
-}));
 
 app.get('', async (req, res) => {
     res.send('AdsCity Server is running');

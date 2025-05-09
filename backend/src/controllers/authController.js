@@ -312,6 +312,8 @@ const verifyOTPCode = async (req, res) => {
 const changePassword = async (req, res) => {
     const { email, newPassword, token, captchaToken } = req.body;
 
+    console.log('Received data:', req.body);
+
     if (!email || !newPassword || !token || !captchaToken) {
         return res.status(400).json({
             success: false,
@@ -338,7 +340,7 @@ const changePassword = async (req, res) => {
             });
         }
 
-        const isChanged = await updatePassword(email, newPassword, token, captchaToken);
+        const isChanged = await updatePassword(email, newPassword, token);
         if (!isChanged) {
             return res.status(400).json({
                 success: false,

@@ -4,11 +4,15 @@ const cors = require('cors');
 const cron = require('node-cron');
 const path = require('path');
 const dotenv = require('dotenv');
+const helmet = require('helmet');         
+const compression = require('compression');
+
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 4000;
-const isProduction = process.env.NODE_ENV === 'production';
+
 
 // 🔄 Tâches CRON
 const { checkFreeTrialExpiry, markPostsAsExpired } = require('./cron');
@@ -31,23 +35,19 @@ const statusRoutes = require('./routes/statusRoutes');
 const updateServices = require('./services/updateServices');
 
 // 🌍 Configuration CORS
-const allowedOrigins = isProduction
-    ? [
-        'https://adscity.net',
-        'https://admin.adscity.net',
-        'https://auth.adscity.net',
-        'https://dashboard.adscity.net',
-        'https://help.adscity.net'
-    ]
-    : [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:3002',
-        'http://localhost:3003',
-        'http://localhost:3004',
-        'https://adscity.net',
-        'https://admin.adscity.net'
-    ];
+const allowedOrigins = [
+    'https://adscity.net',
+    'https://admin.adscity.net',
+    'https://auth.adscity.net',
+    'https://dashboard.adscity.net',
+    'https://help.adscity.net',
+    'https://api.adscity.net', // 👈 à ajouter si c’est là que tourne ton backend
+    // 'http://localhost:3000',
+    // 'http://localhost:3001',
+    // 'http://localhost:3002',
+    // 'http://localhost:3003',
+    // 'http://localhost:3004',
+];
 
 const corsOptions = {
     origin: allowedOrigins,
@@ -59,16 +59,22 @@ const corsOptions = {
 
 // 🛡 Middlewares
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Gérer les requêtes préliminaires
+app.options('*', cors(corsOptions));
+app.use(helmet());         // 👈 Sécurité HTTP
+app.use(compression());   // 👈 Réduction de taille des réponses
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 🧪 Route de test
-app.get('/', (req, res) => {
-    res.send('✅ AdsCity Serveur API is running');
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ success: false, message: 'Une erreur est survenue.' });
 });
+
+// 🧪 Route de test
+app.get('/', (req, res) => { res.send('✅ AdsCity Serveur API is running') });
 
 // 📍 Définition des routes API
 app.use('/api', updateServices);

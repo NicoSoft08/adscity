@@ -130,6 +130,7 @@ const checkUserRole = async (req, res, next) => {
 };
 
 const authenticateUser = async (req, res, next) => {
+
     try {
         // Vérifier d'abord si le token est dans les cookies
         const cookieToken = req.cookies ? req.cookies.authToken : undefined;
@@ -169,10 +170,10 @@ const authenticateUser = async (req, res, next) => {
         next();
     } catch (error) {
         console.error('Erreur d\'authentification:', error);
-        
+
         // Supprimer le cookie en cas d'erreur d'authentification
         clearCookie(res);
-        
+
         res.status(401).json({
             success: false,
             message: 'Accès non autorisé'

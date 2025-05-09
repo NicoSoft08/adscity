@@ -1,8 +1,6 @@
-const backendUrl = process.env.NODE_ENV === 'production'
-    ? 'https://api.adscity.net'
-    : 'http://localhost:4000';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-    
+
 const createPub = async (pubData) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/host/pub`, {

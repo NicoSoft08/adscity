@@ -2,9 +2,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { collectDeviceInfo } from "../services/apiServices";
 
-const backendUrl = process.env.NODE_ENV === 'production'
-    ? 'https://api.adscity.net' 
-    : 'http://localhost:4000';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
     
 
 const addNewAdmin = async (displayName, firstName, lastName, email, phoneNumber, password, permissions, address, city, country, captchaToken, idToken) => {

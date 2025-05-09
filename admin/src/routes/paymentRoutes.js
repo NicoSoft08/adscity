@@ -1,8 +1,6 @@
-const backendUrl = process.env.NODE_ENV === 'production'
-    ? 'https://api.adscity.net'
-    : 'http://localhost:4000';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-    
+
 const fetchPaymentStatus = async () => {
     const response = await fetch(`${backendUrl}/api/payments/all/status`, {
         method: 'GET',

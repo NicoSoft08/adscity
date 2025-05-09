@@ -1,5 +1,5 @@
 const backendUrl = process.env.REACT_APP_BACKEND_URL;
-
+    
 
 const translateText = async (text, sourceLang, targetLang) => {
     try {

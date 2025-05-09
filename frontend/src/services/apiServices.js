@@ -47,5 +47,4 @@ const fetchIPAddress = async () => {
 };
 
 
-
 export { collectDeviceInfo };

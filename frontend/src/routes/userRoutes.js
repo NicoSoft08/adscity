@@ -1,8 +1,6 @@
 import { auth } from "../firebaseConfig";
 
-const backendUrl = process.env.NODE_ENV === 'production'
-    ? 'https://api.adscity.net'
-    : 'http://localhost:4000';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
     
 const fetchMe = async (idToken) => {
@@ -11,7 +9,7 @@ const fetchMe = async (idToken) => {
     }
     const response = await fetch(`${backendUrl}/api/users/me`, {
         method: 'GET',
-        credentials: 'include',
+        // credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -73,7 +71,7 @@ const setUserOnlineStatus = async (userID, isOnline, idToken) => {
 
         const response = await fetch(`${backendUrl}/api/users/user/status`, {
             method: 'POST',
-            credentials: 'include',
+            // credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

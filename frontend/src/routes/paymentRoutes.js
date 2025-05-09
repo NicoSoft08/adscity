@@ -1,9 +1,7 @@
 import { logEvent } from "firebase/analytics";
 import { analytics } from "../firebaseConfig";
 
-const backendUrl = process.env.NODE_ENV === 'production'
-    ? 'https://api.adscity.net'
-    : 'http://localhost:4000';
+const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
     
 const fetchUserPaymentInfo = async (userID) => {

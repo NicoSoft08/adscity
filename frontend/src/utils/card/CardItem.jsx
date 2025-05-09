@@ -476,7 +476,7 @@ export default function CardItem({ post, onToggleFavorite }) {
     };
 
     const expiryDate = checkExpiryDate(expiry_date);
-    if (moderatedAtDate > expiryDate) return null;
+    // if (moderatedAtDate > expiryDate) return null;
 
     return (
         <div ref={cardRef} className={`card-container ${isActive ? 'active' : 'inactive'}`} key={id}>

@@ -1,4 +1,21 @@
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net'
+    : 'http://localhost:4000';
+
+const fetchMe = async (idToken) => {
+    if (!idToken) {
+        throw new Error('Token d\'authentification manquant');
+    }
+    const response = await fetch(`${backendUrl}/api/users/me`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${idToken}`,
+        },
+    });
+    const result = await response.json();
+    return result;
+}
 
 const fetchUserData = async (userID) => {
     console.log(userID)
@@ -139,7 +156,6 @@ const setUserOnlineStatus = async (userID, isOnline, idToken) => {
                 // Add a timestamp to prevent replay attacks
                 timestamp: Date.now()
             }),
-            credentials: 'include',
             signal: controller.signal
         });
 
@@ -301,6 +317,7 @@ const updateUserVerificationStatus = async (userID, updateData) => {
 };
 
 export {
+    fetchMe,
     fetchUsersLocations,
     getUserLoginActivity,
     getUserIDLoginActivity,

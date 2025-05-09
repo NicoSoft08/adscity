@@ -3,14 +3,15 @@ import { fetchNearbyPosts } from '../../routes/postRoutes';
 import Toast from '../../customs/Toast';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
-import './TabFilter.scss';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import './TabFilter.scss';
 
 function TabFilter({ adsApproved, setFilteredAds, onFilterClick, currentUser, userData, setToast, toast, setIsLoading }) {
     const [activeTab, setActiveTab] = useState('recently-posted');
     const { language } = useContext(LanguageContext);
 
     const handleTabClick = async (tab) => {
+        const idToken = await currentUser?.getIdToken(); // 🔑 Récupère le token d'authentification de l'utilisateur
         if (tab === 'nearby' && !currentUser) {
             setToast({
                 show: true,
@@ -42,7 +43,7 @@ function TabFilter({ adsApproved, setFilteredAds, onFilterClick, currentUser, us
             }
 
             setIsLoading(true);  // ⏳ Active le loader
-            const result = await fetchNearbyPosts(userData?.country, userData?.city);
+            const result = await fetchNearbyPosts(userData?.country, userData?.city, idToken); // 🌍 Récupère les annonces à proximité
             logEvent(analytics, 'filter_nearby_posts');  // 📝 Enregistre l'événement
 
             if (result.success && result.nearbyPosts.length > 0) {

@@ -4,8 +4,7 @@ const backendUrl = process.env.NODE_ENV === 'production'
     ? 'https://api.adscity.net' 
     : 'http://localhost:4000';
 
-console.log('backendUrl:', backendUrl); // Ajoutez ce log pour vérifier
-
+    
 const createPost = async (postData, userID, captchaToken) => {
     try {
         // Get user's current token for authentication

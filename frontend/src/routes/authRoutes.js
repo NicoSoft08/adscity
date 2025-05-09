@@ -2,8 +2,11 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { collectDeviceInfo } from "../services/apiServices";
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net'
+    : 'http://localhost:4000';
 
+    
 const createUser = async (address, city, country, email, password, firstName, lastName, phoneNumber, displayName, captchaToken) => {
 
     try {
@@ -56,7 +59,7 @@ const signinUser = async (email, password, captchaToken) => {
             body: JSON.stringify({ userID: user.uid, deviceInfo, captchaToken }),
         });
 
-        const result = await response.json();        
+        const result = await response.json();
         return result;
     } catch (error) {
         console.error('Erreur lors de la connexion de l\'utilisateur :', error);

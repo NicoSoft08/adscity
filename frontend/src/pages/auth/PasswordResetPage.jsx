@@ -3,10 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { updateUserPassword, verifyResetToken } from '../../routes/authRoutes';
 import Toast from '../../customs/Toast';
 import Spinner from '../../customs/Spinner';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
-import '../../styles/PasswordResetPage.scss';
 import ReCAPTCHA from 'react-google-recaptcha';
+import '../../styles/PasswordResetPage.scss';
+import zxcvbn from 'zxcvbn';
+import { Eye, EyeOff } from 'lucide-react';
+
+const strengthColors = ['red', 'orange', 'yellow', 'green'];
 
 export default function PasswordResetPage() {
     const { token } = useParams();
@@ -25,11 +27,11 @@ export default function PasswordResetPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [captchaValue, setCaptchaValue] = useState(null);
 
+    const passwordStrength = zxcvbn(formData.password).score;
+
     // Replace with your actual reCAPTCHA site key
     const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;
 
-    const toggleShowPassword = () => setShowPassword(!showPassword);
-    const toggleShowConfirmPassword = () => setShowConfirmPassword(!showConfirmPassword);
 
     const handleCaptchaChange = (value) => {
         setCaptchaValue(value);
@@ -85,12 +87,8 @@ export default function PasswordResetPage() {
 
         if (!password) {
             errors.password = 'Mot de passe requis.';
-        } else if (password.length < 8) { // Stronger password requirement
-            errors.password = 'Le mot de passe doit contenir au moins 8 caractères.';
-        } else if (!/[A-Z]/.test(password)) {
-            errors.password = 'Le mot de passe doit contenir au moins une majuscule.';
-        } else if (!/[0-9]/.test(password)) {
-            errors.password = 'Le mot de passe doit contenir au moins un chiffre.';
+        } else if (password.length < 6) { // Stronger password requirement
+            errors.password = 'Le mot de passe doit contenir au moins 6 caractères.';
         }
 
         if (!confirmPassword) {
@@ -121,13 +119,19 @@ export default function PasswordResetPage() {
             return;
         }
 
+        if (!captchaValue) {
+            setErrors({ ...errors, captcha: 'Veuillez confirmer que vous n\'êtes pas un robot.' });
+            setLoading(false);
+            return;
+        }
+
         try {
             const result = await updateUserPassword(formData.email, formData.password, token, captchaValue);
 
             if (result.success) {
                 setToast({
                     show: true,
-                    type: 'success',
+                    type: 'info',
                     message: 'Votre mot de passe a été réinitialisé avec succès.'
                 });
                 setTimeout(() => {
@@ -189,46 +193,42 @@ export default function PasswordResetPage() {
             <form className="reset-form" onSubmit={handleSubmit}>
                 <h2>Réinitialisation du mot de passe</h2>
 
-                {/* Password Field */}
-                <div className="password-toggle">
-                    <label htmlFor="password">Nouveau mot de passe</label>
-                    <input
-                        className={`input-field ${errors.password ? 'error' : ''}`}
-                        type={showPassword ? 'text' : 'password'}
-                        name="password"
-                        id="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        placeholder="Entrez un mot de passe"
-                    />
-                    <span onClick={toggleShowPassword}>
-                        <FontAwesomeIcon
-                            icon={showPassword ? faEyeSlash : faEye}
-                            title={showPassword ? 'Cacher' : 'Afficher'}
+                <div className='form-group-item'>
+                    <div className="password-field">
+                        <input
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            value={formData.password}
+                            onChange={handleChange}
+                            placeholder="Nouveau mot de passe"
+                            className={`input-field ${errors.password ? 'error' : ''}`}
                         />
-                    </span>
-                    {errors.password && <div className="error-text">{errors.password}</div>}
-                </div>
+                        <span className='eye-icon' onClick={() => setShowPassword(!showPassword)}>
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </span>
+                    </div>
 
-                {/* Confirm Password Field */}
-                <div className="password-toggle">
-                    <label htmlFor="confirmPassword">Confirmer le mot de passe</label>
-                    <input
-                        className={`input-field ${errors.confirmPassword ? 'error' : ''}`}
-                        type={showConfirmPassword ? 'text' : 'password'}
-                        name="confirmPassword"
-                        id="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        placeholder="Confirmez le mot de passe"
-                    />
-                    <span onClick={toggleShowConfirmPassword}>
-                        <FontAwesomeIcon
-                            icon={showConfirmPassword ? faEyeSlash : faEye}
-                            title={showConfirmPassword ? 'Cacher' : 'Afficher'}
+                    <div className="password-strength">
+                        <div className="strength-bar" style={{ backgroundColor: strengthColors[passwordStrength] }}>
+                            {['Faible', 'Moyen', 'Bon', 'Fort'][passwordStrength]}
+                        </div>
+                    </div>
+                    {errors.password && <span className='error-message'>{errors.password}</span>}
+
+                    <div className="confirm-password-field">
+                        <input
+                            type={showConfirmPassword ? 'text' : 'password'}
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            placeholder="Confirmez le mot de passe"
+                            className={`input-field ${errors.confirmPassword ? 'error' : ''}`}
                         />
-                    </span>
-                    {errors.confirmPassword && <div className="error-text">{errors.confirmPassword}</div>}
+                        <span className='eye-icon' onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                            {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </span>
+                    </div>
+                    {errors.confirmPassword && <span className='error-message'>{errors.confirmPassword}</span>}
                 </div>
 
                 {/* Agree Checkbox */}

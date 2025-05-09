@@ -9,22 +9,39 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from '../../firebaseConfig';
 import data from '../../json/data.json';
 import { LanguageContext } from '../../contexts/LanguageContext';
+import Loading from '../../customs/Loading';
 import '../../styles/CategoryNamePage.scss';
 
 export default function CategoryNamePage() {
     const { categoryName } = useParams();
     const { language } = useContext(LanguageContext);
     const [adsCategory, setAdsCategory] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
+        logEvent(analytics, 'view_category_page', {
+            page_path: `/category/${categoryName}`,
+            category_name: categoryName,
+        });
+        setIsLoading(true);
         const getAdsByCategory = async () => {
-            const result = await fetchPostsByCategory(categoryName);
-            logEvent(analytics, 'view_category_page', {
-                page_path: `/category/${categoryName}`,
-                category_name: categoryName,
-            });
-            if (result.success) {
-                setAdsCategory(result?.postsByCategoryName);
+            try {
+                const result = await fetchPostsByCategory(categoryName);
+                if (result.success) {
+                    setAdsCategory(result?.postsByCategoryName);
+                    setIsLoading(false);
+                } else {
+                    // Gérer l'erreur
+                    console.error("Erreur lors de la récupération des annonces:", result?.message);
+                    setAdsCategory([]);
+                    setIsLoading(false);
+                }
+            } catch (error) {
+                console.error("Exception lors de la récupération des annonces:", error);
+                setAdsCategory([]);
+                setIsLoading(false);
+            } finally {
+                setIsLoading(false);
             }
         }
 
@@ -55,6 +72,8 @@ export default function CategoryNamePage() {
                 backgroundImage={getItems().BackgroundImage}
                 postsLength={adsCategory.length}
             />
+
+            {isLoading && <Loading />}
 
             <div className="display">
                 {adsCategory.length > 0 ? (

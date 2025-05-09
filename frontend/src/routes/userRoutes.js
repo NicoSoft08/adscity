@@ -1,6 +1,8 @@
 import { auth } from "../firebaseConfig";
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net'
+    : 'http://localhost:4000';
 
 const fetchMe = async (idToken) => {
     if (!idToken) {
@@ -11,7 +13,7 @@ const fetchMe = async (idToken) => {
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
-        }
+        },
     });
     const result = await response.json();
     return result;
@@ -79,7 +81,7 @@ const setUserOnlineStatus = async (userID, isOnline, idToken) => {
                 // Add a timestamp to prevent replay attacks
                 timestamp: Date.now()
             }),
-            credentials: 'include',
+            // credentials: 'include',
             signal: controller.signal
         });
 

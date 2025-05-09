@@ -54,20 +54,9 @@ const signinUser = async (email, password, captchaToken) => {
                 'Authorization': `Bearer ${idToken}`,
             },
             body: JSON.stringify({ userID: user.uid, deviceInfo, captchaToken }),
-            credentials: 'include',
         });
 
-        const result = await response.json();
-        // Store the token in localStorage if login was successful
-        if (result.success) {
-            localStorage.setItem('token', idToken);
-            localStorage.setItem('user', JSON.stringify({
-                uid: user.uid,
-                email: user.email,
-                role: result.role
-            }));
-        }
-        
+        const result = await response.json();        
         return result;
     } catch (error) {
         console.error('Erreur lors de la connexion de l\'utilisateur :', error);
@@ -158,7 +147,6 @@ const requestPasswordReset = async (email, captchaToken) => {
         });
 
         const result = await response.json();
-        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la réinitialisation du mot de passe :', error);
@@ -194,6 +182,7 @@ const updateUserPassword = async (email, newPassword, token, captchaToken) => {
         });
 
         const result = await response.json();
+        console.log(result);
         return result;
     } catch (error) {
         console.error('Erreur lors de la mise à jour du mot de passe :', error);

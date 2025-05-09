@@ -50,7 +50,7 @@ export default function RequestPasswordResetPage() {
             if (result.success) {
                 setToast({
                     show: true,
-                    type: 'success',
+                    type: 'info',
                     message: 'Un email de réinitialisation a été envoyé à votre adresse email.'
                 });
                 setEmail(''); // Reset email field

@@ -27,7 +27,7 @@ export default function LoginPage() {
     const redirectUrl =
         (location.state && location.state.redirectUrl) ||
         new URLSearchParams(location.search).get('redirect') ||
-        '/user/dashboard';
+        '/';
 
     // Replace with your actual reCAPTCHA site key
     const RECAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY;

@@ -1,6 +1,10 @@
 import { auth } from "../firebaseConfig";
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net' 
+    : 'http://localhost:4000';
+
+console.log('backendUrl:', backendUrl); // Ajoutez ce log pour vérifier
 
 const createPost = async (postData, userID, captchaToken) => {
     try {
@@ -88,13 +92,12 @@ const fetchApprovedPosts = async () => {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
         });
-
         const result = await response.json();
         return result;
     } catch (error) {
-        console.error('Erreur:', error);
+        console.error('Erreur lors de la récupération des annonces approuvées:', error);
         return [];
     }
 }
@@ -189,16 +192,18 @@ const markAsSold = async (userID, postID) => {
     };
 };
 
-const fetchNearbyPosts = async (country, city) => {
+const fetchNearbyPosts = async (country, city, idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/posts/collect/nearby?country=${encodeURIComponent(country)}&city=${encodeURIComponent(city)}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${idToken}`,
             }
         });
 
         const result = await response.json();
+        console.log('Nearby posts:', result); // Log the result for debugging
         return result;
     } catch (error) {
         console.error('Erreur lors de la récupération des annonces proches:', error);

@@ -5,7 +5,6 @@ import { Eye, EyeOff, Search } from 'lucide-react';
 import PhoneInput from "react-phone-input-2";
 import cities from '../../data/ru.json';
 import { Link, useNavigate } from 'react-router-dom';
-import Toast from '../../customs/Toast';
 import { createUser } from '../../routes/authRoutes';
 import Spinner from '../../customs/Spinner';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -17,13 +16,13 @@ const steps = (language) => (language === 'FR'
     ? ['Informations', 'Contact', 'Location', 'Sécurité']
     : ['Information', 'Contact', 'Location', 'Security']
 );
+
 const strengthColors = ['red', 'orange', 'yellow', 'green'];
 
 export default function SignUpPage() {
     const navigate = useNavigate();
     const { language } = useContext(LanguageContext);
     const [step, setStep] = useState(0);
-    const [toast, setToast] = useState({ show: false, type: '', message: '' });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -62,7 +61,7 @@ export default function SignUpPage() {
 
     const validate = (currentStep) => {
         const newErrors = {};
-        const { firstName, lastName, email, phoneNumber, password, confirmPassword, city, address } = formData;
+        const { firstName, lastName, email, phoneNumber, password, confirmPassword, city, address, agree } = formData;
 
         if (currentStep === 0) {
             if (!firstName.trim()) newErrors.firstName = 'Prénom requis';
@@ -83,12 +82,13 @@ export default function SignUpPage() {
             if (password !== confirmPassword) newErrors.confirmPassword = 'Les mots de passe ne correspondent pas';
         }
 
-        if (!captchaValue) {
+        if (currentStep === 3 && !agree) newErrors.agree = 'Veuillez accepter les conditions';
+
+        if (currentStep === 3 && !captchaValue) {
             newErrors.captcha = "Veuillez confirmer que vous n'êtes pas un robot";
         }
 
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
+        return newErrors;
     };
 
     const handlePhoneChange = (value) => {
@@ -135,23 +135,26 @@ export default function SignUpPage() {
     const passwordStrength = zxcvbn(formData.password).score;
 
     const nextStep = () => {
-        if (validate(step)) setStep(prev => prev + 1);
+        const newErrors = validate(step);
+        if (Object.keys(newErrors).length === 0) {
+            setErrors({}); // Réinitialiser les erreurs si tout est bon
+            setStep(prev => prev + 1);
+        } else {
+            setErrors(newErrors); // Afficher les erreurs à l'utilisateur
+        }
     };
+
     const prevStep = () => setStep(step - 1);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!formData.agree === true) {
-            setToast({ show: true, type: 'error', message: 'Veuillez accepter les conditions d\'utilisation' });
+        const newErrors = validate(step);
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
             return;
         }
 
-        // Check CAPTCHA completion
-        if (!captchaValue) {
-            setToast({ show: true, type: 'error', message: 'Veuillez confirmer que vous n\'êtes pas un robot' });
-            return;
-        }
         setIsLoading(true);
 
         // S'assurer que le numéro est bien formaté en E.164
@@ -172,12 +175,9 @@ export default function SignUpPage() {
                 }
                 setCaptchaValue(null);
                 setIsLoading(false);
-            } else {
-                setToast({ show: true, type: 'error', message: result.message });
             }
         } catch (error) {
             console.error('Erreur lors de l\'inscription :', error);
-            setToast({ show: true, type: 'error', message: 'Une erreur est survenue lors de l\'inscription. Veuillez réessayer.' });
         } finally {
             setIsLoading(false);
         }
@@ -347,6 +347,7 @@ export default function SignUpPage() {
 
                 <input type='checkbox' id='agree' name='agree' value={formData.agree} onChange={handleChange} />
                 <label htmlFor="agree" className="agree-label">En continuant, vous acceptez les Conditions d'utilisation</label>
+                <br />
                 {errors.agree && <span className='error-message'>{errors.agree}</span>}
 
                 {/* reCAPTCHA component */}
@@ -361,11 +362,12 @@ export default function SignUpPage() {
                 {/* Navigation Buttons */}
                 <div className="form-navigation">
                     {step > 0 && <button className="back-button" onClick={prevStep}>Retour</button>}
-                    {step < steps.length - 1 && <button className="next-button" onClick={() => nextStep(step)}>Suivant</button>}
-                    {step === steps.length - 1 && <button className="submit" onClick={handleSubmit}>
-                        {isLoading ? <Spinner /> : "Suivant"}
+                    {step < steps(language).length - 1 && <button className="next-button" onClick={nextStep}>Suivant</button>}
+                    {step === steps(language).length - 1 && <button className="submit" onClick={handleSubmit}>
+                        {isLoading ? <Spinner /> : "Envoyer le code"}
                     </button>}
                 </div>
+
 
                 <p>Avez-vous déjà un compte utilisateur ? <Link to={'/auth/signin'}>Se connecter</Link></p>
 
@@ -377,8 +379,6 @@ export default function SignUpPage() {
                     </p>
                 </div>
             </div>
-            <Toast show={toast.show} message={toast.message} type={toast.type} onClose={() => setToast({ ...toast, show: false })} />
-
         </div>
     );
 }

@@ -1,4 +1,7 @@
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net'
+    : 'http://localhost:4000';
+    
 
 const getViewCount = async (postID) => {
     try {
@@ -106,6 +109,7 @@ const searchItems = async (query) => {
     try {
         const response = await fetch(`${backendUrl}/api/do/search/items?query=${encodeURIComponent(query)}`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },

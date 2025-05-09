@@ -1,6 +1,9 @@
 
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net'
+    : 'http://localhost:4000';
 
+    
 const sendMessage = async (senderID, receiverID, idToken, text) => {
     try {
         const response = await fetch(`${backendUrl}/api/conversations/message/send`, {

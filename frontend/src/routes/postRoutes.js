@@ -89,6 +89,7 @@ const fetchApprovedPosts = async () => {
     try {
         const response = await fetch(`${backendUrl}/api/posts/approved`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },
@@ -105,6 +106,7 @@ const fetchPostsByCategory = async (categoryName) => {
     try {
         const response = await fetch(`${backendUrl}/api/posts/category`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             },

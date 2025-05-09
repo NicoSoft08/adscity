@@ -11,6 +11,7 @@ const fetchMe = async (idToken) => {
     }
     const response = await fetch(`${backendUrl}/api/users/me`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -72,6 +73,7 @@ const setUserOnlineStatus = async (userID, isOnline, idToken) => {
 
         const response = await fetch(`${backendUrl}/api/users/user/status`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
@@ -82,7 +84,6 @@ const setUserOnlineStatus = async (userID, isOnline, idToken) => {
                 // Add a timestamp to prevent replay attacks
                 timestamp: Date.now()
             }),
-            // credentials: 'include',
             signal: controller.signal
         });
 

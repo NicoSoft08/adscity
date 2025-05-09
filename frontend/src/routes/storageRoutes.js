@@ -1,5 +1,8 @@
-const backendUrl = process.env.REACT_APP_BACKEND_URL;
+const backendUrl = process.env.NODE_ENV === 'production'
+    ? 'https://api.adscity.net'
+    : 'http://localhost:4000';
 
+    
 const deletePostImagesFromStorage = async (postID) => {
     try {
         const response = await fetch(`${backendUrl}/api/storage/delete/post-images/${postID}`, {

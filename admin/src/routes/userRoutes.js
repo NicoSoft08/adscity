@@ -2,13 +2,14 @@ const backendUrl = process.env.NODE_ENV === 'production'
     ? 'https://api.adscity.net'
     : 'http://localhost:4000';
 
-    
+
 const fetchMe = async (idToken) => {
     if (!idToken) {
         throw new Error('Token d\'authentification manquant');
     }
     const response = await fetch(`${backendUrl}/api/users/me`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${idToken}`,
@@ -66,6 +67,7 @@ const fetchUsers = async (idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/users`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`
@@ -84,6 +86,7 @@ const fetchUserVerificationData = async (userID) => {
     try {
         const response = await fetch(`${backendUrl}/api/users/verification/${userID}`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -147,6 +150,7 @@ const setUserOnlineStatus = async (userID, isOnline, idToken) => {
 
         const response = await fetch(`${backendUrl}/api/users/user/status`, {
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,

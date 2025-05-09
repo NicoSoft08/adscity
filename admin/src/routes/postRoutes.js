@@ -7,6 +7,7 @@ const fetchPosts = async (idToken) => {
     try {
         const response = await fetch(`${backendUrl}/api/posts`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${idToken}`,
@@ -72,6 +73,7 @@ const fetchPendingPosts = async () => {
     try {
         const response = await fetch(`${backendUrl}/api/posts/pending`, {
             method: 'GET',
+            credentials: 'include',
             headers: {
                 'Content-Type': 'application/json',
             }

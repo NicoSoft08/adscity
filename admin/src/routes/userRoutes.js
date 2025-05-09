@@ -2,6 +2,7 @@ const backendUrl = process.env.NODE_ENV === 'production'
     ? 'https://api.adscity.net'
     : 'http://localhost:4000';
 
+    
 const fetchMe = async (idToken) => {
     if (!idToken) {
         throw new Error('Token d\'authentification manquant');

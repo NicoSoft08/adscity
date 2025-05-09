@@ -1,14 +1,16 @@
+import { auth } from "../firebaseConfig";
+
 const apiRequest = async (url, method = 'GET', data = null) => {
     try {
-        const token = localStorage.getItem('token');
+        const idToken = await auth.currentUser.getIdToken();
 
-        if (!token) {
+        if (!idToken) {
             throw new Error('No authentication token found');
         }
 
         const headers = {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${idToken}`
         };
 
         const options = {
@@ -25,8 +27,6 @@ const apiRequest = async (url, method = 'GET', data = null) => {
         // Handle token expiration
         if (response.status === 401) {
             // Token expired or invalid
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
             window.location.href = '/login'; // Redirect to login
             throw new Error('Session expired. Please login again.');
         }

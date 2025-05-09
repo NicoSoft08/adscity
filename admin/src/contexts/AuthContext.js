@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-import { fetchDataByUserID, setUserOnlineStatus } from '../routes/userRoutes';
+import { fetchMe, setUserOnlineStatus } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }) => {
                     const idToken = await user.getIdToken(true);
 
                     // Fetch user data from backend
-                    const userDataResponse = await fetchDataByUserID(user.uid, idToken);
+                    const userDataResponse = await fetchMe(idToken);
                     if (userDataResponse?.data) {
                         setUserData(userDataResponse.data);
                         setUserRole(userDataResponse.data.role);

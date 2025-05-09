@@ -230,6 +230,12 @@
             }
         }
 
+        .error-message {
+            font-weight: $font-light;
+            font-size: 13px;
+            color: $danger;
+        }
+
         .password-toggle {
             position: relative;
 

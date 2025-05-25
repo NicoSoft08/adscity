@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import Cookies from 'js-cookie';
-import { fetchMe, setUserOnlineStatus } from '../routes/userRoutes';
+import { fetchMe } from '../routes/userRoutes';
 import { auth } from '../firebaseConfig';
 import Loading from '../customs/Loading';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { logoutUser } from '../routes/authRoutes';
 
 
@@ -23,117 +23,59 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check for stored user data on initial load
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
+        const checkSession = async () => {
             try {
-                const parsedUser = JSON.parse(storedUser);
-                setUserRole(parsedUser.role);
-            } catch (error) {
-                console.error("Error parsing stored user data:", error);
-            }
-        }
+                setLoading(true);
 
-        // Listen for auth state changes from Firebase
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            setLoading(true);
-
-            try {
+                const user = await fetchMe();
                 if (user) {
-                    setCurrentUser(user);
-
-                    const idToken = await user.getIdToken(true);
-
-                    // Fetch user data from backend
-                    const userDataResponse = await fetchMe(idToken);
-                    if (userDataResponse?.data) {
-                        setUserData(userDataResponse.data);
-                        setUserRole(userDataResponse.data.role);
-
-                        // Update online status
-                        await setUserOnlineStatus(user.uid, true, idToken);
-                        Cookies.set('authToken', idToken, { expires: 7 }); // Store token for 7 days
-                    }
+                    setCurrentUser(user.data.uid);
+                    setUserData(user.data);
+                    setUserRole(user.data.role || null);
                 } else {
-                    // If there was a user before and now there isn't, update online status
-                    const previousUserID = currentUser?.uid;
-                    if (previousUserID) {
-                        const idToken = await currentUser.getIdToken(true);
-                        await setUserOnlineStatus(previousUserID, false, idToken);
-                        Cookies.remove('authToken', {
-                            path: '/',
-                            domain: '.adscity.net'
-                        });
-                    }
-
-                    // Clear user state
                     setCurrentUser(null);
-                    setUserData(null);
                     setUserRole(null);
+                    setUserData(null);
                 }
             } catch (error) {
-                console.error("Error in auth state change handler:", error);
+                console.error('Erreur lors de la récupération de la session:', error);
+                setCurrentUser(null);
+                setUserRole(null);
+                setUserData(null);
             } finally {
                 setLoading(false);
             }
-        });
-
-        // Cleanup function
-        return () => {
-            unsubscribe();
         };
-    }, [currentUser]); // No dependencies to avoid re-running this effect
+
+        checkSession();
+    }, []);
+
 
     // Function to handle logout
     const logout = async () => {
         try {
             const user = auth.currentUser;
 
-            // 1. Update online status
-            if (user?.uid) {
-                try {
-                    const idToken = await user.getIdToken(true);
-                    await setUserOnlineStatus(user.uid, false, idToken);
-                    Cookies.remove('authToken', {
-                        path: '/',
-                        domain: '.adscity.net'
-                    });
-                } catch (statusError) {
-                    console.warn("Failed to update online status:", statusError);
-                    // Continue with logout even if this fails
-                }
-            }
+            // 1. Supprimer le cookie
+            Cookies.remove('authToken', {
+                path: '/',
+                domain: '.adscity.net',
+            });
 
-            // 2. Server-side logout
+            // 2. Déconnexion côté serveur (optionnel)
             if (user) {
-                try {
-                    await logoutUser(user.uid);
-                } catch (serverError) {
-                    console.warn("Server logout failed:", serverError);
-                    // Continue with local logout even if server logout fails
-                }
+                await logoutUser(user.uid); // Si tu veux notifier le serveur
             }
 
-            // 3. Firebase signout
+            // 3. Déconnexion Firebase
             await signOut(auth);
 
+            setCurrentUser(null);
+            setUserData(null);
+            setUserRole(null);
 
-            // 5. Return success for UI handling
-            return { success: true, message: "Déconnexion réussie." };
         } catch (error) {
-            console.error("Error during logout:", error);
-
-            // Force signout in case of error
-            try {
-                await signOut(auth);
-            } catch (signOutError) {
-                console.error("Forced signout failed:", signOutError);
-            }
-
-            return {
-                success: false,
-                message: "Erreur lors de la déconnexion. Veuillez réessayer."
-            };
+            console.error("Erreur logout:", error);
         }
     };
 
@@ -146,6 +88,7 @@ export const AuthProvider = ({ children }) => {
     const value = {
         currentUser,
         userData,
+        loading,
         userRole,
         logout,
         setUserRole, // Include this if you need to update role elsewhere

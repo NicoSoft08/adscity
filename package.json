@@ -1,0 +1,17 @@
+{
+    "name": "ads-city-monorepo",
+    "version": "1.0.0",
+    "description": "AdsCity - Monorepo containing all applications",
+    "scripts": {
+        "dev": "concurrently \"npm run dev:api\" \"npm run dev:app\" \"npm run dev:dashboard\"",
+        "dev:api": "cd api && npm run dev",
+        "dev:app": "cd app && npm run dev",
+        "dev:auth": "cd auth && npm run dev",
+        "dev:dashboard": "cd dashboard && npm run dev",
+        "install:all": "npm install && concurrently \"cd api && npm install\" \"cd app && npm install\" \"cd auth && npm install\" \"cd dashboard && npm install\"",
+        "build:all": "concurrently \"cd api && npm run build\" \"cd app && npm run build\" \"cd auth && npm run build\" \"cd dashboard && npm run build\""
+    },
+    "devDependencies": {
+        "concurrently": "^7.6.0"
+    }
+}
